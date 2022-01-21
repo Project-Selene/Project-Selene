@@ -1,13 +1,15 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@use "@material/theme" with (
+  $primary: #90caf9,
+  $secondary: #9fa8da,
+  $background: #333,
+);
+@use "material-components-web";
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@import "~@fontsource/roboto/latin.css";
+
+@import "~bootstrap/scss/bootstrap-utilities.scss";
+
+html {
+  color: var(--mdc-theme-text-primary-on-dark, #FFF);
+  background-color: var(--mdc-theme-background, #333);
 }

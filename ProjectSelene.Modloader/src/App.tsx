@@ -1,24 +1,12 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.scss';
 
 export default class App extends React.Component {
     render(): React.ReactNode {
-        return <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.tsx</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
+        return <div className="mdc-typography">
+            <h1 className='mdc-typography--headline1 text-center'>Project Selene</h1>
+            <h2 className='mdc-typography--subtitle1 text-center'>The modloader for Project Terra</h2>
+            <button className="mdc-button mdc-button--raised"><span className="mdc-button__ripple"></span>Button</button>
         </div>
     }
 }
