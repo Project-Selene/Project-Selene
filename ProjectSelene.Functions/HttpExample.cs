@@ -1,42 +1,28 @@
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
+using System.Web;
 
-namespace ProjectSelene.Functions
+namespace ProjectSelene.Functions;
+
+internal class HttpExample : AzureBaseController
 {
-    public class HttpExample
+    private readonly Login<HttpResponseData, HttpRequestData> login;
+
+    public HttpExample(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient)
     {
-        private readonly ILogger _logger;
-        private readonly SeleneDbContext context;
+        login = new Login<HttpResponseData, HttpRequestData>(loggerFactory, configuration, httpClient, createResponse);
+    }
 
-        public HttpExample(ILoggerFactory loggerFactory, SeleneDbContext context)
-        {
-            _logger = loggerFactory.CreateLogger<HttpExample>();
-            this.context = context;
-        }
+    [Function("HttpExample")]
+    public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
-        [Function("HttpExample")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
-        {
-            _logger.LogInformation($"Url: {req.Url}");
-            _logger.LogInformation("Headers");
-            foreach (var header in req.Headers)
-            {
-                _logger.LogInformation($"{header.Key}: {string.Join(',', header.Value)}");
-            }
+        var query = HttpUtility.ParseQueryString(req.Url.Query);
+        string token = query.Get("token")!;
 
-            _logger.LogInformation("Body");
-            _logger.LogInformation(new StreamReader(req.Body).ReadToEnd());
+        response.WriteString($"Hello: {string.Join("; ", this.login.GetUser(token).Claims.Select(c => c.Type + ' ' + c.Value))}");
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString($"{req.Url} {req.Headers} {new StreamReader(req.Body).ReadToEnd()}");
-
-            return response;
-        }
+        return response;
     }
 }

@@ -1,11 +1,13 @@
-using Microsoft.Extensions.Configuration;
+global using Microsoft.Azure.Functions.Worker;
+global using Microsoft.Azure.Functions.Worker.Http;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Logging;
+
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectSelene;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 using System.Net.Http.Headers;
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 
 var host = new HostBuilder()

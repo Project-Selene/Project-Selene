@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <UserSecretsId>f81087e0-c7f8-4fbd-aac8-6373e2e6b13d</UserSecretsId>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.CosmosDB" Version="3.0.9" />
