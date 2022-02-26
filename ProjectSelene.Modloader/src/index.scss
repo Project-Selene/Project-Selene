@@ -5,11 +5,25 @@
 );
 @use "material-components-web";
 
+@use "~bootstrap/scss/bootstrap-utilities.scss";
+
+@use "~material-icons/iconfont/outlined.scss";
+
 @import "~@fontsource/roboto/latin.css";
 
-@import "~bootstrap/scss/bootstrap-utilities.scss";
 
 html {
   color: var(--mdc-theme-text-primary-on-dark, #FFF);
   background-color: var(--mdc-theme-background, #333);
+}
+
+body, .root, .body {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  margin: 0;
 }

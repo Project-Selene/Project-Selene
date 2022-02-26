@@ -1,0 +1,33 @@
+.character-outline {
+    --image-width: 444;
+    --image-height: 360;
+    --scale: 0.05vw;
+
+    position: fixed;
+    width: calc(var(--scale) * var(--image-width));
+    height: calc(var(--scale) * var(--image-height));
+
+    bottom: 0;
+    left: calc(50vw - 0.5 * var(--scale) * var(--image-width));
+}
+
+.character-halo-outline {
+    --image-width: 89;
+    --image-height: 128;
+    --scale: 0.05vw;
+
+    --offset-x: 150px;
+    --offset-y: 2px;
+
+    position: fixed;
+    width: calc(var(--scale) * var(--image-width));
+    height: calc(var(--scale) * var(--image-height));
+
+    bottom: var(--offset-x);
+    left: calc(50vw - 0.5 * var(--scale) * var(--image-width) - var(--offset-y));
+}
+
+.body {
+    position: relative;
+    min-height: 100vh;
+}
