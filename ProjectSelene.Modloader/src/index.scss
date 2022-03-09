@@ -1,15 +1,14 @@
-@use "@material/theme" with (
-  $primary: #90caf9,
-  $secondary: #9fa8da,
-  $background: #333,
-);
-@use "material-components-web";
+// @use "@material/theme" with (
+//   $primary: #90caf9,
+//   $secondary: #9fa8da,
+//   $background: #333,
+// );
 
 @use "~bootstrap/scss/bootstrap-utilities.scss";
 
-@use "~material-icons/iconfont/outlined.scss";
+// @use "~material-icons/iconfont/outlined.scss";
 
-@import "~@fontsource/roboto/latin.css";
+// @import "~@fontsource/roboto/latin.css";
 
 
 html {
