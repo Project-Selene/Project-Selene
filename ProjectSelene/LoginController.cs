@@ -1,51 +1,50 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ProjectSelene;
 
-public class Login<T, R>
+public class LoginController : Controller
 {
     private readonly ILogger logger;
     private readonly string githubAuthorizeEndpoint;
     private readonly string githubTokenEndpoint;
     private readonly byte[] jwtKey;
     private readonly HttpClient httpClient;
-    private readonly ResultFactory<T, R> createResponse;
 
-    public Login(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, ResultFactory<T, R> resultFactory)
+    public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient)
     {
-        this.logger = loggerFactory.CreateLogger<Login<T, R>>();
+        this.logger = loggerFactory.CreateLogger<LoginController>();
         this.githubAuthorizeEndpoint = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&scope=read:user";
         this.githubTokenEndpoint = $"https://github.com/login/oauth/access_token?client_id={configuration["github_client_id"]}&client_secret={configuration["github_client_secret"]}&code=";
         this.jwtKey = Encoding.UTF8.GetBytes(configuration["jwt_secret"]);
         this.httpClient = httpClient;
-        this.createResponse = resultFactory;
     }
 
-    public Task<T> Redirect(R request)
+    [HttpGet("login")]
+    public Task<RedirectResult> Login()
     {
-        return this.createResponse(request, HttpStatusCode.Redirect, headers: new Dictionary<string, string>()
-        {
-            { "Location", this.githubAuthorizeEndpoint }
-        });
+        return Task.FromResult(Redirect(this.githubAuthorizeEndpoint));
     }
 
-    public async Task<T> Complete(R request, string queryString)
+    [HttpGet("completelogin")]
+    public async Task<ActionResult<string>> Complete()
     {
+        string queryString = HttpContext.Request.QueryString.ToUriComponent();
         var query = HttpUtility.ParseQueryString(queryString);
         string code = query.Get("code")!;
         if (string.IsNullOrWhiteSpace(code))
         {
-            return await this.createResponse(request, HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         using var tokenResponse = await this.httpClient.GetAsync(githubTokenEndpoint + Uri.EscapeDataString(code));
         var tokens = await JsonSerializer.DeserializeAsync<GithubTokens>(tokenResponse.Content.ReadAsStream());
-        if (tokens == null)
+        if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
         {
-            return await this.createResponse(request, HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
@@ -54,7 +53,7 @@ public class Login<T, R>
         var userData = await JsonSerializer.DeserializeAsync<GithubUser>(userDataResponse.Content.ReadAsStream());
         if (userData == null)
         {
-            return await this.createResponse(request, HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -70,7 +69,7 @@ public class Login<T, R>
 
         this.logger.LogInformation($"User {userData.id} logged in successfully");
 
-        return await this.createResponse(request, HttpStatusCode.OK, token);
+        return Ok(token);
     }
 
     public ClaimsPrincipal GetUser(string token)

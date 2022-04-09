@@ -5,11 +5,11 @@ namespace ProjectSelene.Functions;
 
 internal class HttpExample : AzureBaseController
 {
-    private readonly Login<HttpResponseData, HttpRequestData> login;
+    private readonly LoginController login;
 
-    public HttpExample(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient)
+    public HttpExample(IServiceProvider serviceProvider, LoginController login) : base(serviceProvider)
     {
-        login = new Login<HttpResponseData, HttpRequestData>(loggerFactory, configuration, httpClient, createResponse);
+        this.login = login;
     }
 
     [Function("HttpExample")]

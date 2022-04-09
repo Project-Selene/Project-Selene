@@ -1,7 +1,6 @@
 global using Microsoft.Azure.Functions.Worker;
 global using Microsoft.Azure.Functions.Worker.Http;
 global using Microsoft.Extensions.Configuration;
-global using Microsoft.Extensions.Logging;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +21,10 @@ var host = new HostBuilder()
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue(ctx.Configuration["github_client_name"])));
             return client;
             });
+        services.AddScoped<LoginController>();
         services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(ctx.Configuration.GetConnectionString("SeleneDb"), "SeleneDb"));
+
+        Singletons.Register(services);
     })
     .Build();
 
