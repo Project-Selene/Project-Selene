@@ -1,3 +1,5 @@
+using ProjectSelene.Controllers;
+
 namespace ProjectSelene.Functions;
 
 internal class LoginFunctions : AzureBaseController

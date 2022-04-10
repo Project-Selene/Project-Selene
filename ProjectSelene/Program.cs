@@ -1,6 +1,5 @@
+using Microsoft.EntityFrameworkCore;
 using ProjectSelene;
-using System.Net.Http.Headers;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +18,12 @@ builder.Services.AddSingleton((_) => {
     return client;
 });
 
-var assembly = Assembly.Load("ProjectSelene");
-builder.Services.AddMvc().AddApplicationPart(assembly).AddControllersAsServices();
+var connectionString = builder.Configuration.GetConnectionString("SeleneDb");
+builder.Services.AddDbContext<SeleneDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
 //builder.Services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(builder.Configuration.GetConnectionString("SeleneDb"), "SeleneDb"));
+
+//builder.Services.AddMvc();
 
 var app = builder.Build();
 
@@ -37,8 +39,3 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

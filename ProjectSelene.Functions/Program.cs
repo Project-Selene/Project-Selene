@@ -8,6 +8,7 @@ using ProjectSelene;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 using System.Reflection;
+using ProjectSelene.Controllers;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder => builder.AddUserSecrets(Assembly.GetExecutingAssembly(), true))
@@ -21,8 +22,9 @@ var host = new HostBuilder()
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue(ctx.Configuration["github_client_name"])));
             return client;
             });
-        services.AddScoped<LoginController>();
         services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(ctx.Configuration.GetConnectionString("SeleneDb"), "SeleneDb"));
+        services.AddScoped<LoginController>();
+        services.AddScoped<ModController>();
 
         Singletons.Register(services);
     })

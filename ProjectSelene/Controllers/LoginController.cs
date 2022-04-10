@@ -1,10 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ProjectSelene;
+namespace ProjectSelene.Controllers;
 
 public class LoginController : Controller
 {
