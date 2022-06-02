@@ -22,7 +22,7 @@ internal class HttpExample : AzureBaseController
         var query = HttpUtility.ParseQueryString(req.Url.Query);
         string token = query.Get("token")!;
 
-        response.WriteString($"Hello: {string.Join("; ", this.login.GetUser(token).Claims.Select(c => c.Type + ' ' + c.Value))}");
+        //response.WriteString($"Hello: {string.Join("; ", this.login.GetUser(token).Claims.Select(c => c.Type + ' ' + c.Value))}");
 
         return response;
     }

@@ -29,7 +29,7 @@ namespace ProjectSelene.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Mod",
+                name: "Mods",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -43,9 +43,9 @@ namespace ProjectSelene.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Mod", x => x.Id);
+                    table.PrimaryKey("PK_Mods", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Mod_Users_AuthorId",
+                        name: "FK_Mods_Users_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -70,9 +70,9 @@ namespace ProjectSelene.Migrations
                 {
                     table.PrimaryKey("PK_ModVersion", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ModVersion_Mod_OwnedById",
+                        name: "FK_ModVersion_Mods_OwnedById",
                         column: x => x.OwnedById,
-                        principalTable: "Mod",
+                        principalTable: "Mods",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -117,8 +117,8 @@ namespace ProjectSelene.Migrations
                 column: "ModVersionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mod_AuthorId",
-                table: "Mod",
+                name: "IX_Mods_AuthorId",
+                table: "Mods",
                 column: "AuthorId");
 
             migrationBuilder.CreateIndex(
@@ -146,7 +146,7 @@ namespace ProjectSelene.Migrations
                 name: "ModVersion");
 
             migrationBuilder.DropTable(
-                name: "Mod");
+                name: "Mods");
 
             migrationBuilder.DropTable(
                 name: "Users");

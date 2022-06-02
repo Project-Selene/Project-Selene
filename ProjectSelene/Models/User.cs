@@ -9,5 +9,5 @@ public class User
 
     public bool IsAdmin { get; set; } = false;
 
-    public IEnumerable<Mod> Mods { get; set; } = Enumerable.Empty<Mod>();
+    public List<Mod> Mods { get; set; } = new List<Mod> { };
 }

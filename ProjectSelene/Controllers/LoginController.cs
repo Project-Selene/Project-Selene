@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using ProjectSelene.Services;
 
 namespace ProjectSelene.Controllers;
 
@@ -10,16 +12,18 @@ public class LoginController : Controller
     private readonly ILogger logger;
     private readonly string githubAuthorizeEndpoint;
     private readonly string githubTokenEndpoint;
-    private readonly byte[] jwtKey;
+    private readonly SymmetricSecurityKey jwtKey;
     private readonly HttpClient httpClient;
+    private readonly LoginService loginService;
 
-    public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient)
+    public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, LoginService loginService)
     {
         this.logger = loggerFactory.CreateLogger<LoginController>();
         this.githubAuthorizeEndpoint = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&scope=read:user";
         this.githubTokenEndpoint = $"https://github.com/login/oauth/access_token?client_id={configuration["github_client_id"]}&client_secret={configuration["github_client_secret"]}&code=";
-        this.jwtKey = Encoding.UTF8.GetBytes(configuration["jwt_secret"]);
+        this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwt_secret"]));
         this.httpClient = httpClient;
+        this.loginService = loginService;
     }
 
     [HttpGet("login")]
@@ -28,6 +32,7 @@ public class LoginController : Controller
         return Task.FromResult(Redirect(this.githubAuthorizeEndpoint));
     }
 
+    [ApiExplorerSettings(IgnoreApi = true)]
     [HttpGet("completelogin")]
     public async Task<ActionResult<string>> Complete()
     {
@@ -59,7 +64,7 @@ public class LoginController : Controller
         var token = tokenHandler.CreateEncodedJwt(new SecurityTokenDescriptor()
         {
             Issuer = "https://functionsproject.azurewebsites.net/",
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(jwtKey), "HS256"),
+            SigningCredentials = new SigningCredentials(jwtKey, "HS256"),
             Claims = new Dictionary<string, object>()
             {
                 { ClaimTypes.NameIdentifier, userData.id }
@@ -71,32 +76,9 @@ public class LoginController : Controller
         return Ok(token);
     }
 
-    public ClaimsPrincipal GetUser(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
+    [HttpGet("loggedin")]
+    public bool IsLoggedIn() => this.loginService.IsLoggedIn(HttpContext);
 
-        if (string.IsNullOrEmpty(token) || !tokenHandler.CanReadToken(token))
-        {
-            return new ClaimsPrincipal();
-        }
-
-        try
-        {
-            return tokenHandler.ValidateToken(token, new TokenValidationParameters()
-            {
-                IssuerSigningKey = new SymmetricSecurityKey(this.jwtKey),
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                ValidateAudience = false,
-                ValidIssuer = "https://functionsproject.azurewebsites.net/",
-                ValidAlgorithms = new[] { "HS256" }
-            }, out var _);
-        } 
-        catch
-        {
-            return new ClaimsPrincipal();
-        }
-    }
 
     private record GithubTokens
     {

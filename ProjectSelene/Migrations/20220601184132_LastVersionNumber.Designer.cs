@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectSelene;
 
@@ -10,9 +11,10 @@ using ProjectSelene;
 namespace ProjectSelene.Migrations
 {
     [DbContext(typeof(SeleneDbContext))]
-    partial class SeleneDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220601184132_Minor")]
+    partial class LastVersionNumber
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

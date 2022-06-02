@@ -13,5 +13,7 @@ public class Mod
     public int ModInfoId { get; set; }
 
     [Required]
-    public IEnumerable<ModVersion> Versions { get; set; } = new List<ModVersion>();
+    public List<ModVersion> Versions { get; set; } = new List<ModVersion>();
+
+    public string? LatestVersionNumber { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectSelene.Models;
 
@@ -21,7 +22,7 @@ public class ModVersion
 
     [Required]
     [MinLength(1)]
-    public Artifact[] Artifacts { get; set; } = Array.Empty<Artifact>();
+    public ICollection<Artifact> Artifacts { get; set; } = new List<Artifact>();
 
     [InverseProperty(nameof(Mod.Versions))]
     public Mod OwnedBy { get; init; } = new Mod();
