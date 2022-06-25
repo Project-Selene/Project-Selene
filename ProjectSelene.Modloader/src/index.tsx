@@ -1,22 +1,23 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
 import './index.scss';
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = document.getElementById('root');
 if (root?.hasChildNodes()) {
-	ReactDOM.hydrate(
+	ReactDOM.hydrateRoot(root,
 		<React.StrictMode>
 			<App />
-		</React.StrictMode>, 
-		root);
-} else {
-	ReactDOM.render(
+		</React.StrictMode>);
+} else if (root) {
+	ReactDOM.createRoot(root).render(
 		<React.StrictMode>
 			<App />
-		</React.StrictMode>, 
-		root);
+		</React.StrictMode>,
+	);
 }
 
 // If you want to start measuring performance in your app, pass a function

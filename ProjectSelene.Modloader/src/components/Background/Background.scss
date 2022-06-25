@@ -1,0 +1,39 @@
+.background-body {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+
+    z-index: -100;
+    overflow: hidden;
+
+    .full-moon-container {
+        position: absolute;
+
+        $max-width: 1136px;
+
+        width: 100vw;
+        height: calc(100vw / 3);
+        max-height: calc($max-width / 3);
+
+        bottom: 0;
+
+        .full-moon {
+            width: 100vw;
+            max-width: $max-width;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    .background-stars {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        z-index: -200;
+    }
+}
