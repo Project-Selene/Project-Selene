@@ -1,0 +1,12 @@
+.home-buttons {
+    margin-left: 3vw;
+    width: 33vw;
+    transition: all 2s ease-in-out;
+    perspective: 33vw;
+    perspective-origin: center;
+    align-items: center;
+
+    > * {
+        transform: rotateY(8deg);
+    }
+}

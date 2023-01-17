@@ -1,0 +1,13 @@
+{
+    "name": "DummyGame",
+    "version" : "0.1.0",
+    "main": "assets/node-webkit.html",
+    "chromium-args" : "--ignore-gpu-blacklist --ignore-gpu-blocklist --disable-direct-composition --disable-background-networking --in-process-gpu --password-store=basic",
+    "window" : {
+      "toolbar" : false,
+      "icon" : "favicon.png",
+      "width" : 1136,
+      "height": 640,
+      "fullscreen" : false
+    }
+  }
