@@ -1,8 +1,9 @@
-export interface Storage {
-	readonly base: string;
-    readFile(path: string): Promise<string>;
-	readDir(path: string): Promise<string[]>;
-	writeGranted(): Promise<boolean>;
+export abstract class Storage {
+	abstract readonly target: string;
+	abstract readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean>;
+	abstract readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean>;
+    abstract writeGranted(response: WritableStream<Uint8Array>): Promise<boolean>;
+	abstract writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean>;
 }
 
 export type StorageInfo = {

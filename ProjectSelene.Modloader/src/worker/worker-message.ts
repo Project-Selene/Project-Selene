@@ -1,13 +1,14 @@
+export interface RequestData {
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+    body: ReadableStream<Uint8Array>;
+    clientId: string;
+}
 
 export type WorkerMessage = {
     type: 'fetch',
-    request: {
-        method: string,
-        url: string,
-        headers: Record<string, string>,
-        body: ReadableStream<Uint8Array>,
-        clientId: string,
-    },
+    request: RequestData,
     response: WritableStream,
 } | {
     type: 'ok',
@@ -27,6 +28,12 @@ export type RegisterDir = {
     kind: 'handle',
     target: string,
     handle: string,
+} | {
+    type: 'register-dir',
+    id: number,
+    kind: 'indexed',
+    target: string,
+    key: string,
 } | {
     type: 'register-dir',
     id: number,

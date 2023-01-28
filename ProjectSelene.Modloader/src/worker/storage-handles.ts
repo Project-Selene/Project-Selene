@@ -1,74 +1,78 @@
 import { Storage } from './storage';
 
-export class StorageHandles implements Storage {
+export class StorageHandles extends Storage {
 	public constructor(
-        public readonly base: string,
+        public readonly target: string,
         private readonly dir: FileSystemDirectoryHandle,
 	) {
-        
+		super();
 	}
-	public async readFile(path: string): Promise<string> {
-		const parts = path.split('/');
-		let dir = this.dir;
-		for (let i = 0; i < parts.length - 1; i++) {
-			const part = parts[i];
-
-			const state = await dir.queryPermission({ mode: 'read' });
-			if (state !== 'granted') {
-				await dir.requestPermission({ mode: 'read' });
+	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const fileHandle = await this.resolveFile(parts, 'read', false);
+			const file = await fileHandle.getFile();
+			file.stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			return false;
+		}
+		
+	}
+	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const dirHandle = await this.resolveFolder(parts, 'read', false);
+			const result: {name: string, isDir: boolean}[] = [];
+			for await (const [name, entry] of dirHandle.entries()) {
+				result.push({
+					name,
+					isDir: entry.kind === 'directory',
+				});
 			}
-
-			dir = await dir.getDirectoryHandle(part, {create: false});
+			new Blob([JSON.stringify(result)], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			return false;
 		}
-        
-		const dirState = await dir.queryPermission({ mode: 'read' });
-		if (dirState !== 'granted') {
-			await dir.requestPermission({ mode: 'read' });
-		}
-
-		const fileHandle = await dir.getFileHandle(parts[parts.length - 1], { create: false });
-        
-		const fileState = await fileHandle.queryPermission({ mode: 'read' });
-		if (fileState !== 'granted') {
-			await fileHandle.requestPermission({ mode: 'read' });
-		}
-
-		const file = await fileHandle.getFile();
-
-		const reader = new FileReader();
-		const result = new Promise<string>((resolve, reject) => {
-			reader.onload = ev => resolve(ev.target?.result as string);
-			reader.onerror = err => reject(err);
-			reader.readAsText(file);
-		});
-		return await result;
 	}
-	public async readDir(path: string): Promise<string[]> {
-		const parts = path.split('/');
-		let dir = this.dir;
-		for (let i = 0; i < parts.length; i++) {
-			const part = parts[i];
-
-			const state = await dir.queryPermission({ mode: 'read' });
-			if (state !== 'granted') {
-				await dir.requestPermission({ mode: 'read' });
-			}
-
-			dir = await dir.getDirectoryHandle(part, {create: false});
-		}
-        
-		const dirState = await dir.queryPermission({ mode: 'read' });
-		if (dirState !== 'granted') {
-			await dir.requestPermission({ mode: 'read' });
-		}
-
-		const result: string[] = [];
-		for await (const [name] of dir.entries()) {
-			result.push(name);
-		}
-		return result;
+	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
+		new Blob(['{"state":"' + await this.dir.queryPermission({ mode: 'readwrite' })+ '"}'], {type: 'application/json'}).stream().pipeTo(response);
+		return true;
 	}
-	public async writeGranted(): Promise<boolean> {
-		return await this.dir.queryPermission({ mode: 'readwrite' }) === 'granted';
+
+	public async writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const fileHandle = await this.resolveFile(parts, 'read', false);
+			const file = await fileHandle.createWritable();
+			content.pipeTo(file)
+				.then(() => new Blob(['{"success":true}'], {type: 'application/json'}).stream().pipeTo(response))
+				.catch(() => new Blob(['{"success":false}'], {type: 'application/json'}).stream().pipeTo(response));  //Do not wait here
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	private async resolveFolder(path: string[], mode: FileSystemPermissionMode, create: boolean) {
+		let dir = await this.ensurePermissions(this.dir, mode);
+		for (const part of path) {
+			dir = await this.ensurePermissions(await dir.getDirectoryHandle(part, {create}), mode);
+		}
+		return dir;
+	}
+	private async resolveFile(path: string[], mode: FileSystemPermissionMode, create: boolean) {
+		const dir = await this.resolveFolder(path.slice(0, path.length - 1), mode, create);
+		const file = await dir.getFileHandle(path[path.length - 1], {create});
+		return await this.ensurePermissions(file, mode);
+	}
+
+	private async ensurePermissions<T extends FileSystemDirectoryHandle | FileSystemFileHandle>(dir: T, mode: FileSystemPermissionMode) {
+		const state = await dir.queryPermission({ mode });
+		if (state !== 'granted') {
+			await dir.requestPermission({ mode });
+		}
+		return dir;
 	}
 }

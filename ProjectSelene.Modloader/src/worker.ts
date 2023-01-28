@@ -138,6 +138,27 @@ export class Worker {
 			start: '/fs/game/',
 		} as SWMessage, []);
 	}
+
+	public async registerSavesInMemory(key: string) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'register-dir',
+			id: rid,
+			target: '/fs/saves/',
+			kind: 'indexed',
+			key,
+		}, rid);
+		
+		const sw = (await navigator.serviceWorker.ready).active;
+		if (!sw) {
+			throw new Error('No serviceworker found');
+		}
+		await this.postMessage(sw, {
+			type: 'filter',
+			start: '/fs/saves/',
+		} as SWMessage, []);
+	}
 }
 
 export const worker = new Worker();
