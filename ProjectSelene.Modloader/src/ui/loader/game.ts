@@ -1,6 +1,5 @@
 // import * as filesystem from '../../filesystem';
-import { filesystem } from '../../filesystem';
-import { Game } from '../../game';
+// import { Game } from '../../game';
 import { worker } from '../../worker';
 import * as indexedDB from './indexedDB';
 
@@ -22,7 +21,7 @@ export async function openInBrowser() {
 			});
 
 			if (!files) {
-				return new Game(filesystem);
+				// return new Game(filesystem);
 			}
 
 			await worker.registerGameDirectoryOnDemand(files);
@@ -38,7 +37,7 @@ export async function openInBrowser() {
 
 			console.log(files);
 			document.body.removeChild(picker);
-			return new Game(filesystem);
+			// return new Game(filesystem);
 		}
 
 		const folder = await window.showDirectoryPicker({
@@ -85,7 +84,7 @@ async function findBestHandle(handles: {  handle: FileSystemDirectoryHandle, wri
 }
 
 
-async function openFolder(folder: FileSystemDirectoryHandle): Promise<Game> {
+async function openFolder(folder: FileSystemDirectoryHandle): Promise<any> {
 	await worker.registerGameDirectoryHandle(folder);
 	const text = await (await fetch('fs/game/index-release.html')).text();
 	const dom = new DOMParser().parseFromString(text, 'text/html');
@@ -97,5 +96,5 @@ async function openFolder(folder: FileSystemDirectoryHandle): Promise<Game> {
 	doc.write(dom.documentElement.innerHTML);
 	doc.close();
 	// return new Game(filesystem.fromFolderHandle(folder));
-	return new Game(filesystem);
+	// return new Game(filesystem);
 }

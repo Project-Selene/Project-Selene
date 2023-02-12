@@ -1,0 +1,22 @@
+.play-button {
+    width: 20em;
+    
+    > * {
+        background-color: #66F3 !important;
+    }
+}
+.play-button:hover {
+    > * {
+        background-color: #99F3 !important;;
+    }
+}
+
+.group {
+    z-index: 1;
+    width: 20em;
+}
+
+.dropdown {
+    background-color: #338 !important;
+    width: 20em;
+}
