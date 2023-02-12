@@ -11,7 +11,7 @@ module.exports = {
 	entry: './src/main.ts',
 	output: {
 		filename: 'game.compiled.js',
-		path: path.resolve(__dirname, 'dist'),
+		path: path.resolve(__dirname, 'dist', 'assets', 'js'),
         
 	},
 	resolve: {
@@ -34,7 +34,7 @@ module.exports = {
 		new CopyPlugin({
 			patterns: [{
 				from: 'static',
-				to: '.'
+				to: '../..'
 			}]
 		}),
 		{
