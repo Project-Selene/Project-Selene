@@ -17,17 +17,18 @@ module.exports = {
 	resolve: {
 		extensions: ['.ts']
 	},
+	module: {
+		rules: [
+			{
+				test: /\.tsx?$/,
+				use: 'ts-loader',
+				exclude: /node_modules/,
+			},
+		],
+	},
 	optimization: {
-		minimizer: [new TerserPlugin({
-			terserOptions: {
-				keep_classnames: true,
-				keep_fnames: true,
-				//mangle: false,
-				format: {
-					beautify: true,
-				}
-			}
-		})]
+		concatenateModules: false, //The test game is small enough to optimize stuff it wouldn't in a big program
+		minimize: false
 	},
 	plugins: [
 		new CopyPlugin({

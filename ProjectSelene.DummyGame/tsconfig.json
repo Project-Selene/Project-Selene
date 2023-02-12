@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "None",
+    "moduleResolution": "node",
     "target": "ES2018",
     "lib": ["ES2018"],
     "sourceMap": true,
     "outDir": "cache"
   },
+  "include": ["*", "tsconfig.json"],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "references": [{"path": "./src/tsconfig.json"}]
 }

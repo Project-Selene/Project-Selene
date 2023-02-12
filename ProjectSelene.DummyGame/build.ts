@@ -8,9 +8,10 @@ import yauzl = require('yauzl');
 const CACHE = './cache/';
 const DIST = './dist/';
 const NWJS_EXE = 'nw.exe';
-const NWJS_ZIP = 'nwjs-v0.35.5-win-x64.zip';
-const NWJS_URL = 'https://dl.nwjs.io/v0.35.5/nwjs-v0.35.5-win-x64.zip';
-const NWJS_ROOT = 'nwjs-v0.35.5-win-x64/';
+const NWJS_VERSION = 'v0.67.1';
+const NWJS_ZIP = `nwjs-${NWJS_VERSION}-win-x64.zip`;
+const NWJS_URL = `https://dl.nwjs.io/${NWJS_VERSION}/nwjs-${NWJS_VERSION}-win-x64.zip`;
+const NWJS_ROOT = `nwjs-${NWJS_VERSION}-win-x64/`;
 
 export async function downloadNWJS() {
 	if (fs.existsSync(DIST + NWJS_EXE)) {
