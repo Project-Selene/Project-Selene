@@ -6,11 +6,11 @@
   "component": {
     "default": {
       "customTemplates": {
-        "component": "src/templates/component/TemplateName.tsx",
-        "style": "src/templates/component/TemplateName.scss",
-        "test": "src/templates/component/TemplateName.test.tsx"
+        "component": "src/ui/templates/component/TemplateName.tsx",
+        "style": "src/ui/templates/component/TemplateName.scss",
+        "test": "src/ui/templates/component/TemplateName.test.tsx"
       },
-      "path": "src/components",
+      "path": "src/ui/components",
       "withStyle": true,
       "withTest": true,
       "withLazy": false,

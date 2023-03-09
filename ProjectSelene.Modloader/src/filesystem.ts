@@ -1,8 +1,12 @@
+import { Worker } from './worker';
+
 export class Filesystem {
-	public game = '';
-	public nwjs = '';
-	public mods = '';
-	public config = '';
+	private readonly worker = new Worker();
+
+	public async setup() {
+		await this.worker.setup();
+		await this.mountInMemory('/fs/saves/', 'saves');
+	}
 
 	public async readFile(path: string): Promise<string> {
 		return await (await fetch(path)).text();
@@ -34,6 +38,16 @@ export class Filesystem {
 				'X-SW-Command': 'isWritable',
 			},
 		})).json();
+	}
+	
+	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
+		await this.worker.registerDirectoryHandle(mount, dir);
+	}
+	public async mountFileList(mount: string, files: FileList) {
+		await this.worker.registerGameDirectoryOnDemand(mount, files);
+	}
+	public async mountInMemory(mount: string, key: string) {
+		await this.worker.registerSavesInMemory(mount, key);
 	}
 }
 

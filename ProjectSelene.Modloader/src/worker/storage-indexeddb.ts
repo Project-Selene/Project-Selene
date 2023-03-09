@@ -8,19 +8,21 @@ export class StorageIndexedDB extends Storage {
         private readonly key: string,
 	) {
 		super();
-		this.store = idb.createStore(key, 'worker-store');
+		this.store = idb.createStore('SeleneDb-worker-store-' + key, 'worker-store-' + key);
 	}
 	
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
 			const content: string | undefined = await idb.get(path, this.store);
 			if (content === undefined) {
+				new Blob([], {type: 'text/plain'}).stream().pipeTo(response); //TODO: send proper error
 				return false;
 			}
 
 			new Blob([content], {type: 'text/plain'}).stream().pipeTo(response); //Do not wait here
 			return true;
 		} catch {
+			new Blob([], {type: 'text/plain'}).stream().pipeTo(response); //TODO: send proper error
 			return false;
 		}
 	}

@@ -9,6 +9,7 @@ import { WorkerMessage } from './worker-message';
 export type { };
 declare const self: SharedWorkerGlobalScope;
 
+const store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
 const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
 workerBroadcast.addEventListener('message', handleMessage);
 
@@ -19,9 +20,10 @@ async function handleMessage(event: MessageEvent) {
 	switch (data.type) {
 	case 'register-dir': {
 		if (data.kind === 'handle') {
-			const handle = await idb.get(data.handle);
+			const handle = await idb.get(data.handle, store);
 			if (!handle) {
 				workerBroadcast.postMessage({type: 'error', id: data.id} as WorkerMessage);
+				return;
 			}
 			storages.push(new StorageHandles(data.target, handle));
 		} else if (data.kind === 'indexed') {

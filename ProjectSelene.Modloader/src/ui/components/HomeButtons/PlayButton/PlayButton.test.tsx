@@ -5,12 +5,12 @@ import React from 'react';
 
 import { PlayButton } from './PlayButton';
 
-describe('<OpenButton />', () => {
+describe('<PlayButton />', () => {
 	test('it should mount', () => {
-		render(<PlayButton title="asd" />);
+		render(<PlayButton />);
 
-		const homeButtons = screen.getByTestId('OpenButton');
+		const homeButtonsPlayButton = screen.getByTestId('PlayButton');
 
-		expect(homeButtons).toBeInTheDocument();
+		expect(homeButtonsPlayButton).toBeInTheDocument();
 	});
 });

@@ -14,6 +14,8 @@ export class Worker {
 	private pendingWorkerPromiseResolve?: (data: unknown) => void;
 	private pendingWorkerPromiseReject?: (err: string) => void;
 
+	private readonly store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
+
 	async setup() {
 		workerBroadcast.addEventListener('message', msg => {
 			if (msg.data?.type === 'request-resource') {
@@ -80,6 +82,7 @@ export class Worker {
 				pendingWorkerCount--;
 				result.push(data);
 				if (pendingWorkerCount === 0) {
+					console.log('resolve worker message', id);
 					resolve(result);
 				}
 			} ;
@@ -89,15 +92,15 @@ export class Worker {
 		});
 	}
 
-	public async registerGameDirectoryHandle(dir: FileSystemDirectoryHandle) {
+	public async registerDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
 		const rid = Math.random();
-		const id = 'game-dir-' + rid;
-		idb.set(id, dir);
+		const id = 'dir-' + rid;
+		await idb.set(id, dir, this.store);
 
 		await this.postMessageBroadcast({
 			type: 'register-dir',
 			id: rid,
-			target: '/fs/game/',
+			target: mount,
 			kind: 'handle',
 			handle: id,
 		}, rid);
@@ -108,23 +111,23 @@ export class Worker {
 		}
 		await this.postMessage(sw, {
 			type: 'filter',
-			start: '/fs/game/',
+			start: mount,
 		} as SWMessage, []);
-		idb.del(id);
+		idb.del(id, this.store);
 	}
-	public async registerGameDirectoryOnDemand(files: FileList) {
+	public async registerGameDirectoryOnDemand(mount: string, files: FileList) {
 		const rid = Math.random();
 
 		const names = Array.from(files).map(f => f.webkitRelativePath.slice(f.webkitRelativePath.indexOf('/') + 1));
 		
 		for (const file of files) {
-			fileMap.set( '/fs/game/' + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1), file);
+			fileMap.set(mount + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1), file);
 		}
 
 		await this.postMessageBroadcast({
 			type: 'register-dir',
 			id: rid,
-			target: '/fs/game/',
+			target: mount,
 			kind: 'on-demand',
 			files: names,
 		}, rid);
@@ -135,17 +138,16 @@ export class Worker {
 		}
 		await this.postMessage(sw, {
 			type: 'filter',
-			start: '/fs/game/',
+			start: mount,
 		} as SWMessage, []);
 	}
-
-	public async registerSavesInMemory(key: string) {
+	public async registerSavesInMemory(mount: string, key: string) {
 		const rid = Math.random();
 
 		await this.postMessageBroadcast({
 			type: 'register-dir',
 			id: rid,
-			target: '/fs/saves/',
+			target: mount,
 			kind: 'indexed',
 			key,
 		}, rid);
@@ -156,9 +158,7 @@ export class Worker {
 		}
 		await this.postMessage(sw, {
 			type: 'filter',
-			start: '/fs/saves/',
+			start: mount,
 		} as SWMessage, []);
 	}
 }
-
-export const worker = new Worker();

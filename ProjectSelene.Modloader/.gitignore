@@ -24,3 +24,6 @@ yarn-error.log*
 
 *.js
 !/scripts/*.js
+/test-results/
+/playwright-report/
+/playwright/.cache/

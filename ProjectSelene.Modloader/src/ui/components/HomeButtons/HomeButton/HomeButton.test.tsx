@@ -5,12 +5,12 @@ import React from 'react';
 
 import { HomeButton } from './HomeButton';
 
-describe('<HomeButtons />', () => {
+describe('<HomeButton />', () => {
 	test('it should mount', () => {
-		render(<HomeButton title="asd" />);
+		render(<HomeButton title="Hello" />);
 
-		const homeButtons = screen.getByTestId('HomeButtons');
+		const homeButton = screen.getByTestId('HomeButton');
 
-		expect(homeButtons).toBeInTheDocument();
+		expect(homeButton).toBeInTheDocument();
 	});
 });

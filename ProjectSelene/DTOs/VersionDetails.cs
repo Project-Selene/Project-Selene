@@ -3,7 +3,7 @@
 namespace ProjectSelene.DTOs;
 
 public record VersionDetails(
-    string Verison, 
+    string Version, 
     string SubmittedBy, 
     DateTime SubmittedOn, 
     bool Verified, 

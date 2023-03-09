@@ -14,7 +14,8 @@ export class StorageHandles extends Storage {
 			const file = await fileHandle.getFile();
 			file.stream().pipeTo(response); //Do not wait here
 			return true;
-		} catch {
+		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		
