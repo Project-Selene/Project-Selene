@@ -1,31 +1,34 @@
 import * as idb from 'idb-keyval';
 import { castImmutable, current, Draft, Immutable } from 'immer';
 import { filesystem } from './filesystem';
-import { Game } from './game';
 import { doAsync } from './hooks/state';
-import { State } from './state';
+import { Games, LoadingState, State, Game } from './state';
 
-export class Loader {
-	public readonly games: Game[] = [];
-
-	public async setup() {
-		const gameStore = idb.createStore('SeleneDb', 'gameHandles');
+export async function loadGames(state: Draft<State>) {
+	state.games = { loading: true };
+	doAsync(async (state, games) => {
+		state.games = {
+			loading: false,
+			success: true,
+			data: {
+				games: games,
+				selectedGame: 0,
+			},
+		} as LoadingState<Games>;
+	}, async () => {
+		const games: Game[] = [];	
+		const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
 		for (const key of await idb.get('keys', gameStore) ?? []) {
-			this.games.push(new Game(
-				key,
-				await idb.get(key + '_version', gameStore) ?? 'unknown',
-				await idb.get(key + '_handle', gameStore) ?? (() => { throw new Error('Failed to load game folder from storage'); })(),
-			));
+			games.push({
+				name: key + '',
+				store: {
+					type: 'handle',
+					handle: await idb.get(key + '_handle', gameStore) ?? (() => { throw new Error('Failed to load game folder from storage'); })(),
+				},
+			});
 		}
-		console.log(gameStore);
-		await filesystem.setup();
-	}
-}
-
-export const loader = new Loader();
-
-export async function loadGames() {
-	return;
+		return games;
+	});
 }
 
 export async function openGame(state: Draft<State>) {

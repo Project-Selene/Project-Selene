@@ -47,7 +47,7 @@ export class Filesystem {
 		await this.worker.registerGameDirectoryOnDemand(mount, files);
 	}
 	public async mountInMemory(mount: string, key: string) {
-		await this.worker.registerSavesInMemory(mount, key);
+		await this.worker.registerInMemory(mount, key);
 	}
 }
 

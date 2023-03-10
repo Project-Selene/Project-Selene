@@ -35,9 +35,12 @@ export function useAppCallback(callback: (state: Draft<State>) => void | Promise
 	return () => doAsync(callback);
 }
 
-export async function doAsync(callback: (state: Draft<State>) => void | Promise<void>) {
+export async function doAsync(callback: (state: Draft<State>) => void | Promise<void>): Promise<void>;
+export async function doAsync<T>(callback: (state: Draft<State>, prepared: Awaited<T>) => void | Promise<void>, prepare: () => T | Promise<T>): Promise<void>;
+export async function doAsync<T>(callback: (state: Draft<State>, prepared?: Awaited<T>) => void | Promise<void>, prepare?: () => T | Promise<T>) {
+	const prepared = prepare ? await prepare() : undefined;
 	const draft = createDraft(root.state);
-	await callback(draft);
+	await callback(draft, prepared);
 	root.state = finishDraft(draft);
 	updateAppState();
 }

@@ -141,7 +141,7 @@ export class Worker {
 			start: mount,
 		} as SWMessage, []);
 	}
-	public async registerSavesInMemory(mount: string, key: string) {
+	public async registerInMemory(mount: string, key: string) {
 		const rid = Math.random();
 
 		await this.postMessageBroadcast({
