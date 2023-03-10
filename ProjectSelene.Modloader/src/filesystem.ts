@@ -5,7 +5,6 @@ export class Filesystem {
 
 	public async setup() {
 		await this.worker.setup();
-		await this.mountInMemory('/fs/saves/', 'saves');
 	}
 
 	public async readFile(path: string): Promise<string> {

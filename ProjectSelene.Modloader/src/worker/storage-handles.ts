@@ -72,7 +72,8 @@ export class StorageHandles extends Storage {
 	private async ensurePermissions<T extends FileSystemDirectoryHandle | FileSystemFileHandle>(dir: T, mode: FileSystemPermissionMode) {
 		const state = await dir.queryPermission({ mode });
 		if (state !== 'granted') {
-			await dir.requestPermission({ mode });
+			const result = await dir.requestPermission({ mode });
+			console.log('permission result', result);
 		}
 		return dir;
 	}

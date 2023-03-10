@@ -6,7 +6,7 @@ import { HomeButton } from '../HomeButton/HomeButton';
 
 export function PlayButton() {
 	const needsOpen = useNeedsOpen();
-	const open = useAppCallback(state => needsOpen ? openGame(state) : playGame(state));
+	const open = useAppCallback(state => needsOpen ? openGame() : playGame(state));
 
 	return <HomeButton title={needsOpen ? 'Open' : 'Play'} onClick={open} />;
 }

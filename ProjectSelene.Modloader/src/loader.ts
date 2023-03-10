@@ -2,7 +2,9 @@ import * as idb from 'idb-keyval';
 import { castImmutable, current, Draft, Immutable } from 'immer';
 import { filesystem } from './filesystem';
 import { doAsync } from './hooks/state';
-import { Games, LoadingState, State, Game } from './state';
+import { Game, Games, LoadingState, State } from './state';
+
+const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
 
 export async function loadGames(state: Draft<State>) {
 	state.games = { loading: true };
@@ -17,7 +19,6 @@ export async function loadGames(state: Draft<State>) {
 		} as LoadingState<Games>;
 	}, async () => {
 		const games: Game[] = [];	
-		const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
 		for (const key of await idb.get('keys', gameStore) ?? []) {
 			games.push({
 				name: key + '',
@@ -31,33 +32,28 @@ export async function loadGames(state: Draft<State>) {
 	});
 }
 
-export async function openGame(state: Draft<State>) {
-	state.games = { loading: true };
-	doAsync(state => openGameFromHandle(state));
-}
-
-async function openGameFromHandle(state: Draft<State>) {
-	console.log('open');
-	const result = await window.showDirectoryPicker({
-		id: 'game',
-		mode: 'read',
-	});
-	state.games = {
-		loading: false,
-		success: true,
-		data: {
-			games: [{
+export function openGame() {
+	doAsync(async (state, handle)  => {
+		if ('data' in state.games) {
+			state.selectedGame = state.games.data.games.push({
 				name: 'Game',
 				store: {
 					type: 'handle',
-					handle: result,
+					handle,
 				},
-			}],
-			selectedGame: 0,
-		},
-	};
-}
+			}) - 1;
+		}
 
+		const keys = await idb.get('keys', gameStore) as string[] ?? [];
+		const key = Math.random();
+		keys.push(key + '');
+		await idb.set('keys', keys, gameStore);
+		await idb.set(key + '_handle', handle, gameStore);
+	}, () => window.showDirectoryPicker({
+		id: 'game',
+		mode: 'read',
+	}));
+}
 export function playGame(state: Draft<State>) {
 	console.log('play');
 	prepareWindow();
@@ -158,18 +154,24 @@ function prepareWindow() {
 		},
 		process: {
 			versions: {
-				'node-webkit': '0.67.1',
+				'node-webkit': window.process?.versions?.['node-webkit'] ?? 'browser',
 			},
 		},
 	});
 }
 
 async function startGame(state: Immutable<State>) {
-	if (!('data' in state.games) || state.games.data.games[0].store.type !== 'handle') {
+	if (!('data' in state.games)) {
+		return;
+	}
+
+	const game = state.games.data.games[state.selectedGame];
+	if (game.store.type !== 'handle') {
 		return;
 	}
 	
-	await filesystem.mountDirectoryHandle('/fs/game/', state.games.data.games[0].store.handle);
+	await game.store.handle.requestPermission({ mode: 'read' });
+	await filesystem.mountDirectoryHandle('/fs/game/', game.store.handle);
 	await filesystem.mountInMemory('/fs/saves/', 'save-data');
 
 	const entryPointResponse = await fetch('/fs/game/terra/index-release.html');

@@ -3,6 +3,7 @@ import { Draft, Immutable } from 'immer';
 export const root = {
 	state: {
 		games: { loading: undefined },
+		selectedGame: 0,
 		mods: { loading: undefined },
 		modDb: {
 			mods: { loading: undefined },
@@ -28,6 +29,7 @@ export type LoadingState<T> = {
 
 export interface State {
     games: LoadingState<Games>;
+    selectedGame: number;
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
@@ -48,7 +50,6 @@ export type Store = {
 
 export interface Games {
     games: Game[];
-    selectedGame: number;
 }
 
 export interface Game {
