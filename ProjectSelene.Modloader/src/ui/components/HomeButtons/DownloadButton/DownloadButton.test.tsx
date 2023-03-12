@@ -9,7 +9,7 @@ describe('<DownloadButton />', () => {
 	test('it should mount', () => {
 		render(<DownloadButton />);
 
-		const homeButtonsDownloadButton = screen.getByTestId('DownloadButton');
+		const homeButtonsDownloadButton = screen.getByText('Download');
 
 		expect(homeButtonsDownloadButton).toBeInTheDocument();
 	});

@@ -43,16 +43,16 @@ async function handleMessage(event: MessageEvent) {
 				switch (data.request.headers['x-sw-command']) {
 				case 'writeFile': 
 					storage.writeFile(path, data.request.body, data.response);
-					break;
+					return;
 				case 'readDir': 
 					storage.readDir(path, data.response);
-					break;
+					return;
 				case 'isWritable':
 					storage.writeGranted(data.response);
-					break;
+					return;
 				default: 
 					storage.readFile(path, data.response);
-					break;
+					return;
 				}
 			}
 		}

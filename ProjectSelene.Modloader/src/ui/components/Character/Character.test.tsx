@@ -9,8 +9,10 @@ describe('<Character />', () => {
 	test('it should mount', () => {
 		render(<Character />);
 
-		const character = screen.getByTestId('Character');
+		const character = screen.getAllByRole('img');
 
-		expect(character).toBeInTheDocument();
+		for (const element of character) {
+			expect(element).toBeInTheDocument();
+		}
 	});
 });

@@ -59,7 +59,9 @@ export class StorageHandles extends Storage {
 	private async resolveFolder(path: string[], mode: FileSystemPermissionMode, create: boolean) {
 		let dir = await this.ensurePermissions(this.dir, mode);
 		for (const part of path) {
-			dir = await this.ensurePermissions(await dir.getDirectoryHandle(part, {create}), mode);
+			if (part) {
+				dir = await this.ensurePermissions(await dir.getDirectoryHandle(part, {create}), mode);
+			}
 		}
 		return dir;
 	}

@@ -14,6 +14,7 @@ const context = await esbuild.context(
 			'.svg': 'file',
 			'.json': 'file',
 			'.ico': 'file',
+			'.raw.mjs': 'file',
 		},
 		assetNames: '[name]',
 		outdir: './build/',

@@ -3,6 +3,7 @@ import { castImmutable, current, Draft, Immutable } from 'immer';
 import { filesystem } from './filesystem';
 import { doAsync } from './hooks/state';
 import { Game, Games, LoadingState, State } from './state';
+import { transform } from './transformer';
 
 const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
 
@@ -164,13 +165,21 @@ async function startGame(state: Immutable<State>) {
 	if (!('data' in state.games)) {
 		return;
 	}
-
+	
 	const game = state.games.data.games[state.selectedGame];
 	if (game.store.type !== 'handle') {
 		return;
 	}
 	
 	await game.store.handle.requestPermission({ mode: 'read' });
+	await filesystem.mountDirectoryHandle('/fs/internal/game/original/', game.store.handle);
+	const code = await filesystem.readFile('/fs/internal/game/original/terra/dist/bundle.js');
+	const prefix = await filesystem.readFile('prefix.raw.mjs');
+	const injected = transform(code, prefix);
+	
+	await filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
+	await filesystem.writeFile('/fs/game/terra/dist/bundle.js', injected);
+
 	await filesystem.mountDirectoryHandle('/fs/game/', game.store.handle);
 	await filesystem.mountInMemory('/fs/saves/', 'save-data');
 

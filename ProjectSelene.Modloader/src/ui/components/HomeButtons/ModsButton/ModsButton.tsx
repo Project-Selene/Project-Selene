@@ -1,6 +1,10 @@
 import React from 'react';
+import { useAppCallback } from '../../../../hooks/state';
+import { loadMods } from '../../../../mods';
 import { HomeButton } from '../HomeButton/HomeButton';
 
 export function ModsButton() {
-	return <HomeButton title="Mods" />;
+	const load = useAppCallback(() => loadMods());
+
+	return <HomeButton title="Mods" onClick={load} />;
 }

@@ -9,7 +9,7 @@ describe('<HomeButton />', () => {
 	test('it should mount', () => {
 		render(<HomeButton title="Hello" />);
 
-		const homeButton = screen.getByTestId('HomeButton');
+		const homeButton = screen.getByText('Hello');
 
 		expect(homeButton).toBeInTheDocument();
 	});

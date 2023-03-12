@@ -3,17 +3,19 @@ import './App.scss';
 import { ThemeProvider } from '@mui/material';
 import React, { useEffect } from 'react';
 
+import { useAppCallback } from '../hooks/state';
+import { loadGames } from '../loader';
 import { Background } from './components/Background/Background';
 import { Character } from './components/Character/Character';
 import { HomeButtons } from './components/HomeButtons/HomeButtons';
 import { Title } from './components/Title/Title';
 import { theme } from './theme';
-import { useAppCallback } from '../hooks/state';
-import { loadGames } from '../loader';
 
 export default function App() {
 	useEffect(() => {
-		const initialize = useAppCallback(state => loadGames(state));
+		const initialize = useAppCallback(async state => {
+			await loadGames(state);
+		});
 		initialize();
 	});
 

@@ -2,6 +2,7 @@ import * as b from './b';
 import { Foo } from './test';
 
 const x = {a:1};
+let l;
 
 
 class TestClient extends b.TestParent {
@@ -19,10 +20,10 @@ class TestClient extends b.TestParent {
 
 
 function y() {
-
+	l = 123;
 	b.test(x);
 	console.log(x);
-	// console.log(b);
+	console.log(l);
 	new TestClient().target();
 	new Foo().bar();
 }

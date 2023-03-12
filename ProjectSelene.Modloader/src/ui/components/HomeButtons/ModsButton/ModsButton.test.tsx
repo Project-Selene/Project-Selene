@@ -9,7 +9,7 @@ describe('<ModsButton />', () => {
 	test('it should mount', () => {
 		render(<ModsButton />);
 
-		const homeButtonsModsButton = screen.getByTestId('ModsButton');
+		const homeButtonsModsButton = screen.getByRole('button');
 
 		expect(homeButtonsModsButton).toBeInTheDocument();
 	});
