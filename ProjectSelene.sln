@@ -9,6 +9,8 @@ Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "ProjectSelene.Modloader", "
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "ProjectSelene.DummyGame", "ProjectSelene.DummyGame\ProjectSelene.DummyGame.njsproj", "{D16D9A40-E2CC-4210-B1AC-88FCC21DE241}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "ProjectSelene.Modloader.API", "ProjectSelene.Modloader.API\ProjectSelene.Modloader.API.njsproj", "{ED8FACE6-6AD8-489A-A32A-FBC0858838E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D16D9A40-E2CC-4210-B1AC-88FCC21DE241}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D16D9A40-E2CC-4210-B1AC-88FCC21DE241}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D16D9A40-E2CC-4210-B1AC-88FCC21DE241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED8FACE6-6AD8-489A-A32A-FBC0858838E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED8FACE6-6AD8-489A-A32A-FBC0858838E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED8FACE6-6AD8-489A-A32A-FBC0858838E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED8FACE6-6AD8-489A-A32A-FBC0858838E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

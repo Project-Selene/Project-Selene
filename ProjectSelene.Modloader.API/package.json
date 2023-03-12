@@ -1,0 +1,20 @@
+{
+  "name": "@project-selene/api",
+  "version": "1.0.0",
+  "description": "The runtime API for Project Selene",
+  "main": "dist/main.js",
+  "type": "module",
+  "author": {
+    "name": ""
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "tsc --build --clean",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.0",
+    "typescript": "^4.9.5"
+  }
+}
