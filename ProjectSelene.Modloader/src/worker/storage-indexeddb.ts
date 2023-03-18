@@ -15,14 +15,12 @@ export class StorageIndexedDB extends Storage {
 		try {
 			const content: string | undefined = await idb.get(path, this.store);
 			if (content === undefined) {
-				new Blob([], {type: 'text/plain'}).stream().pipeTo(response); //TODO: send proper error
 				return false;
 			}
 
 			new Blob([content], {type: 'text/plain'}).stream().pipeTo(response); //Do not wait here
 			return true;
 		} catch {
-			new Blob([], {type: 'text/plain'}).stream().pipeTo(response); //TODO: send proper error
 			return false;
 		}
 	}

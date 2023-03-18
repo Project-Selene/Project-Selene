@@ -206,7 +206,7 @@ export function transform(content: string, prefix: string) {
 		},
 	]).transformed[0] as ts.SourceFile;
 
-	return ts.createPrinter({ newLine: ts.NewLineKind.LineFeed }).printNode(ts.EmitHint.Unspecified, resultFile, resultFile);
+	return ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true }).printNode(ts.EmitHint.Unspecified, resultFile, resultFile);
 }
 
 function hookBlock(block: ts.Block) {

@@ -40,19 +40,39 @@ async function handleMessage(event: MessageEvent) {
 		for (const storage of storages) {
 			if (pathname.startsWith(storage.target)) {
 				const path = pathname.slice(storage.target.length);
+				let result: boolean;
 				switch (data.request.headers['x-sw-command']) {
 				case 'writeFile': 
-					storage.writeFile(path, data.request.body, data.response);
-					return;
+					result = await storage.writeFile(path, data.request.body, data.response);
+					break;
 				case 'readDir': 
-					storage.readDir(path, data.response);
-					return;
+					result = await storage.readDir(path, data.response);
+					break;
 				case 'isWritable':
-					storage.writeGranted(data.response);
-					return;
+					result = await storage.writeGranted(data.response);
+					break;
 				default: 
-					storage.readFile(path, data.response);
-					return;
+					result = await storage.readFile(path, data.response);
+					break;
+				}
+				
+				if (result) {
+					workerBroadcast.postMessage({
+						type: 'response',
+						id: data.id,
+						response: {
+							status: 200,
+						},
+					} as WorkerMessage);
+				} else {
+					new Blob([], {type: 'text/plain'}).stream().pipeTo(data.response);
+					workerBroadcast.postMessage({
+						type: 'response',
+						id: data.id,
+						response: {
+							status: 404,
+						},
+					} as WorkerMessage);
 				}
 			}
 		}

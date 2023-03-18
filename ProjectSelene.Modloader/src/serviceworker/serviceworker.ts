@@ -13,6 +13,14 @@ interface WorkerRegistration {
 	lastWorker: number;
 }
 const workers = new Map<string, WorkerRegistration>();
+const callbacks = new Map<number, (data: unknown) => void>();
+
+const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
+workerBroadcast.addEventListener('message', event => {
+	if (event.data?.type === 'response') {
+		callbacks.get(event.data.id)?.(event.data);
+	}
+});
 
 self.addEventListener('install', event => event.waitUntil((async () => {
 	await self.skipWaiting();
@@ -60,7 +68,7 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => event.respondWith((async () => {
 	const reg = workers.get(event.clientId);
 	if (!reg) {
-		return await fetch(event.request);
+		return await fromNetworkOrCached(event.request);
 	}
 
 	for (const filter of reg.filter) {
@@ -69,10 +77,14 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 			const worker = reg.workers[next];
 			reg.lastWorker = next;
 
+			const id = Math.random();
+			const wait = waitForResponse<{response: ResponseInit}>(id);
+
 			const stream = new TransformStream();
 
 			worker.postMessage({
 				type: 'fetch',
+				id,
 				request: {
 					method: event.request.method,
 					url: event.request.url,
@@ -89,15 +101,48 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 
 			return new Response(
 				stream.readable,
-				{ status: 200 },
+				(await wait).response,
 			);
 		}
 	}
-	return await fetch(event.request);
+
+	return await fromNetworkOrCached(event.request);
 })()));
+
+async function fromNetworkOrCached(request: Request) {
+	if (!navigator.onLine) {
+		const cached = await caches.match(request);
+		if (cached) {
+			return cached;
+		}
+	}
+
+	try {
+		const response = await fetch(request);
+		
+		const cache = await caches.open('selene-loader');
+		await cache.put(request, response.clone());
+
+		return response;
+	} catch {
+		const cached = await caches.match(request);
+		if (cached) {
+			return cached;
+		}
+
+		return new Response('Network error happened', {
+			status: 408,
+			headers: { 'Content-Type': 'text/plain' },
+		});
+	}
+}
 
 function toObject(headers: Headers) {
 	const result: Record<string, string> = {};
 	headers.forEach((value, key) => result[key] = value);
 	return result;
+}
+
+function waitForResponse<T>(id: number): Promise<T> {
+	return new Promise(resolve => callbacks.set(id, resolve as unknown as (data: unknown) => void));
 }

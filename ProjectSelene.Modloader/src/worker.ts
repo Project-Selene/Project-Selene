@@ -18,10 +18,6 @@ export class Worker {
 
 	async setup() {
 		workerBroadcast.addEventListener('message', msg => {
-			if (msg.data?.type === 'request-resource') {
-				fileMap.get(msg.data.file)?.stream().pipeTo(msg.data.stream);
-				return;
-			}
 			this.pendingWorkerPromiseResolve?.(msg.data);
 		} );
 		workerBroadcast.addEventListener('messageerror', msg => this.pendingWorkerPromiseReject?.(msg.data));

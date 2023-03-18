@@ -8,6 +8,7 @@ export interface RequestData {
 
 export type WorkerMessage = {
     type: 'fetch',
+    id: number,
     request: RequestData,
     response: WritableStream,
 } | {
@@ -17,9 +18,9 @@ export type WorkerMessage = {
     type: 'error',
     id: number,
 } | {
-    type: 'request-resource',
-    file: string,
-    stream: WritableStream<Uint8Array>,
+    type: 'response',
+    id: number,
+    response: ResponseInit,
 } | RegisterDir ;
 
 export type RegisterDir = {

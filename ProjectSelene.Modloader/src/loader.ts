@@ -174,7 +174,7 @@ async function startGame(state: Immutable<State>) {
 	await game.store.handle.requestPermission({ mode: 'read' });
 	await filesystem.mountDirectoryHandle('/fs/internal/game/original/', game.store.handle);
 	const code = await filesystem.readFile('/fs/internal/game/original/terra/dist/bundle.js');
-	const prefix = await filesystem.readFile('prefix.raw.mjs');
+	const prefix = await filesystem.readFile('/static/js/prefix.js');
 	const injected = transform(code, prefix);
 	
 	await filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');

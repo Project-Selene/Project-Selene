@@ -7,6 +7,7 @@ const context = await esbuild.context(
 			main: './src/index.ts',
 			'static/js/worker': './src/worker/worker.ts',
 			serviceworker: './src/serviceworker/serviceworker.ts',
+			'static/js/prefix': './src/prefix/prefix.ts',
 		},
 		loader: {
 			'.html': 'file',
@@ -14,7 +15,6 @@ const context = await esbuild.context(
 			'.svg': 'file',
 			'.json': 'file',
 			'.ico': 'file',
-			'.raw.mjs': 'file',
 		},
 		assetNames: '[name]',
 		outdir: './build/',
