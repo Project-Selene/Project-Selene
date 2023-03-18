@@ -62,6 +62,9 @@ async function handleMessage(event: MessageEvent) {
 						id: data.id,
 						response: {
 							status: 200,
+							headers: {
+								'content-type': 'text/javascript',
+							},
 						},
 					} as WorkerMessage);
 				} else {

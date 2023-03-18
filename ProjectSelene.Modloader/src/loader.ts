@@ -63,6 +63,14 @@ export function playGame(state: Draft<State>) {
 
 function prepareWindow() {
 	Object.assign(window, {
+		__projectSelene:  {
+			classes: {},
+			functions: {},
+			consts: {},
+			lets: {},
+			gameReadyCallback: hookGameStart,
+			symbol: Symbol('ProjectSelene'),
+		},
 		require(name: string) {
 			if (name === 'fs') {
 				return new Proxy({}, {
@@ -194,3 +202,59 @@ async function startGame(state: Immutable<State>) {
 	document.write(doc.documentElement.innerHTML);
 	document.close();
 }
+
+async function hookGameStart(...args: unknown[]) {
+	console.log('ready', ...args);
+	await loadMods();
+	return __projectSelene.functions['startGame'](...args);
+}
+
+async function loadMods() {
+	//TODO: load logic
+	try {
+		const src = '/fs/game/dev-mods/jetpack/dist/main.js';
+		const mod = await import(src);
+		mod.default({
+			inject(clazz: { new(...args: unknown[]): unknown}) {
+				//Basically just does a linked list insert
+				//Example: 
+				// From: mod -> injectable -> hook -> original
+				// To: hook -> mod -> original
+				//
+				//With second mod
+				// From: modB -> injectable -> hook -> mod -> original
+				// To: hook -> modB -> mod -> original
+
+				let ctor = clazz;
+				let proto = clazz.prototype;
+				while (Object.getPrototypeOf(ctor)[__projectSelene.symbol] !== 'injected') {
+					ctor = Object.getPrototypeOf(ctor);
+					if (ctor === Function) {
+						throw new Error('Can only hook classes that have an Injectable(...) super class');
+					}
+					proto = Object.getPrototypeOf(proto);
+				}
+
+				const injectableCtor = Object.getPrototypeOf(ctor);
+				const injectableProto = Object.getPrototypeOf(proto);
+
+				const hookCtor = Object.getPrototypeOf(injectableCtor);
+				const hookProto = Object.getPrototypeOf(injectableProto);
+
+				const currentCtor = Object.getPrototypeOf(hookCtor);
+				const currentProto = Object.getPrototypeOf(hookProto);
+
+				Object.setPrototypeOf(ctor, currentCtor);
+				Object.setPrototypeOf(proto, currentProto);
+
+				Object.setPrototypeOf(hookCtor, ctor);
+				Object.setPrototypeOf(hookProto, proto);
+			},
+		});
+	} catch(e) {
+		console.error('could not load mod', e);
+		return;
+	}
+	return;
+}
+

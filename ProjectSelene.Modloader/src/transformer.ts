@@ -68,13 +68,54 @@ export function transform(content: string, prefix: string) {
 						]));
 					}
 				} else if (ts.isFunctionDeclaration(result)) {
-					return result;
+					if (!result.body) {
+						return result;
+					}
+					if (result.name) {
+						return ts.factory.createVariableStatement(undefined, ts.factory.createVariableDeclarationList([
+							ts.factory.createVariableDeclaration(result.name, undefined, undefined,
+								ts.factory.createCallExpression(ts.factory.createIdentifier('__injectFunction'), undefined, [
+									ts.factory.createStringLiteral(result.name.text),
+									ts.factory.createElementAccessExpression(
+										ts.factory.createObjectLiteralExpression([
+											ts.factory.createPropertyAssignment(
+												result.name.text,
+												ts.factory.createFunctionExpression(
+													result.modifiers,
+													result.asteriskToken,
+													undefined as ts.Identifier | undefined,
+													result.typeParameters,
+													result.parameters,
+													result.type,
+													result.body,
+												),
+											),
+										]),
+										ts.factory.createStringLiteral(result.name.text),
+									),
+								]),
+							),
+						]));
+					} else {
+						return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createIdentifier('__injectFunction'), undefined, [
+							ts.factory.createVoidZero(),
+							ts.factory.createFunctionExpression(
+								result.modifiers,
+								result.asteriskToken,
+								undefined as ts.Identifier | undefined,
+								result.typeParameters,
+								result.parameters,
+								result.type,
+								result.body,
+							),
+						]));
+					}
 				}
 				return result;
 			}
 
 			return node => {
-				const result = transform(node);
+				const result = ts.visitNode(node, transform);
 				if (ts.isSourceFile(result)
 					&& result.statements.length === 1
 					&& ts.isExpressionStatement(result.statements[0])
@@ -206,7 +247,10 @@ export function transform(content: string, prefix: string) {
 		},
 	]).transformed[0] as ts.SourceFile;
 
-	return ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true }).printNode(ts.EmitHint.Unspecified, resultFile, resultFile);
+	return ts.createPrinter({ 
+		newLine: ts.NewLineKind.LineFeed, 
+		removeComments: true,  //We don't want to remove comments but it randomly decides to insert comments from bundle.js into the injected code and breaking it
+	}).printNode(ts.EmitHint.Unspecified, resultFile, resultFile);
 }
 
 function hookBlock(block: ts.Block) {

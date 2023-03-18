@@ -1,12 +1,3 @@
-const __projectSelene: {
-    classes: Record<string | symbol, unknown>;
-    consts: Record<string | symbol, unknown>;
-    lets: Record<string | symbol, { getter: () => unknown, setter: (value: unknown) => void }>;
-} = {
-	classes: {},
-	consts: {},
-	lets: {},
-};
 function __injectClass<T extends Record<string, unknown>>(name: string, clazz: new (...args: unknown[]) => T) {
 	//set class instance name (makes things a lot easier to debug)
 	const result = {[name]: class extends clazz { } }[name];
@@ -22,6 +13,16 @@ function __injectClass<T extends Record<string, unknown>>(name: string, clazz: n
     
 	__projectSelene.classes[name] = clazz;
 	return clazz;
+}
+
+function __injectFunction(name: string, value: (...args: unknown[]) => unknown) {
+	if (name === 'startGame') {
+		__projectSelene.functions[name] = value;
+		return __projectSelene.gameReadyCallback;
+	}
+
+	__projectSelene.functions[name] = value;
+	return value;
 }
 
 function __injectConst(name: string, value: unknown) {
@@ -42,7 +43,7 @@ function __injectLet(name: string, getter: () => unknown, setter: (value: unknow
 	__projectSelene.lets[name] = {getter, setter};
 }
 
-Object.assign(window, { __injectClass, __injectConst, __injectLet, __projectSelene });
+Object.assign(window, { __injectClass, __injectFunction, __injectConst, __injectLet });
 
 export { };
 
