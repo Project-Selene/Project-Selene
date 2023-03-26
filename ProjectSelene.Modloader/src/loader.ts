@@ -169,6 +169,8 @@ function prepareWindow() {
 	});
 }
 
+
+
 async function startGame(state: Immutable<State>) {
 	if (!('data' in state.games)) {
 		return;
@@ -191,6 +193,8 @@ async function startGame(state: Immutable<State>) {
 	await filesystem.mountDirectoryHandle('/fs/game/', game.store.handle);
 	await filesystem.mountInMemory('/fs/saves/', 'save-data');
 
+	await filesystem.mountZip('/fs/mods/jetpack/', '/fs/game/dev-mods/jetpack/dist/main.zip');
+
 	const entryPointResponse = await fetch('/fs/game/terra/index-release.html');
 	const parser = new DOMParser();
 	const doc = parser.parseFromString(await entryPointResponse.text(), 'text/html');
@@ -212,7 +216,7 @@ async function hookGameStart(...args: unknown[]) {
 async function loadMods() {
 	//TODO: load logic
 	try {
-		const src = '/fs/game/dev-mods/jetpack/dist/main.js';
+		const src = '/fs/mods/jetpack/main.js';
 		const mod = await import(src);
 		mod.default({
 			inject(clazz: { new(...args: unknown[]): unknown}) {
@@ -225,12 +229,16 @@ async function loadMods() {
 				// From: modB -> injectable -> hook -> mod -> original
 				// To: hook -> modB -> mod -> original
 
+				if (__projectSelene.symbol in clazz) {
+					throw new Error('Can only hook classes that have an Injectable(...) super class. Directly injecting the result of Injectable(...) does not make sense.');
+				}
+
 				let ctor = clazz;
 				let proto = clazz.prototype;
 				while (Object.getPrototypeOf(ctor)[__projectSelene.symbol] !== 'injected') {
 					ctor = Object.getPrototypeOf(ctor);
 					if (ctor === Function) {
-						throw new Error('Can only hook classes that have an Injectable(...) super class');
+						throw new Error('Can only hook classes that have an Injectable(...) super class.');
 					}
 					proto = Object.getPrototypeOf(proto);
 				}
