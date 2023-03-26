@@ -41,4 +41,10 @@ export type RegisterDir = {
     kind: 'on-demand',
     target: string,
     files: string[],
+} | {
+    type: 'register-dir',
+    id: number,
+    kind: 'zip',
+    target: string,
+    source: string,
 };

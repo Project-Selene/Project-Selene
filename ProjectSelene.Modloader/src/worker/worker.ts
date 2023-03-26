@@ -4,6 +4,7 @@ import * as idb from 'idb-keyval';
 import { Storage } from './storage';
 import { StorageHandles } from './storage-handles';
 import { StorageIndexedDB } from './storage-indexeddb';
+import { StorageZip } from './storage-zip';
 import { WorkerMessage } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
 export type { };
@@ -28,6 +29,8 @@ async function handleMessage(event: MessageEvent) {
 			storages.push(new StorageHandles(data.target, handle));
 		} else if (data.kind === 'indexed') {
 			storages.push(new StorageIndexedDB(data.target, data.key));
+		} else if (data.kind === 'zip') {
+			storages.push(new StorageZip(data.target, data.source, readFile));
 		} else {
 			throw new Error('Not implemented yet: ' + data.kind);
 		}
@@ -83,6 +86,21 @@ async function handleMessage(event: MessageEvent) {
 	}
 	default:
 		break;
+	}
+}
+
+async function readFile(pathname: string) {
+	for (const storage of storages) {
+		if (pathname.startsWith(storage.target)) {
+			const str = new TransformStream();
+
+			const path = pathname.slice(storage.target.length);
+			const result = await storage.readFile(path, str.writable);
+				
+			if (result) {
+				return str.readable;
+			}
+		}
 	}
 }
 

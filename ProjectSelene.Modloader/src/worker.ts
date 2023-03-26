@@ -157,4 +157,24 @@ export class Worker {
 			start: mount,
 		} as SWMessage, []);
 	}
+	public async registerZip(mount: string, source: string) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'register-dir',
+			id: rid,
+			target: mount,
+			kind: 'zip',
+			source,
+		}, rid);
+		
+		const sw = (await navigator.serviceWorker.ready).active;
+		if (!sw) {
+			throw new Error('No serviceworker found');
+		}
+		await this.postMessage(sw, {
+			type: 'filter',
+			start: mount,
+		} as SWMessage, []);
+	}
 }

@@ -48,6 +48,9 @@ export class Filesystem {
 	public async mountInMemory(mount: string, key: string) {
 		await this.worker.registerInMemory(mount, key);
 	}
+	public async mountZip(mount: string, source: string) {
+		await this.worker.registerZip(mount, source);
+	}
 }
 
 export const filesystem = new Filesystem();
