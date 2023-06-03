@@ -66,6 +66,10 @@ self.addEventListener('message', event => {
 	})());});
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
+	if (event.request.headers.get('Accept') === 'text/event-stream') {
+		return fetch(event.request);
+	}
+
 	const reg = workers.get(event.clientId);
 	if (!reg) {
 		return await fromNetworkOrCached(event.request);

@@ -7,16 +7,17 @@ import { Background } from './components/Background/Background';
 import { Character } from './components/Character/Character';
 import { HomeButtons } from './components/HomeButtons/HomeButtons';
 import { Title } from './components/Title/Title';
+import { doLoad } from './hooks/state';
+import { root } from './state';
 import { theme } from './theme';
 
 export default function App() {
-	// useEffect(() => {
-	// 	const initialize = useAppCallback(async state => {
-	// 		await loadGames(state);
-	// 		await loadMods(state);
-	// 	});
-	// 	initialize();
-	// });
+	doLoad(() => root.loader.finder.loadGames(), (state, value) => {
+		state.gamesInfo = value;
+		if (value.data?.games) {
+			state.games = value.data?.games.map(() => ({}));
+		}
+	});
 
 	return <ThemeProvider theme={theme}>
 		<div className="body">

@@ -2,7 +2,7 @@ import { WarningAmber } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { useJSAvailable } from '../../../hooks/detect';
+import { useJSAvailable } from '../../hooks/detect';
 
 export function NOJSWarning() {
 	const jsAvailable = useJSAvailable();

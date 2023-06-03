@@ -1,6 +1,7 @@
-import { createDraft, Draft, finishDraft, Immutable } from 'immer';
+import produce, { createDraft, Draft, finishDraft, Immutable } from 'immer';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { root, State } from '../state';
+import { LoadingState, State } from '../../state';
+import { root } from '../state';
 
 interface StoredSelector<T> {
     selector: (state: Immutable<State>) => T,
@@ -25,6 +26,12 @@ export function useAppState<T>(selector: (state: Immutable<State>) => T) {
 			update,
 		};
 		selectors.push(stored as StoredSelector<unknown>);
+
+		const actual = stored.selector(root.state);
+		if (actual !== stored.current) {
+			stored.update(actual);
+		}
+
 		return () => { selectors.splice(selectors.indexOf(stored as StoredSelector<unknown>), 1); };
 	}, [selector]);
 
@@ -42,6 +49,19 @@ export async function doAsync<T>(callback: (state: Draft<State>, prepared?: Awai
 	const draft = createDraft(root.state);
 	await callback(draft, prepared);
 	root.state = finishDraft(draft);
+	updateAppState();
+}
+
+export async function doLoad<T>(load: (state: Immutable<State>) => T | Promise<T>, assign: (state: Draft<State>, value: LoadingState<T>) => void): Promise<void> {
+	root.state = produce(root.state, (state) => { assign(state, {loading: true}); });
+	updateAppState();
+
+	try {
+		const data = await load(root.state);
+		root.state = produce(root.state, (state) => { assign(state, {loading: false, success: true, data}); });
+	} catch (error) {
+		root.state = produce(root.state, (state) => { assign(state, {loading: false, success: false, error}); });
+	}
 	updateAppState();
 }
 

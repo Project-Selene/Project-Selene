@@ -1,17 +1,4 @@
-import { Draft, Immutable } from 'immer';
-
-export const root = {
-	state: {
-		games: {},
-		selectedGame: 0,
-		mods: {},
-		modDb: {
-			mods: {},
-			modDetails: {},
-			versionDetails: {},
-		},
-	} as Immutable<State>,
-};
+import { Immutable } from 'immer';
 
 export type LoadingState<T> = {
     loading?: undefined; //Not yet loaded
@@ -31,27 +18,42 @@ export type LoadingState<T> = {
 } | {
     loading: false; //Failed to load
     success: false;
-    data: T;
+    data?: T;
     error: unknown;
 };
 
+export type AppState = Immutable<State>;
+
 export interface State {
-    games: LoadingState<Games>;
+    gamesInfo: LoadingState<GamesInfo>;
+    games: LoadingState<Game>[];
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
+
+    ui: UIState;
 }
 
-export type AppState = Draft<State>;
+export interface UIState {
+    modsOpen: boolean;
+}
 
-export interface Games {
-    games: Game[];
+export interface GamesInfo {
+    games: Array<{
+        id: number;
+        type: 'handle';
+        handle: FileSystemDirectoryHandle;
+    } | { 
+        id: number;
+        type: 'fs';
+        path: string;
+    }>;
     selectedGame: number;
+    nextId: number;
 }
 
 export interface Game {
-    internalName: string;
-    name: string;
+    id: number;
 }
 
 export interface Mods {

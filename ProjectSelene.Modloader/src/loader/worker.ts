@@ -1,6 +1,6 @@
 import * as idb from 'idb-keyval';
-import { SWMessage, SWMessageResponse } from './serviceworker/sw-message';
-import { WorkerMessage } from './worker/worker-message';
+import { SWMessage, SWMessageResponse } from '../serviceworker/sw-message';
+import { WorkerMessage } from '../worker/worker-message';
 
 const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
 const numberOfWorkers = 1;

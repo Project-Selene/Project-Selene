@@ -1,15 +1,10 @@
 import React from 'react';
-import { useNeedsOpen } from '../../../../hooks/game';
-import { useAppCallback } from '../../../../hooks/state';
-import { playGame } from '../../../../loader';
+import { usePlay, usePlayLoading } from '../../../hooks/game';
 import { HomeButton } from '../HomeButton/HomeButton';
 
 export function PlayButton() {
-	const needsOpen = useNeedsOpen();
-	const open = useAppCallback(state => {
-		// return needsOpen ? loadGames(state) : playGame(state);
-		return playGame(state);
-	});
+	const playLoading = usePlayLoading();
+	const play = usePlay();
 
-	return <HomeButton title={needsOpen ? 'Open' : 'Play'} onClick={open} />;
+	return <HomeButton title={'Play'} onClick={play} loading={playLoading} />;
 }

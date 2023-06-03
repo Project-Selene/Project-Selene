@@ -1,7 +1,8 @@
 import { Worker } from './worker';
 
 export class Filesystem {
-	private readonly worker = new Worker();
+	private static readonly worker = new Worker();
+	private readonly worker = Filesystem.worker;
 
 	public async setup() {
 		await this.worker.setup();
@@ -60,5 +61,3 @@ export class Filesystem {
 		await this.worker.registerLink(mount, source);
 	}
 }
-
-export const filesystem = new Filesystem();

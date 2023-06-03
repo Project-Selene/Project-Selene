@@ -1,4 +1,5 @@
-import { filesystem } from './filesystem';
+import { Filesystem } from './loader/filesystem';
+import { root } from './ui/state';
 import { startUI } from './ui/ui';
 
 if (process.env.NODE_ENV === 'development') {
@@ -8,7 +9,8 @@ if (process.env.NODE_ENV === 'development') {
 	new EventSource('/esbuild').addEventListener('change', () => location.reload());
 }
 
-filesystem.setup();
+console.log(root);
+new Filesystem().setup();
 startUI();
 
 

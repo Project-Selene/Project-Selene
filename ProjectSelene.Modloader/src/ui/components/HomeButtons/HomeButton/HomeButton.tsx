@@ -8,7 +8,8 @@ export function HomeButton(props: {
 	title: string,
 	onClick?: () => void,
 	href?: string
-	actions?: [{ title: string, onClick: () => void }]
+	actions?: [{ title: string, onClick: () => void }],
+	loading?: boolean
 }) {
 	const [open, setOpen] = React.useState(false);
 	const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -16,12 +17,12 @@ export function HomeButton(props: {
 	return <>
 		<Stack>
 			<ButtonGroup variant="outlined" ref={anchorRef} className="home-button-group">
-				<Button className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#66F3' }}>
+				<Button className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#66F3' }} disabled={props.loading}>
 					{props.title}
 				</Button>
 				{
 					props.actions ?
-						<Button className="home-button" size="small" onClick={() => setOpen(true)}>
+						<Button className="home-button" size="small" onClick={() => setOpen(true)} disabled={props.loading}>
 							<ArrowDropDownIcon />
 						</Button>
 						: <></>
