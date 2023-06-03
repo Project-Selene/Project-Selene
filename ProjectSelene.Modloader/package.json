@@ -9,13 +9,13 @@
     "@mui/material": "^5.11.3",
     "bootstrap": "^5.2.3",
     "idb-keyval": "^6.2.0",
-    "immer": "^9.0.19",
+    "immer": "^10.0.2",
     "jszip": "^3.10.1",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "spark-md5": "^3.0.2",
-    "typescript": "^5.0.2",
+    "typescript": ">=5.0.2",
     "web-vitals": "^3.1.0"
   },
   "scripts": {
@@ -45,10 +45,10 @@
   "devDependencies": {
     "@playwright/test": "^1.30.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/jest": "^29.2.5",
-    "@types/node": "^18.11.18",
+    "@types/node": "^20.2.5",
     "@types/path-browserify": "^1.0.0",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
@@ -63,5 +63,8 @@
     "react-scripts": "^5.0.1",
     "react-snap": "^1.23.0",
     "sass": "^1.57.1"
+  },
+  "overrides": {
+    "typescript": ">=5.0.2"
   }
 }

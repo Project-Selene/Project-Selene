@@ -32,6 +32,13 @@ public class LoginController : Controller
         return Task.FromResult(Redirect(this.githubAuthorizeEndpoint));
     }
 
+
+    [HttpGet("login/url")]
+    public Task<string> LoginURL()
+    {
+        return Task.FromResult(this.githubAuthorizeEndpoint);
+    }
+
     [ApiExplorerSettings(IgnoreApi = true)]
     [HttpGet("completelogin")]
     public async Task<ActionResult<string>> Complete()

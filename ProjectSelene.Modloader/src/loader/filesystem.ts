@@ -69,4 +69,8 @@ export class Filesystem {
 		console.log('mounted link', mount, source);
 		await this.worker.registerLink(mount, source);
 	}
+	public async mountHttp(mount: string, source: string) {
+		console.log('mounted http', mount, source);
+		await this.worker.registerHttp(mount, source);
+	}
 }

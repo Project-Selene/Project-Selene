@@ -53,4 +53,10 @@ export type RegisterDir = {
     kind: 'link',
     target: string,
     source: string,
+} | {
+    type: 'register-dir',
+    id: number,
+    kind: 'http',
+    target: string,
+    source: string,
 };

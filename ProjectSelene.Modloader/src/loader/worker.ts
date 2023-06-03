@@ -78,7 +78,7 @@ export class Worker {
 				pendingWorkerCount--;
 				result.push(data);
 				if (pendingWorkerCount === 0) {
-					console.log('resolve worker message', id);
+					// console.log('resolve worker message', id);
 					resolve(result);
 				}
 			} ;
@@ -185,6 +185,26 @@ export class Worker {
 			id: rid,
 			target: mount,
 			kind: 'link',
+			source,
+		}, rid);
+		
+		const sw = (await navigator.serviceWorker.ready).active;
+		if (!sw) {
+			throw new Error('No serviceworker found');
+		}
+		await this.postMessage(sw, {
+			type: 'filter',
+			start: mount,
+		} as SWMessage, []);
+	}
+	public async registerHttp(mount: string, source: string) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'register-dir',
+			id: rid,
+			target: mount,
+			kind: 'http',
 			source,
 		}, rid);
 		

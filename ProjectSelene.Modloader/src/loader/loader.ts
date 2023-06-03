@@ -9,6 +9,7 @@ export class Loader {
 	public readonly finder = new Finder();
 	private readonly filesystem = new Filesystem();
 	private prefix = '';
+	private devModIteration = 0;
 	
 	constructor() {
 		this.filesystem.readFile('/static/js/prefix.js').then(prefix => this.prefix = prefix);
@@ -51,6 +52,8 @@ export class Loader {
 			
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
 		await this.filesystem.writeFile('/fs/game/terra/dist/bundle.js', injected);
+
+		await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
 		
 		for (const mod of state.mods.data.mods) {
 			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + mod.internalName + '/');
@@ -86,9 +89,9 @@ export class Loader {
 				}
 			}
 		}
+		await this.loadDevMod();
 	}
-
-
+	
 	async loadMod(mod: Mod) {
 		try {
 			const src = `/fs/mods/${mod.internalName}/main.js`;
@@ -99,5 +102,43 @@ export class Loader {
 			return;
 		}
 		return;
+	}
+
+	async loadDevMod() {
+		try {
+			await fetch('http://localhost:8182/manifest.json'); //Check if mod exists
+
+			const devModPath = '/fs/dev-mod/' + (this.devModIteration++) + '/';
+
+			await this.filesystem.mountLink(devModPath, '/fs/internal/dev-mod/');
+
+			const manifestText = await this.filesystem.readFile(devModPath + 'manifest.json');
+			const manifest = JSON.parse(manifestText);
+			const mod: Mod = {
+				currentInfo: manifest,
+				enabled: true,
+				internalName: 'dev',
+			};
+			const handler = new ModHandler(mod);
+
+			const src = devModPath + 'main.js';
+
+			__projectSelene.devMod = {
+				hotreload: async () => {
+					console.log('Reloading development mod');
+
+					const imported = await import(src);
+					imported.unload?.();
+					handler.uninject();
+
+					this.loadDevMod();
+				},
+			};
+
+			const imported = await import(src);
+			imported.default(handler);
+		} catch {
+			console.log('No dev mod found');
+		}
 	}
 }

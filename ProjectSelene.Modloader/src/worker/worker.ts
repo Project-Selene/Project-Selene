@@ -3,6 +3,7 @@
 import * as idb from 'idb-keyval';
 import { Storage } from './storage';
 import { StorageHandles } from './storage-handles';
+import { StorageHttp } from './storage-http';
 import { StorageIndexedDB } from './storage-indexeddb';
 import { StorageLink } from './storage-link';
 import { StorageZip } from './storage-zip';
@@ -32,6 +33,8 @@ async function handleMessage(event: MessageEvent) {
 			storages.unshift(new StorageIndexedDB(data.target, data.key));
 		} else if (data.kind === 'zip') {
 			storages.unshift(new StorageZip(data.target, data.source, readFile));
+		} else if (data.kind === 'http') {
+			storages.unshift(new StorageHttp(data.target, data.source));
 		} else if (data.kind === 'link') {
 			const sourceStorage = storages.filter(s => data.source.startsWith(s.target))
 				.sort((a, b) => b.target.length - a.target.length)[0];
@@ -49,7 +52,7 @@ async function handleMessage(event: MessageEvent) {
 		let target: Storage | null = null;
 		for (const storage of storages) {
 			if (pathname.startsWith(storage.target)) {
-				if (!target || target.target < storage.target) {
+				if (!target || target.target.length < storage.target.length) {
 					target = storage;
 				}
 			}
