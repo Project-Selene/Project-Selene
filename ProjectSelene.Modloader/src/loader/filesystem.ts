@@ -39,6 +39,15 @@ export class Filesystem {
 			},
 		})).json();
 	}
+
+	public async stat(path: string): Promise<{ctimeMs: number}> {
+		return await (await fetch(path, {
+			method: 'GET',
+			headers: {
+				'X-SW-Command': 'stat',
+			},
+		})).json();
+	}
 	
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
 		console.log('mounted directory', mount);

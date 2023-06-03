@@ -55,6 +55,18 @@ export class StorageHandles extends Storage {
 			return false;
 		}
 	}
+	
+	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const fileHandle = await this.resolveFile(parts, 'read', false);
+			const file = await fileHandle.getFile();
+			new Blob([JSON.stringify({ctimeMs: file.lastModified})], {type: 'application/json'}).stream().pipeTo(response);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
 	private async resolveFolder(path: string[], mode: FileSystemPermissionMode, create: boolean) {
 		let dir = await this.ensurePermissions(this.dir, mode);

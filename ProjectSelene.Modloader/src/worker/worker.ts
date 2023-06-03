@@ -68,6 +68,9 @@ async function handleMessage(event: MessageEvent) {
 			case 'isWritable':
 				result = await target.writeGranted(data.response);
 				break;
+			case 'stat':
+				result = await target.stat(path, data.response);
+				break;
 			default: 
 				result = await target.readFile(path, data.response);
 				break;

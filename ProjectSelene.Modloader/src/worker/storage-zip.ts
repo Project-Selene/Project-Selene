@@ -63,6 +63,27 @@ export class StorageZip extends Storage {
 			return false;
 		}
 	}
+
+	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const stream = await this.readFileFromFS(this.source);
+			if (!stream) {
+				return false;
+			}
+
+			const zip = await JSZip.loadAsync(await (new Response(stream)).arrayBuffer());
+			const file = zip.file(path);
+			if (!file) {
+				return false;
+			}
+
+			new Blob([JSON.stringify({ctimeMs: file.date.getTime()})], {type: 'application/json'}).stream().pipeTo(response);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
 	public async writeGranted(): Promise<boolean> {
 		return false;
 	}

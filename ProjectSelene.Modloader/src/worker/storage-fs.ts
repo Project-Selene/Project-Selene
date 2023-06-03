@@ -56,4 +56,13 @@ export class StorageFS extends Storage {
 		}
 	}
 	
+	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const stat = await this.fs.promises.stat(this.path.join(this.source, path));
+			new Blob([JSON.stringify(stat)], {type: 'application/json'}).stream().pipeTo(response);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 }

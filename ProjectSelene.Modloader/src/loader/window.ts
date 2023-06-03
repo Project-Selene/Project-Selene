@@ -100,7 +100,16 @@ function requireFSPromises() {
 				},
 				async stat(name: string) {
 					console.log('stat', pathToUrl(name));
-					return {ctimeMs: 1673544664915.2834};
+					const result = await (await fetch(pathToUrl(name), {
+						method: 'GET',
+						headers: {
+							'X-SW-Command': 'stat',
+						},
+					})).json();
+					if (!result) {
+						throw new Error('Failed to get stat of file: ' + name);
+					}
+					return result;
 				},
 				async writeFile(name: string, content: string) {
 					console.log('writefile', name, content);

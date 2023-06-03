@@ -13,7 +13,7 @@ export class StorageIndexedDB extends Storage {
 	
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
-			const content: string | undefined = await idb.get(path, this.store);
+			const content: string | undefined = await idb.get('content_' + path, this.store);
 			if (content === undefined) {
 				return false;
 			}
@@ -34,8 +34,8 @@ export class StorageIndexedDB extends Storage {
 			const keys = await idb.keys(this.store);
 			for (const key of keys) {
 				const str = key.toString();
-				if (str.startsWith(path)) {
-					const name = str.slice(path.length);
+				if (str.startsWith('content_' + path)) {
+					const name = str.slice(path.length + 'content_'.length);
 					if (name.includes('/')) {
 						result.push({
 							isDir: true,
@@ -64,10 +64,26 @@ export class StorageIndexedDB extends Storage {
 	private async writeFileAsync(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<void> {
 		try {
 			const contentText = await new Response(content).text();
-			await idb.set(path, contentText, this.store);
+			const time = new Date().getTime();
+			await idb.set('content_' + path, contentText, this.store);
+			await idb.set('ctimeMs_' + path, time, this.store);
 			await new Blob(['{"success":true}'], {type: 'application/json'}).stream().pipeTo(response);
 		} catch {
 			await new Blob(['{"success":false}'], {type: 'application/json'}).stream().pipeTo(response);
+		}
+	}
+
+	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const ctimeMs: number | undefined = await idb.get('ctimeMs_' + path, this.store);
+			if (ctimeMs === undefined) {
+				return false;
+			}
+
+			new Blob([JSON.stringify({ctimeMs})], {type: 'text/plain'}).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			return false;
 		}
 	}
 }
