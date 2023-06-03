@@ -47,4 +47,10 @@ export type RegisterDir = {
     kind: 'zip',
     target: string,
     source: string,
+} | {
+    type: 'register-dir',
+    id: number,
+    kind: 'link',
+    target: string,
+    source: string,
 };

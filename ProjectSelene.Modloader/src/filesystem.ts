@@ -40,16 +40,24 @@ export class Filesystem {
 	}
 	
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
+		console.log('mounted directory', mount);
 		await this.worker.registerDirectoryHandle(mount, dir);
 	}
 	public async mountFileList(mount: string, files: FileList) {
+		console.log('mounted files', mount);
 		await this.worker.registerGameDirectoryOnDemand(mount, files);
 	}
 	public async mountInMemory(mount: string, key: string) {
+		console.log('mounted in memory', mount, key);
 		await this.worker.registerInMemory(mount, key);
 	}
 	public async mountZip(mount: string, source: string) {
+		console.log('mounted zip', mount, source);
 		await this.worker.registerZip(mount, source);
+	}
+	public async mountLink(mount: string, source: string) {
+		console.log('mounted link', mount, source);
+		await this.worker.registerLink(mount, source);
 	}
 }
 

@@ -18,4 +18,8 @@ export type StorageInfo = {
     fsType: 'indexed',
     path: string,
     target: string,
+} | {
+    fsType: 'link',
+    path: string,
+    target: string,
 };

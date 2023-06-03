@@ -81,7 +81,7 @@ export function transform(content: string, prefix: string) {
 											ts.factory.createPropertyAssignment(
 												result.name.text,
 												ts.factory.createFunctionExpression(
-													result.modifiers,
+													result.modifiers as unknown as ts.Modifier[],
 													result.asteriskToken,
 													undefined as ts.Identifier | undefined,
 													result.typeParameters,
@@ -100,7 +100,7 @@ export function transform(content: string, prefix: string) {
 						return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createIdentifier('__injectFunction'), undefined, [
 							ts.factory.createVoidZero(),
 							ts.factory.createFunctionExpression(
-								result.modifiers,
+								result.modifiers as unknown as ts.Modifier[],
 								result.asteriskToken,
 								undefined as ts.Identifier | undefined,
 								result.typeParameters,

@@ -4,6 +4,7 @@ import * as idb from 'idb-keyval';
 import { Storage } from './storage';
 import { StorageHandles } from './storage-handles';
 import { StorageIndexedDB } from './storage-indexeddb';
+import { StorageLink } from './storage-link';
 import { StorageZip } from './storage-zip';
 import { WorkerMessage } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
@@ -26,11 +27,17 @@ async function handleMessage(event: MessageEvent) {
 				workerBroadcast.postMessage({type: 'error', id: data.id} as WorkerMessage);
 				return;
 			}
-			storages.push(new StorageHandles(data.target, handle));
+			storages.unshift(new StorageHandles(data.target, handle));
 		} else if (data.kind === 'indexed') {
-			storages.push(new StorageIndexedDB(data.target, data.key));
+			storages.unshift(new StorageIndexedDB(data.target, data.key));
 		} else if (data.kind === 'zip') {
-			storages.push(new StorageZip(data.target, data.source, readFile));
+			storages.unshift(new StorageZip(data.target, data.source, readFile));
+		} else if (data.kind === 'link') {
+			const sourceStorage = storages.filter(s => data.source.startsWith(s.target))
+				.sort((a, b) => b.target.length - a.target.length)[0];
+			const sourcePath = data.source.substring(sourceStorage.target.length);
+
+			storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
 		} else {
 			throw new Error('Not implemented yet: ' + data.kind);
 		}
@@ -38,48 +45,54 @@ async function handleMessage(event: MessageEvent) {
 		break;
 	}
 	case 'fetch': {
-		console.log('handling: ', data.request.url);
 		const pathname = decodeURI(new URL(data.request.url).pathname);
+		let target: Storage | null = null;
 		for (const storage of storages) {
 			if (pathname.startsWith(storage.target)) {
-				const path = pathname.slice(storage.target.length);
-				let result: boolean;
-				switch (data.request.headers['x-sw-command']) {
-				case 'writeFile': 
-					result = await storage.writeFile(path, data.request.body, data.response);
-					break;
-				case 'readDir': 
-					result = await storage.readDir(path, data.response);
-					break;
-				case 'isWritable':
-					result = await storage.writeGranted(data.response);
-					break;
-				default: 
-					result = await storage.readFile(path, data.response);
-					break;
+				if (!target || target.target < storage.target) {
+					target = storage;
 				}
-				
-				if (result) {
-					workerBroadcast.postMessage({
-						type: 'response',
-						id: data.id,
-						response: {
-							status: 200,
-							headers: {
-								'content-type': 'text/javascript',
-							},
+			}
+		}
+		console.log('handling: ', data.request.url, target);
+		if (target) {
+			const path = pathname.slice(target.target.length);
+			let result: boolean;
+			switch (data.request.headers['x-sw-command']) {
+			case 'writeFile': 
+				result = await target.writeFile(path, data.request.body, data.response);
+				break;
+			case 'readDir': 
+				result = await target.readDir(path, data.response);
+				break;
+			case 'isWritable':
+				result = await target.writeGranted(data.response);
+				break;
+			default: 
+				result = await target.readFile(path, data.response);
+				break;
+			}
+			
+			if (result) {
+				workerBroadcast.postMessage({
+					type: 'response',
+					id: data.id,
+					response: {
+						status: 200,
+						headers: {
+							'content-type': 'text/javascript',
 						},
-					} as WorkerMessage);
-				} else {
-					new Blob([], {type: 'text/plain'}).stream().pipeTo(data.response);
-					workerBroadcast.postMessage({
-						type: 'response',
-						id: data.id,
-						response: {
-							status: 404,
-						},
-					} as WorkerMessage);
-				}
+					},
+				} as WorkerMessage);
+			} else {
+				new Blob([], {type: 'text/plain'}).stream().pipeTo(data.response);
+				workerBroadcast.postMessage({
+					type: 'response',
+					id: data.id,
+					response: {
+						status: 404,
+					},
+				} as WorkerMessage);
 			}
 		}
 		break;

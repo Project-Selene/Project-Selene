@@ -2,11 +2,11 @@ import { Draft, Immutable } from 'immer';
 
 export const root = {
 	state: {
-		games: { loading: undefined },
+		games: {},
 		selectedGame: 0,
-		mods: { loading: undefined },
+		mods: {},
 		modDb: {
-			mods: { loading: undefined },
+			mods: {},
 			modDetails: {},
 			versionDetails: {},
 		},
@@ -14,22 +14,29 @@ export const root = {
 };
 
 export type LoadingState<T> = {
-    loading: undefined; //Not yet loaded
+    loading?: undefined; //Not yet loaded
+    success?: undefined;
+    data?: T;
+    error?: unknown;
 } | {
     loading: true; //Loading
+    success?: undefined;
+    data?: T;
+    error?: unknown;
 } | {
     loading: false; //Loaded successfully
     success: true;
     data: T;
+    error?: unknown;
 } | {
     loading: false; //Failed to load
     success: false;
+    data: T;
     error: unknown;
 };
 
 export interface State {
     games: LoadingState<Games>;
-    selectedGame: number;
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
@@ -37,28 +44,17 @@ export interface State {
 
 export type AppState = Draft<State>;
 
-export type Store = {
-    type: 'indexedDb';
-    key: string;
-} | {
-    type: 'fs'; //Nodejs fs
-    directory: string;
-} | {
-    type: 'handle';
-    handle: FileSystemDirectoryHandle;
-};
-
 export interface Games {
     games: Game[];
+    selectedGame: number;
 }
 
 export interface Game {
-    store: Store;
+    internalName: string;
     name: string;
 }
 
 export interface Mods {
-    store: Store;
     mods: Mod[];
 }
 
