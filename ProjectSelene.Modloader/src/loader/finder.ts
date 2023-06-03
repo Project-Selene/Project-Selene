@@ -3,7 +3,6 @@ import { AppState, Game, GamesInfo, Mod, Mods } from '../state';
 import { Filesystem } from './filesystem';
 
 const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
-console.log(gameStore);
 
 export class Finder  {
 	private readonly filesystem = new Filesystem();
