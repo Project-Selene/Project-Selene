@@ -7,7 +7,7 @@ import { HomeButtons } from './HomeButtons';
 
 describe('<HomeButtons />', () => {
 	test('it should mount', () => {
-		render(<HomeButtons />);
+		render(<HomeButtons onModsOpen={() => 0} />);
 
 
 		const homeButton = screen.getByText('Download');

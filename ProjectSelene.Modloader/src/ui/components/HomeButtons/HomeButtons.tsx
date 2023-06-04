@@ -6,12 +6,14 @@ import './HomeButtons.scss';
 import { ModsButton } from './ModsButton/ModsButton';
 import { PlayButton } from './PlayButton/PlayButton';
 
-export function HomeButtons() {
+export function HomeButtons(props: {
+	onModsOpen: () => void
+}) {
 	return <div className="home-buttons ms-5">
 		<Stack direction="column" spacing={1} justifyContent="start" className="mt-3 home-buttons">
 			<PlayButton />
 			<DownloadButton />
-			<ModsButton />
+			<ModsButton onModsOpen={props.onModsOpen} />
 		</Stack>
 	</div>;
 }

@@ -7,7 +7,7 @@ import { ModsButton } from './ModsButton';
 
 describe('<ModsButton />', () => {
 	test('it should mount', () => {
-		render(<ModsButton />);
+		render(<ModsButton onModsOpen={() => 0} />);
 
 		const homeButtonsModsButton = screen.getByRole('button');
 

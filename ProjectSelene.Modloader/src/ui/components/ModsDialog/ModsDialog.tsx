@@ -5,7 +5,10 @@ import React, { useState } from 'react';
 import { useAppState } from '../../hooks/state';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
-export function ModsDialog() {
+export function ModsDialog(props: {
+	open: boolean,
+	onClose: () => void
+}) {
 	const mods = useAppState(state => state.mods.data?.mods);
 	const moddb = useAppState(state => state.modDb.mods.data);
 
@@ -21,7 +24,7 @@ export function ModsDialog() {
 
 	const [currentTab, setCurrentTab] = useState(0);
 
-	return <Dialog open={false} maxWidth={false} fullWidth={true}>
+	return <Dialog open={props.open} maxWidth={false} fullWidth={true} onClose={props.onClose}>
 		<DialogTitle>
 			<Stack direction="row" justifyContent="space-between">
 				<span>Mods</span>
@@ -30,7 +33,7 @@ export function ModsDialog() {
 					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />}>
 						Open mods folder
 					</Button>
-					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />}>
+					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />} onClick={props.onClose}>
 						Close
 					</Button>
 				</Stack>

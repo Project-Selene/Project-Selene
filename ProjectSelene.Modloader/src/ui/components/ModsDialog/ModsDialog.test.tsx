@@ -7,7 +7,7 @@ import { ModsDialog } from './ModsDialog';
 
 describe('<ModsDialog />', () => {
 	test('it should mount', () => {
-		render(<ModsDialog />);
+		render(<ModsDialog open={true} onClose={() => 0} />);
 
 		const dialog = screen.getByTestId('ModsDialog');
 

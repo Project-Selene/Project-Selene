@@ -1,7 +1,7 @@
 import './App.scss';
 
 import { ThemeProvider } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Background } from './components/Background/Background';
 import { Character } from './components/Character/Character';
@@ -20,13 +20,15 @@ export default function App() {
 		}
 	});
 
+	const [modsOpen, setModsOpen] = useState(false);
+
 	return <ThemeProvider theme={theme}>
 		<div className="body">
 			<Title />
-			<HomeButtons />
+			<HomeButtons onModsOpen={() => setModsOpen(true)} />
 			<Character />
 			<Background />
-			<ModsDialog />
+			<ModsDialog open={modsOpen} onClose={() => setModsOpen(false)} />
 		</div>
 	</ThemeProvider>;
 }
