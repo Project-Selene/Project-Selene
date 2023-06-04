@@ -7,9 +7,47 @@ export const root = {
 		gamesInfo: {},
 		games: [],
 		selectedGame: 0,
-		mods: {},
+		mods: {
+			loading: false,
+			success: true,
+			data: {
+				mods: [{
+					internalName: 'asd',
+					enabled: true,
+					currentInfo: {
+						name: 'b',
+						description: 'lorem ipsum',
+						id: 2,
+						version: '0.0.0',
+					},
+				}, {
+					internalName: 'example',
+					enabled: true,
+					currentInfo: {
+						name: 'a',
+						description: 'lorem ipsum',
+						id: 1,
+						version: '1.0.0',
+					},
+				}],
+			},
+		},
 		modDb: {
-			mods: {},
+			mods: {
+				loading: false,
+				success: true,
+				data: [{
+					id: 1,
+					description: 'asdf',
+					name: 'a',
+					version: '1.1.1',
+				}, {
+					id: 3,
+					description: 'coolMod description',
+					name: 'c',
+					version: '1.1.1',
+				}],
+			},
 			modDetails: {},
 			versionDetails: {},
 		},

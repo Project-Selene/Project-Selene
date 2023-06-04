@@ -1,0 +1,67 @@
+import Close from '@mui/icons-material/Close';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import { Box, Button, Dialog, DialogContent, DialogTitle, Stack, Tab, Tabs, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { useAppState } from '../../hooks/state';
+import { ModsEntry } from './ModsEntry/ModsEntry';
+
+export function ModsDialog() {
+	const mods = useAppState(state => state.mods.data?.mods);
+	const moddb = useAppState(state => state.modDb.mods.data);
+
+	const installedModIds: number[] = mods
+		?.map(m => m)
+		.sort((a, b) => a.currentInfo.name.localeCompare(b.currentInfo.name))
+		.map(m => m.currentInfo.id) ?? [];
+	const installedModIdsSet = new Set(installedModIds);
+	const availableModIds: number[] = moddb
+		?.filter(m => !installedModIdsSet.has(m.id))
+		.sort((a, b) => a.name.localeCompare(b.name))
+		.map(m => m.id) ?? [];
+
+	const [currentTab, setCurrentTab] = useState(0);
+
+	return <Dialog open={false} maxWidth={false} fullWidth={true}>
+		<DialogTitle>
+			<Stack direction="row" justifyContent="space-between">
+				<span>Mods</span>
+				<Stack direction="row" spacing={0.5}>
+					<TextField id="outlined-basic" label="Search..." variant="outlined" />
+					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />}>
+						Open mods folder
+					</Button>
+					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />}>
+						Close
+					</Button>
+				</Stack>
+			</Stack>
+		</DialogTitle>
+		<DialogContent sx={{ height: '80vh' }}>
+			<Stack direction="column" sx={{ height: '100%' }}>
+				<Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 1 }}>
+					<Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+						<Tab label="Installed" />
+						<Tab label="Available" />
+					</Tabs>
+				</Box>
+				{currentTab === 0 && !mods && <Stack direction="row" justifyContent="center" alignItems="center" sx={{ flexGrow: 1 }}>
+					<Stack direction="column">
+						<Button variant="outlined" style={{ backgroundColor: '#66F3' }}>
+							Open mods folder
+						</Button>
+					</Stack>
+				</Stack>}
+				{currentTab === 0 && mods && <Stack spacing={1}>
+					{
+						installedModIds.map(id => (<ModsEntry key={id} id={id} />))
+					}
+				</Stack>}
+				{currentTab === 1 && <Stack spacing={1}>
+					{
+						availableModIds.map(id => (<ModsEntry key={id} id={id} />))
+					}
+				</Stack>}
+			</Stack>
+		</DialogContent>
+	</Dialog>;
+}

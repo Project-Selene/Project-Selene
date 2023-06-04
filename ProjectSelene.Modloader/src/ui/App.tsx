@@ -6,6 +6,7 @@ import React from 'react';
 import { Background } from './components/Background/Background';
 import { Character } from './components/Character/Character';
 import { HomeButtons } from './components/HomeButtons/HomeButtons';
+import { ModsDialog } from './components/ModsDialog/ModsDialog';
 import { Title } from './components/Title/Title';
 import { doLoad } from './hooks/state';
 import { root } from './state';
@@ -25,6 +26,7 @@ export default function App() {
 			<HomeButtons />
 			<Character />
 			<Background />
+			<ModsDialog />
 		</div>
 	</ThemeProvider>;
 }
