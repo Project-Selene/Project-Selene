@@ -20,6 +20,10 @@ export default function App() {
 		}
 	});
 
+	doLoad(() => root.moddb.modList(), (state, value) => {
+		state.modDb.mods = value;
+	});
+
 	const [modsOpen, setModsOpen] = useState(false);
 
 	return <ThemeProvider theme={theme}>

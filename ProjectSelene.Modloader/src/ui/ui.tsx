@@ -8,12 +8,7 @@ import reportWebVitals from './reportWebVitals';
 
 export function startUI() {
 	const root = document.getElementById('root');
-	if (root?.hasChildNodes()) {
-		ReactDOM.hydrateRoot(root,
-			<React.StrictMode>
-				<App />
-			</React.StrictMode>);
-	} else if (root) {
+	if (root) {
 		ReactDOM.createRoot(root).render(
 			<React.StrictMode>
 				<App />

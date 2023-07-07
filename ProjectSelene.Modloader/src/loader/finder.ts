@@ -63,11 +63,16 @@ export class Finder  {
 				selectedGame: state.gamesInfo.data.games.length,
 			};
 			
+			await handle.requestPermission({mode: 'read'});
+			await this.filesystem.mountDirectoryHandle('/fs/internal/game/' + gameHandles.selectedGame + '/', handle);
+
 			await idb.set('index', gameHandles, gameStore);
+
+			const mods = await this.loadMods(state, gameHandles.selectedGame);
 			
 			return [{
-				id: state.gamesInfo.data.nextId,
-			}, gameHandles, state.mods.data as Mods];
+				id: gameHandles.selectedGame,
+			}, gameHandles, mods];
 		}
 	}
 

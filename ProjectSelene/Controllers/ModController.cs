@@ -38,13 +38,9 @@ public class ModController : Controller
         else
         {
             return new ModList(
-                await this.context.Mods
-                    .Include(m => m.Versions)
-                    .ThenInclude(v => v.VerifiedBy)
-                    .Where(m => m.Versions.Any(v => v.VerifiedBy != null))
-                    .AsNoTracking()
-                    .Select(m => new ModList.Entry(m.Id, m.Info.Name, m.Info.Description, m.Versions.First(v => v.VerifiedBy != null).Version))
-                    .ToListAsync());
+                (await this.context.Mods
+                    .ToListAsync())
+                    .Select(m => new ModList.Entry(m.Id, m.Info.Name, m.Info.Description, m.Versions.FirstOrDefault(v => v.VerifiedBy != null, new ModVersion()).Version)));
         }
     }
 

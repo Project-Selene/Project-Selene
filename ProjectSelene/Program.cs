@@ -1,3 +1,4 @@
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
@@ -50,11 +51,24 @@ builder.Services.AddSingleton((_) => {
 });
 
 var connectionString = builder.Configuration.GetConnectionString("SeleneMariaDb");
-builder.Services.AddDbContext<SeleneDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+//builder.Services.AddDbContext<SeleneDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-//builder.Services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(builder.Configuration.GetConnectionString("SeleneDb"), "SeleneDb"));
+builder.Services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(builder.Configuration.GetConnectionString("SeleneDb"), "selene-db", options =>
+{
+    options.Region(Regions.WestEurope);
+}));
 
 //builder.Services.AddMvc();
+
+const string localCorsPolicyName = "_allowLocalhostCORS";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: localCorsPolicyName,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:8080");
+                      });
+});
 
 var app = builder.Build();
 
@@ -64,9 +78,11 @@ using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>(
     if (context != null)
     {
         //context.Database.EnsureCreated();
-        await context.Database.MigrateAsync();
+        //await context.Database.MigrateAsync();
     }
 }
+
+app.UseCors(localCorsPolicyName);
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
