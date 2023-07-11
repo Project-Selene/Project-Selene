@@ -19,6 +19,7 @@
     "web-vitals": "^3.1.0"
   },
   "scripts": {
+    "start": "node scripts/serve.mjs",
     "build": "react-scripts build && npm run build:worker && npm run build:sw && npm run build:prefix",
     "build:worker": "esbuild --bundle --target=es2018 --sourcemap --outfile=./build/static/js/worker.js ./src/worker/worker.ts",
     "build:sw": "esbuild --bundle --target=es2018 --sourcemap --outfile=./build/serviceworker.js ./src/serviceworker/serviceworker.ts",

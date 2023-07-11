@@ -18,10 +18,12 @@ public class LoginController : Controller
 
     public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, LoginService loginService)
     {
+        var jwtSecret = configuration["jwt_secret"] ?? throw new ArgumentNullException("jwt_secret", "jwt_secret is required");
+
         this.logger = loggerFactory.CreateLogger<LoginController>();
-        this.githubAuthorizeEndpoint = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&scope=read:user";
+        this.githubAuthorizeEndpoint = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&scope=read:user&redirect_uri={configuration["github_redirect_uri"]}";
         this.githubTokenEndpoint = $"https://github.com/login/oauth/access_token?client_id={configuration["github_client_id"]}&client_secret={configuration["github_client_secret"]}&code=";
-        this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwt_secret"]));
+        this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         this.httpClient = httpClient;
         this.loginService = loginService;
     }

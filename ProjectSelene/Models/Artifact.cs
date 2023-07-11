@@ -1,4 +1,6 @@
-﻿namespace ProjectSelene.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectSelene.Models;
 
 public class Artifact
 {
@@ -6,5 +8,11 @@ public class Artifact
     public int Id { get; init; }
 
     [Required]
-    public string Url { get; set; } = "";
+    public string Url { get; init; } = "";
+
+    [JsonIgnore]
+    public StoredObject? StoredObject { get; init; }
+
+    [JsonIgnore]
+    public ModVersion ModVersion { get; init; } = new();
 }

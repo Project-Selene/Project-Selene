@@ -41,6 +41,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<LoginService>();
+#if DEBUG
+builder.Services.AddSingleton<IStorageProviderService, FSStorageService>();
+#else
+builder.Services.AddSingleton<IStorageProviderService, AWSStorageService>();
+#endif
 
 builder.Services.AddSingleton((_) => {
     var client = new HttpClient();
@@ -50,13 +55,11 @@ builder.Services.AddSingleton((_) => {
     return client;
 });
 
-var connectionString = builder.Configuration.GetConnectionString("SeleneMariaDb");
+//var connectionString = builder.Configuration.GetConnectionString("SeleneMariaDb");ddddd
 //builder.Services.AddDbContext<SeleneDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-builder.Services.AddDbContext<SeleneDbContext>(options => options.UseCosmos(builder.Configuration.GetConnectionString("SeleneDb"), "selene-db", options =>
-{
-    options.Region(Regions.WestEurope);
-}));
+
+builder.Services.AddDbContext<SeleneDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SeleneSqliteDb")));
 
 //builder.Services.AddMvc();
 
@@ -78,7 +81,7 @@ using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>(
     if (context != null)
     {
         //context.Database.EnsureCreated();
-        //await context.Database.MigrateAsync();
+        await context.Database.MigrateAsync();
     }
 }
 

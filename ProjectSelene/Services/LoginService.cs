@@ -13,8 +13,10 @@ public class LoginService
 
     public LoginService(ILoggerFactory loggerFactory, IConfiguration configuration, SeleneDbContext context)
     {
+        var jwtSecret = configuration["jwt_secret"] ?? throw new ArgumentNullException("jwt_secret", "jwt_secret is required");
+
         this.logger = loggerFactory.CreateLogger<LoginService>();
-        this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["jwt_secret"]));
+        this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         this.context = context;
     }
     public bool IsLoggedIn(HttpContext HttpContext)
@@ -33,11 +35,14 @@ public class LoginService
 
         var id = int.Parse(githubIdClaim.Value);
 
-        var result = this.context.Users
+        var result = await this.context.Users
             .Include(u => u.Mods)
             .ThenInclude(m => m.Versions)
             .ThenInclude(v => v.Artifacts)
-            .FirstOrDefault(c => c.GithubId == id);
+            .Include(u => u.StoredObjects)
+            .ThenInclude(o => o.Artifacts)
+            .ThenInclude(a => a.ModVersion)
+            .FirstOrDefaultAsync(c => c.GithubId == id);
         if (result != null)
         {
             return result;
@@ -52,10 +57,10 @@ public class LoginService
             Mods = new List<Mod>(),
         };
 
-        this.context.Users.Add(user);
+        await this.context.Users.AddAsync(user);
 
-        this.context.SaveChanges();
-        transaction.Commit();
+        await this.context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return user;
     }
@@ -70,7 +75,7 @@ public class LoginService
             return new ClaimsPrincipal();
         }
 
-        string auth = HttpContext.Request.Headers.Authorization[0];
+        string? auth = HttpContext.Request.Headers.Authorization[0];
         if (string.IsNullOrEmpty(auth)
             || !auth.StartsWith("Bearer "))
         {

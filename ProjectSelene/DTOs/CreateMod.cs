@@ -9,6 +9,7 @@ public record CreateMod(
     [RegularExpression(@"^\d+\.\d+\.\d+$")]
     string Version,
     [Required]
-    [MinLength(1)]
-    IEnumerable<string> Artifacts
+    IEnumerable<string> Artifacts,
+    [Required]
+    IEnumerable<string> StoredObjects
 );

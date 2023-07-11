@@ -7,18 +7,30 @@ public class SeleneDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Mod> Mods => Set<Mod>();
+    public DbSet<StoredObject> StoredObjects => Set<StoredObject>();
 
     public SeleneDbContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Mod>()
-                .OwnsOne(m => m.Info);
+                .HasOne(m => m.Info)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Mod>()
-                .OwnsMany(m => m.Versions, v =>
-                {
-                    v.OwnsMany(v => v.Artifacts);
-                });
+                .HasMany(m => m.Versions)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Artifact>()
+                .HasOne(a => a.ModVersion)
+                .WithMany(m => m.Artifacts)
+                .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Artifact>()
+                .HasOne(a => a.StoredObject)
+                .WithMany(o => o.Artifacts)
+                .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -207,6 +207,15 @@ public class ModController : Controller
                 return this.Conflict(new {id, version = versionUpload.Version});
             }
 
+            var objects = user.StoredObjects.Where(so => versionUpload.StoredObjects.Contains(so.Id)).ToList();
+            foreach (var so in versionUpload.StoredObjects)
+            {
+                if (!objects.Any(o => o.Id == so))
+                {
+                    return NotFound(new { id = so });
+                }
+            }
+
             mod.Versions.Add(new ModVersion()
             {
                 Version = versionUpload.Version,
@@ -215,7 +224,11 @@ public class ModController : Controller
                 Artifacts = versionUpload.Artifacts.Select(url => new Artifact()
                 {
                     Url = url
-                }).ToList()
+                }).Concat(versionUpload.StoredObjects.Select(so => new Artifact()
+                {
+                    Url = Request.Scheme + "://" + Request.Host + "/storage/download/" + so, //TODO: better url
+                    StoredObject = objects.First(o => o.Id == so),
+                })).ToList()
             });
 
             await this.context.SaveChangesAsync();
@@ -256,6 +269,15 @@ public class ModController : Controller
             }
 
 
+            var objects = user.StoredObjects.Where(so => data.StoredObjects.Contains(so.Id)).ToList();
+            foreach (var so in data.StoredObjects)
+            {
+                if (!objects.Any(o => o.Id == so))
+                {
+                    return NotFound(new { id = so });
+                }
+            }
+
             var added = new Mod()
             {
                 Info = new ModInfo()
@@ -270,10 +292,14 @@ public class ModController : Controller
                         Version = data.Version,
                         SubmittedOn = DateTime.Now,
                         SubmittedBy = user,
-                        Artifacts = data.Artifacts.Select(url => new Artifact()
-                        {
-                            Url = url
-                        }).ToList()
+                Artifacts = data.Artifacts.Select(url => new Artifact()
+                {
+                    Url = url
+                }).Concat(data.StoredObjects.Select(so => new Artifact()
+                {
+                    Url = Request.Scheme + "://" + Request.Host + "/storage/download/" + so, //TODO: better url
+                    StoredObject = objects.First(o => o.Id == so),
+                })).ToList()
 
                     }
                 }
@@ -281,9 +307,10 @@ public class ModController : Controller
 
             user.Mods.Add(added);
 
+            await transaction.CommitAsync();
+
             await this.context.SaveChangesAsync();
 
-            await transaction.CommitAsync();
 
             return Ok(new { id = added.Id, version = data.Version });
         }

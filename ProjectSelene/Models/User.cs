@@ -10,4 +10,6 @@ public class User
     public bool IsAdmin { get; set; } = false;
 
     public List<Mod> Mods { get; set; } = new List<Mod> { };
+
+    public ICollection<StoredObject> StoredObjects { get; init; } = new List<StoredObject>();
 }
