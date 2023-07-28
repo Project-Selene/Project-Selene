@@ -110,6 +110,75 @@ export function transform(content: string, prefix: string) {
 							),
 						]));
 					}
+				} else if (ts.isFunctionExpression(result)) {
+					if (result.parameters.length === 1
+						&& ts.isBlock(result.body)
+					) {
+						const nameNode = result.parameters[0].name;
+						if (ts.isIdentifier(nameNode)) {
+							const name = nameNode.text;
+
+							let isEnum = true;
+							for (const stmt of result.body.statements) {
+								//<name>[<name>[<string x>] = <number|string>] = <string x>;
+								if ((!ts.isExpressionStatement(stmt)
+								|| !ts.isBinaryExpression(stmt.expression)
+								|| stmt.expression.operatorToken.kind !== ts.SyntaxKind.EqualsToken
+								|| !ts.isStringLiteral(stmt.expression.right)
+								|| !ts.isElementAccessExpression(stmt.expression.left)
+								|| !ts.isIdentifier(stmt.expression.left.expression)
+								|| stmt.expression.left.expression.text !== name
+								|| !ts.isBinaryExpression(stmt.expression.left.argumentExpression)
+								|| stmt.expression.left.argumentExpression.operatorToken.kind !== ts.SyntaxKind.EqualsToken
+								|| !ts.isElementAccessExpression(stmt.expression.left.argumentExpression.left)
+								|| !ts.isIdentifier(stmt.expression.left.argumentExpression.left.expression)
+								|| stmt.expression.left.argumentExpression.left.expression.text !== name
+								|| !ts.isStringLiteral(stmt.expression.left.argumentExpression.left.argumentExpression)
+								|| stmt.expression.left.argumentExpression.left.argumentExpression.text !== stmt.expression.right.text
+								|| !(ts.isNumericLiteral(stmt.expression.left.argumentExpression.right)
+								|| 	ts.isStringLiteral(stmt.expression.left.argumentExpression.right)))
+								&& (
+									//<name>[<string x>] = <string y>;
+									!ts.isExpressionStatement(stmt)
+								|| !ts.isBinaryExpression(stmt.expression)
+								|| stmt.expression.operatorToken.kind !== ts.SyntaxKind.EqualsToken
+								|| !ts.isStringLiteral(stmt.expression.right)
+								|| !ts.isElementAccessExpression(stmt.expression.left)
+								|| !ts.isIdentifier(stmt.expression.left.expression)
+								|| stmt.expression.left.expression.text !== name
+								|| !ts.isStringLiteral(stmt.expression.left.argumentExpression)
+								)) {
+									isEnum = false;
+									break;
+								}
+							}
+	
+	
+							if (isEnum) {
+								return ts.factory.createFunctionExpression(
+									result.modifiers,
+									result.asteriskToken,
+									result.name,
+									result.typeParameters,
+									result.parameters,
+									result.type,
+									ts.factory.createBlock([
+										...result.body.statements,
+										ts.factory.createExpressionStatement(
+											ts.factory.createCallExpression(
+												ts.factory.createIdentifier('__injectEnum'),
+												undefined,
+												[
+													ts.factory.createStringLiteral(name),
+													nameNode,
+												],
+											),
+										),
+									], true),
+								);
+							}
+						}
+					}
 				}
 				return result;
 			}

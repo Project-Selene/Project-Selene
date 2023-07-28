@@ -6,6 +6,7 @@ export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 		functions: {},
 		consts: {},
 		lets: {},
+		enums: {},
 		gameReadyCallback: hookGameStart,
 		symbol: Symbol('ProjectSelene'),
 	};

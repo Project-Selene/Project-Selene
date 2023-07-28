@@ -6,6 +6,7 @@ declare interface ProjectSeleneGlobal {
     functions: Record<string | symbol, (...args: unknown[]) => unknown>;
     consts: Record<string | symbol, unknown>;
     lets: Record<string | symbol, { getter: () => unknown, setter: (value: unknown) => void }>;
+    enums: Record<string, Record<string, number>>;
 }
 
 declare const __projectSelene: ProjectSeleneGlobal;

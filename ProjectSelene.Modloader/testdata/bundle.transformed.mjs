@@ -106,5 +106,26 @@
                 new _test__WEBPACK_IMPORTED_MODULE_1__.Q().bar();
             } }["y"]);
         y();
+        var PLAYER_CORE;
+        (function (PLAYER_CORE) {
+            PLAYER_CORE[PLAYER_CORE["MOVE"] = 0] = "MOVE";
+            PLAYER_CORE[PLAYER_CORE["DASH"] = 1] = "DASH";
+            PLAYER_CORE[PLAYER_CORE["GUARD"] = 2] = "GUARD";
+            PLAYER_CORE[PLAYER_CORE["MELEE"] = 3] = "MELEE";
+            PLAYER_CORE[PLAYER_CORE["RANGE"] = 4] = "RANGE";
+            PLAYER_CORE[PLAYER_CORE["CHARGE"] = 5] = "CHARGE";
+            PLAYER_CORE[PLAYER_CORE["MONEY"] = 6] = "MONEY";
+            PLAYER_CORE[PLAYER_CORE["MENU"] = 7] = "MENU";
+            PLAYER_CORE[PLAYER_CORE["ELEMENT_NATURE"] = 8] = "ELEMENT_NATURE";
+            PLAYER_CORE[PLAYER_CORE["ELEMENT_AETHER"] = 9] = "ELEMENT_AETHER";
+            PLAYER_CORE[PLAYER_CORE["ELEMENT_FIRE"] = 10] = "ELEMENT_FIRE";
+            PLAYER_CORE[PLAYER_CORE["ELEMENT_ICE"] = 11] = "ELEMENT_ICE";
+            PLAYER_CORE[PLAYER_CORE["ELEMENT_CHANGE"] = 12] = "ELEMENT_CHANGE";
+            PLAYER_CORE[PLAYER_CORE["EXP"] = 13] = "EXP";
+            PLAYER_CORE[PLAYER_CORE["MODIFIER"] = 14] = "MODIFIER";
+            PLAYER_CORE[PLAYER_CORE["ITEMS"] = 15] = "ITEMS";
+            __injectEnum("PLAYER_CORE", PLAYER_CORE);
+        })(PLAYER_CORE || (PLAYER_CORE = {}));
+        console.log(PLAYER_CORE);
     })();
 })();

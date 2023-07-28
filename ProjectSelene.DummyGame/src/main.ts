@@ -28,3 +28,26 @@ function y() {
 	new Foo().bar();
 }
 y();
+
+
+enum PLAYER_CORE {
+	MOVE,
+	DASH,
+	GUARD,
+	MELEE,
+	RANGE,
+	CHARGE,
+	MONEY,
+	MENU,
+	ELEMENT_NATURE,
+	ELEMENT_AETHER,
+	ELEMENT_FIRE,
+	ELEMENT_ICE,
+	ELEMENT_CHANGE,
+	EXP,
+	MODIFIER,
+	ITEMS,
+}
+
+console.log(PLAYER_CORE);
+

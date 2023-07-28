@@ -43,7 +43,17 @@ function __injectLet(name: string, getter: () => unknown, setter: (value: unknow
 	__projectSelene.lets[name] = {getter, setter};
 }
 
-Object.assign(window, { __injectClass, __injectFunction, __injectConst, __injectLet });
+function __injectEnum(name: string, enumValue: Record<string, number>) {
+	if (name === 'tmp') {
+		return;
+	}
+	if (name in __projectSelene.enums) {
+		console.warn('duplicate enum', name);
+	}
+	__projectSelene.enums[name] = enumValue;
+}
+
+Object.assign(window, { __injectClass, __injectFunction, __injectConst, __injectLet, __injectEnum });
 
 export { };
 
