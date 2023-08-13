@@ -59,4 +59,12 @@ export type RegisterDir = {
     kind: 'http',
     target: string,
     source: string,
+} | {
+    type: 'register-patches' | 'unregister-patches',
+    id: number,
+    kind: 'json',
+    patches: {
+        target: string,
+        source: string,
+    }[]
 };

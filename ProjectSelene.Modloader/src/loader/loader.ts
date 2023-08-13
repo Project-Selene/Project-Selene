@@ -1,4 +1,4 @@
-import { Mod, State } from '../state';
+import { Mod, ModPatch, State } from '../state';
 import { Filesystem } from './filesystem';
 import { Finder } from './finder';
 import { ModInfo as ModHandler } from './mod-handler';
@@ -94,6 +94,7 @@ export class Loader {
 	
 	async loadMod(mod: Mod) {
 		try {
+			Filesystem.worker.registerJSONPatches(this.mapPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches));
 			const src = `/fs/mods/${mod.internalName}/main.js`;
 			const imported = await import(src);
 			imported.default(new ModHandler(mod));
@@ -123,22 +124,37 @@ export class Loader {
 
 			const src = devModPath + 'main.js';
 
-			__projectSelene.devMod ??= {async hotreload() {return;}};
+			__projectSelene.devMod ??= {
+				async hotreload() {return;},
+				registerPatches: (patches) => {
+					return Filesystem.worker.registerJSONPatches(this.mapPatches(devModPath, patches));
+				},
+				unregisterPatches: (patches) => {
+					return Filesystem.worker.unregisterJSONPatches(this.mapPatches(devModPath, patches));
+				},
+				
+			};
 			__projectSelene.devMod.hotreload = async () => {
 				console.log('Reloading development mod');
 
 				const imported = await import(src);
 				imported.unload?.();
 				handler.uninject();
+				Filesystem.worker.unregisterJSONPatches(this.mapPatches(devModPath, mod.currentInfo.patches));
 
 				this.loadDevMod();
 			};
 
+			Filesystem.worker.registerJSONPatches(this.mapPatches(devModPath, mod.currentInfo.patches));
 			const imported = await import(src);
 			imported.default(handler);
 			__projectSelene.devMod.afterMain?.(handler);
-		} catch {
-			console.log('No dev mod found');
+		} catch (e) {
+			console.log('No dev mod found', e);
 		}
+	}
+
+	private mapPatches(base: string, patches: ModPatch[]) {
+		return patches.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch'}));
 	}
 }

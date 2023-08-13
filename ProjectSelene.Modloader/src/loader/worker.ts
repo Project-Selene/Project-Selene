@@ -217,4 +217,31 @@ export class Worker {
 			start: mount,
 		} as SWMessage, []);
 	}
+
+	public async registerJSONPatches(patches: {
+        target: string,
+        source: string,
+    }[]) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'register-patches',
+			id: rid,
+			kind: 'json',
+			patches,
+		}, rid);
+	}
+	public async unregisterJSONPatches(patches: {
+        target: string,
+        source: string,
+    }[]) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'unregister-patches',
+			id: rid,
+			kind: 'json',
+			patches,
+		}, rid);
+	}
 }

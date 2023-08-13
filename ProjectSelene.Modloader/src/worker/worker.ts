@@ -1,6 +1,8 @@
 /// <reference lib="WebWorker" />
 
 import * as idb from 'idb-keyval';
+import { Patcher } from './patcher';
+import { PatcherJSON } from './patcher-json';
 import { Storage } from './storage';
 import { StorageHandles } from './storage-handles';
 import { StorageHttp } from './storage-http';
@@ -17,6 +19,9 @@ const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
 workerBroadcast.addEventListener('message', handleMessage);
 
 const storages: Storage[] = [];
+const patchers: Patcher[] = [
+	new PatcherJSON(readFile),
+];
 
 async function handleMessage(event: MessageEvent) {
 	const data: WorkerMessage = event.data;
@@ -43,6 +48,20 @@ async function handleMessage(event: MessageEvent) {
 			storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
 		} else {
 			throw new Error('Not implemented yet: ' + data.kind);
+		}
+		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
+		break;
+	}
+	case 'register-patches': {
+		if (data.kind === 'json') {
+			patchers[0].registerPatches(data.patches);
+		}
+		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
+		break;
+	}
+	case 'unregister-patches': {
+		if (data.kind === 'json') {
+			patchers[0].unregisterPatches(data.patches);
 		}
 		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
 		break;
@@ -74,9 +93,21 @@ async function handleMessage(event: MessageEvent) {
 			case 'stat':
 				result = await target.stat(path, data.response);
 				break;
-			default: 
-				result = await target.readFile(path, data.response);
+			default: {
+				const patcher = patchers.find(p => p.hasPatch(pathname));
+				if (patcher) {
+					const transformer = new TransformStream();
+					result = await target.readFile(path, transformer.writable);
+					if (result) {
+						patcher.patchFile(pathname, transformer.readable).pipeTo(data.response);
+					} else {
+						transformer.readable.pipeTo(data.response);
+					}
+				} else {
+					result = await target.readFile(path, data.response);
+				}
 				break;
+			}
 			}
 			
 			if (result) {

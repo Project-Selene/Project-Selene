@@ -1,7 +1,7 @@
 import { Worker } from './worker';
 
 export class Filesystem {
-	private static readonly worker = new Worker();
+	public static readonly worker = new Worker();
 	private readonly worker = Filesystem.worker;
 
 	public async setup() {

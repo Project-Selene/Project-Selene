@@ -66,6 +66,11 @@ export interface Mod {
     enabled: boolean;
 }
 
+export interface ModPatch {
+    target: string;
+    type: 'json';
+}
+
 export interface ModDb {
     mods: LoadingState<ModInfo[]>;
     modDetails: Record<number, LoadingState<ModDetails>>
@@ -77,6 +82,7 @@ export interface ModInfo {
     name: string;
     description: string;
     version: string;
+    patches: ModPatch[];
 }
 
 export interface ModDetails {

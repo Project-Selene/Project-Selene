@@ -1,8 +1,8 @@
 import { Mod } from '../state';
 
 export class ModInfo {
-	private registryCtor = new Map<unknown, {injected: unknown, lowest: unknown}>(); 
-	private registryProto = new Map<unknown, {injected: unknown, lowest: unknown}>(); 
+	private registryCtor = new Map<unknown, {injected: unknown, lowest: unknown}[]>(); 
+	private registryProto = new Map<unknown, {injected: unknown, lowest: unknown}[]>(); 
 	constructor(
         private readonly mod: Mod,
 	) {
@@ -48,16 +48,30 @@ export class ModInfo {
 		Object.setPrototypeOf(hookCtor, clazz);
 		Object.setPrototypeOf(hookProto, clazz.prototype);
 
-		this.registryCtor.set(hookCtor, {injected: clazz, lowest: ctor});
-		this.registryProto.set(hookProto, {injected: clazz.prototype, lowest: proto});
+		const existingCtors = this.registryCtor.get(hookCtor);
+		if (existingCtors) {
+			existingCtors.push({injected: clazz, lowest: ctor});
+		} else {
+			this.registryCtor.set(hookCtor, [{injected: clazz, lowest: ctor}]);
+		}
+		const existingProtos = this.registryProto.get(hookProto);
+		if (existingProtos) {
+			existingProtos.push({injected: clazz.prototype, lowest: proto});
+		} else {
+			this.registryProto.set(hookProto, [{injected: clazz.prototype, lowest: proto}]);
+		}
 	}
 
 	public uninject() {
-		for (const [hook, {injected, lowest}] of this.registryCtor) {
-			this.uninjectTarget(hook, injected, lowest);
+		for (const [hook, list] of this.registryCtor) {
+			for (const {injected, lowest} of list) {
+				this.uninjectTarget(hook, injected, lowest);
+			}
 		}
-		for (const [hook, {injected, lowest}] of this.registryProto) {
-			this.uninjectTarget(hook, injected, lowest);
+		for (const [hook, list] of this.registryProto) {
+			for (const {injected, lowest} of list) {
+				this.uninjectTarget(hook, injected, lowest);
+			}
 		}
 		this.registryCtor.clear();
 		this.registryProto.clear();
