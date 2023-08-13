@@ -123,20 +123,20 @@ export class Loader {
 
 			const src = devModPath + 'main.js';
 
-			__projectSelene.devMod = {
-				hotreload: async () => {
-					console.log('Reloading development mod');
+			__projectSelene.devMod ??= {async hotreload() {return;}};
+			__projectSelene.devMod.hotreload = async () => {
+				console.log('Reloading development mod');
 
-					const imported = await import(src);
-					imported.unload?.();
-					handler.uninject();
+				const imported = await import(src);
+				imported.unload?.();
+				handler.uninject();
 
-					this.loadDevMod();
-				},
+				this.loadDevMod();
 			};
 
 			const imported = await import(src);
 			imported.default(handler);
+			__projectSelene.devMod.afterMain?.(handler);
 		} catch {
 			console.log('No dev mod found');
 		}

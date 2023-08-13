@@ -40,13 +40,18 @@ const browserProcess = {
 	},
 };
 
+let fs: unknown;
 function require(name: string) {
 	if (originalRequire) {
 		return originalRequire(name);
 	}
 
 	if (name === 'fs') {
-		return requireFS();
+		if (fs) {
+			return fs;
+		}
+		fs = requireFS();
+		return fs;
 	}
 }
 
@@ -55,8 +60,8 @@ function pathToUrl(path: string) {
 }
 
 function requireFS() {
-	return new Proxy({}, {
-		get(_, prop) {
+	return new Proxy({} as Record<string | symbol, unknown>, {
+		get(original, prop) {
 			// console.log('fs', prop);
 			return ({
 				promises: requireFSPromises(),
@@ -84,7 +89,11 @@ function requireFS() {
 					}));
 					callback(undefined,mapped);
 				},
-			} as Record<string | symbol, unknown>)[prop] ?? (() => {throw new Error('Cannot be used in browser');})();
+			} as Record<string | symbol, unknown>)[prop] ?? original[prop] ?? (() => {throw new Error('Cannot be used in browser');})();
+		},
+		set(original, p, newValue) {
+			original[p] = newValue;
+			return true;
 		},
 	});
 }

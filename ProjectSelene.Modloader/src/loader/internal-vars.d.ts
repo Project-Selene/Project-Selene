@@ -1,6 +1,6 @@
 declare interface ProjectSeleneGlobal {
     gameReadyCallback: () => void;
-    devMod?: {hotreload: () => void}
+    devMod?: {hotreload: () => void, afterMain?: (mod: ModHandler) => void}
     symbol: symbol;
     classes: Record<string | symbol, unknown>;
     functions: Record<string | symbol, (...args: unknown[]) => unknown>;
