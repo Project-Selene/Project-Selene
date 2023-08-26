@@ -68,7 +68,7 @@ export interface Mod {
 
 export interface ModPatch {
     target: string;
-    type: 'json';
+    type: 'json' | 'raw';
 }
 
 export interface ModDb {

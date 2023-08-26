@@ -129,6 +129,11 @@ public class StorageController : Controller
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download([FromRoute] string id, CancellationToken cancellationToken)
     {
+        if (!Request.Host.Host.StartsWith("cdn."))
+        {
+            return this.BadRequest();
+        }
+
         var obj = await context.StoredObjects
             .Where(o => o.Artifacts.Any(a => a.ModVersion.VerifiedBy != null))
             .FirstOrDefaultAsync(o => o.Id == id);

@@ -3,6 +3,7 @@
 import * as idb from 'idb-keyval';
 import { Patcher } from './patcher';
 import { PatcherJSON } from './patcher-json';
+import { PatcherRaw } from './patcher-raw';
 import { Storage } from './storage';
 import { StorageHandles } from './storage-handles';
 import { StorageHttp } from './storage-http';
@@ -19,7 +20,9 @@ const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
 workerBroadcast.addEventListener('message', handleMessage);
 
 const storages: Storage[] = [];
+const rawPatcher = new PatcherRaw(readFile);
 const patchers: Patcher[] = [
+	rawPatcher,
 	new PatcherJSON(readFile),
 ];
 
@@ -54,14 +57,18 @@ async function handleMessage(event: MessageEvent) {
 	}
 	case 'register-patches': {
 		if (data.kind === 'json') {
-			patchers[0].registerPatches(data.patches);
+			patchers[1].registerPatches(data.patches);
+		} else if (data.kind === 'raw') {
+			rawPatcher.registerPatches(data.patches);
 		}
 		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
 		break;
 	}
 	case 'unregister-patches': {
 		if (data.kind === 'json') {
-			patchers[0].unregisterPatches(data.patches);
+			patchers[1].unregisterPatches(data.patches);
+		} else if (data.kind === 'raw') {
+			rawPatcher.unregisterPatches(data.patches);
 		}
 		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
 		break;
@@ -94,18 +101,7 @@ async function handleMessage(event: MessageEvent) {
 				result = await target.stat(path, data.response);
 				break;
 			default: {
-				const patcher = patchers.find(p => p.hasPatch(pathname));
-				if (patcher) {
-					const transformer = new TransformStream();
-					result = await target.readFile(path, transformer.writable);
-					if (result) {
-						patcher.patchFile(pathname, transformer.readable).pipeTo(data.response);
-					} else {
-						transformer.readable.pipeTo(data.response);
-					}
-				} else {
-					result = await target.readFile(path, data.response);
-				}
+				result = await readFileWithPatches(pathname, target, path, data.response);
 				break;
 			}
 			}
@@ -131,12 +127,65 @@ async function handleMessage(event: MessageEvent) {
 					},
 				} as WorkerMessage);
 			}
+		} else {
+			const result = await readFileWithPatches(pathname, null, null, data.response);
+			if (result) {
+				workerBroadcast.postMessage({
+					type: 'response',
+					id: data.id,
+					response: {
+						status: 200,
+						headers: {
+							'content-type': 'text/javascript',
+						},
+					},
+				} as WorkerMessage);
+			}
 		}
 		break;
 	}
 	default:
 		break;
 	}
+}
+
+async function readFileWithPatches(pathname: string, target: Storage | null, path: string | null, response: WritableStream<Uint8Array>): Promise<boolean> {
+	const applicable = patchers.filter(p => p.hasPatch(pathname));
+	if (applicable.length === 0) {
+		if (!target || !path) {
+			return false; //No patches and no target file
+		} 
+		
+		return await target.readFile(path, response); //No patches but we have a file
+	}
+
+	let readable: ReadableStream<Uint8Array>;
+	if (applicable.includes(rawPatcher)) {
+		applicable.splice(applicable.indexOf(rawPatcher), 1);
+
+		//Raw patch exists -> always use it even if we have a file
+		readable = rawPatcher.patchFile(pathname, null);
+	} else {
+		if (!target || !path) { 
+			return false; //We have patches but non of them are raw and we have no file
+		} 
+		
+		const transformer = new TransformStream();
+		const result = await target.readFile(path, transformer.writable);
+		if (!result) {
+			return false; //We failed to read the file, we can't apply patches to failed reads
+		}
+
+		readable = transformer.readable;
+	}
+
+	for (const patcher of applicable) {
+		readable = patcher.patchFile(pathname, readable);
+	}
+
+	readable.pipeTo(response);
+
+	return true;
 }
 
 async function readFile(pathname: string) {

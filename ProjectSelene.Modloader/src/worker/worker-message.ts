@@ -62,7 +62,7 @@ export type RegisterDir = {
 } | {
     type: 'register-patches' | 'unregister-patches',
     id: number,
-    kind: 'json',
+    kind: 'json' | 'raw',
     patches: {
         target: string,
         source: string,

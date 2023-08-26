@@ -244,4 +244,31 @@ export class Worker {
 			patches,
 		}, rid);
 	}
+
+	public async registerRawPatches(patches: {
+        target: string,
+        source: string,
+    }[]) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'register-patches',
+			id: rid,
+			kind: 'raw',
+			patches,
+		}, rid);
+	}
+	public async unregisterRawPatches(patches: {
+        target: string,
+        source: string,
+    }[]) {
+		const rid = Math.random();
+
+		await this.postMessageBroadcast({
+			type: 'unregister-patches',
+			id: rid,
+			kind: 'raw',
+			patches,
+		}, rid);
+	}
 }

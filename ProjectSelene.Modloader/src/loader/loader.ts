@@ -94,7 +94,7 @@ export class Loader {
 	
 	async loadMod(mod: Mod) {
 		try {
-			Filesystem.worker.registerJSONPatches(this.mapPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches));
+			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches, true);
 			const src = `/fs/mods/${mod.internalName}/main.js`;
 			const imported = await import(src);
 			imported.default(new ModHandler(mod));
@@ -127,10 +127,10 @@ export class Loader {
 			__projectSelene.devMod ??= {
 				async hotreload() {return;},
 				registerPatches: (patches) => {
-					return Filesystem.worker.registerJSONPatches(this.mapPatches(devModPath, patches));
+					return this.registerPatches(devModPath, patches, true);
 				},
 				unregisterPatches: (patches) => {
-					return Filesystem.worker.unregisterJSONPatches(this.mapPatches(devModPath, patches));
+					return this.registerPatches(devModPath, patches, false);
 				},
 				
 			};
@@ -140,12 +140,12 @@ export class Loader {
 				const imported = await import(src);
 				imported.unload?.();
 				handler.uninject();
-				Filesystem.worker.unregisterJSONPatches(this.mapPatches(devModPath, mod.currentInfo.patches));
+				await this.registerPatches(devModPath, mod.currentInfo.patches, false);
 
 				this.loadDevMod();
 			};
 
-			Filesystem.worker.registerJSONPatches(this.mapPatches(devModPath, mod.currentInfo.patches));
+			this.registerPatches(devModPath, mod.currentInfo.patches, true);
 			const imported = await import(src);
 			imported.default(handler);
 			__projectSelene.devMod.afterMain?.(handler);
@@ -154,7 +154,20 @@ export class Loader {
 		}
 	}
 
-	private mapPatches(base: string, patches: ModPatch[]) {
-		return patches.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch'}));
+	private async registerPatches(base: string, patches: ModPatch[], register: boolean) {
+		const rawPatches = patches
+			.filter(p => p.type === 'raw')
+			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length)}));
+		const jsonPatches = patches
+			.filter(p => p.type === 'json')
+			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch'}));
+
+		if (register) {
+			await Filesystem.worker.registerRawPatches(rawPatches);
+			await Filesystem.worker.registerJSONPatches(jsonPatches);
+		} else {
+			await Filesystem.worker.unregisterRawPatches(rawPatches);
+			await Filesystem.worker.unregisterJSONPatches(jsonPatches);
+		}
 	}
 }

@@ -2,7 +2,7 @@ export abstract class Patcher {
 	protected readonly patches = new Map<string, string[]>();
 
 	constructor(
-        private readonly readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>,
+        protected readonly readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>,
 	) { }
 
 	protected async streamToUint8Array(readableStream: ReadableStream<Uint8Array>) {
@@ -54,9 +54,10 @@ export abstract class Patcher {
 		for (const { target, source } of patches) {
 			const existing = this.patches.get(target);
 			if (existing) {
-				if (!existing.includes(source)) {
-					existing.push(source);
+				if (existing.includes(source)) {
+					existing.splice(existing.indexOf(source), 1);
 				}
+				existing.push(source);
 			} else {
 				this.patches.set(target, [source]);
 			}
