@@ -5,12 +5,9 @@ import React from 'react';
 export function Background() {
 	return <div className="background-body">
 
-		<div className="full-moon-container">
-			<div className="full-moon">
-				<img src="full_moon.svg"></img>
-			</div>
+		<div className="full-moon">
+			<img src="full_moon.svg"></img>
 		</div>
-
 
 		<svg version="1.1"
 			width="100vw" height="100vh"

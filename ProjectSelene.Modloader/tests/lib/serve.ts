@@ -8,6 +8,7 @@ export async function serve() {
 				main: './src/index.ts',
 				'static/js/worker': './src/worker/worker.ts',
 				serviceworker: './src/serviceworker/serviceworker.ts',
+				'static/js/prefix': './src/prefix/prefix.ts',
 			},
 			loader: {
 				'.html': 'file',

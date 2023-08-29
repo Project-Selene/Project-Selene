@@ -8,23 +8,12 @@
     z-index: -100;
     overflow: hidden;
 
-    .full-moon-container {
+    .full-moon {
         position: absolute;
-
-        $max-width: 1136px;
-
-        width: 100vw;
-        height: calc(100vw / 3);
-        max-height: calc($max-width / 3);
-
-        bottom: 0;
-
-        .full-moon {
-            width: 100vw;
-            max-width: $max-width;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        bottom: -40vw;
+        left: 28vw;
+        width: 65vw;
+        height: 65vw;
     }
 
     .background-stars {

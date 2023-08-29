@@ -1,7 +1,7 @@
-.character-outline {
-    --image-width: 444;
-    --image-height: 360;
-    --scale: 0.05vw;
+.character {
+    --image-width: 1455;
+    --image-height: 1991;
+    --scale: 0.02vw;
 
     z-index: -50;
 
@@ -9,24 +9,37 @@
     width: calc(var(--scale) * var(--image-width));
     height: calc(var(--scale) * var(--image-height));
 
-    bottom: 0;
-    left: calc(50vw - 0.5 * var(--scale) * var(--image-width));
+    bottom: calc(-0.2 * var(--scale) * var(--image-height));
+    left: calc(61.8vw - 0.5 * var(--scale) * var(--image-width));
 }
 
-.character-halo-outline {
-    --image-width: 89;
-    --image-height: 128;
-    --scale: 0.05vw;
+.halo {
+    --image-width: 1455;
+    --image-height: 1991;
+    --scale: 0.02vw;
 
-    --offset-x: 150px;
-    --offset-y: 2px;
-    
     z-index: -50;
 
     position: fixed;
     width: calc(var(--scale) * var(--image-width));
     height: calc(var(--scale) * var(--image-height));
 
-    bottom: var(--offset-x);
-    left: calc(50vw - 0.5 * var(--scale) * var(--image-width) - var(--offset-y));
+    bottom: calc(-0.2 * var(--scale) * var(--image-height));
+    left: calc(61.8vw - 0.5 * var(--scale) * var(--image-width));
+
+    animation: halo-hover infinite ease-in-out 60s;
 }
+
+@keyframes halo-hover {
+    from {
+      transform: translateY(0%);
+    }
+
+    50% {
+      transform: translateY(-2.5%);
+    }
+  
+    to {
+      transform: translateY(0%);
+    }
+  }
