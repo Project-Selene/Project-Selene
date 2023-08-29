@@ -175,6 +175,7 @@ export class Game {
 							currentInfo: manifest,
 							enabled: true,
 							internalName: internalName + '',
+							filename: mod.name,
 						});
 					} catch (e) {
 						console.error('Invalid mod: ' + mod.name, e);
@@ -188,5 +189,36 @@ export class Game {
 		return {
 			mods,
 		};
+	}
+
+	public async deleteMod(filename: string) {
+		const id = this.selectedGame;
+		const selectedGameInfo = this.games.get(id);
+		if (!selectedGameInfo) {
+			throw new Error('Game info must me loaded before loading the game');
+		}
+
+		if (selectedGameInfo.type === 'handle') {
+			if (await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
+				if (await selectedGameInfo.handle.requestPermission({mode: 'readwrite'}) !== 'granted') {
+					throw new Error('Could not delete mod due to missing permissions');
+				}
+			}
+
+			const mods = await selectedGameInfo.handle.getDirectoryHandle('mods');
+			if (await mods.queryPermission({mode: 'readwrite'}) !== 'granted') {
+				if (await mods.requestPermission({mode: 'readwrite'}) !== 'granted') {
+					throw new Error('Could not delete mod due to missing permissions');
+				}
+			}
+
+			await mods.removeEntry(filename);
+		} else if (selectedGameInfo.type === 'fs') {
+			const fs: typeof import('fs') = globalThis['require']('fs');
+			const path: typeof import('path') = globalThis['require']('path');
+
+			await fs.promises.unlink(path.join(selectedGameInfo.path, 'mods', filename));
+		}
+		return this.getModsInternal(id);
 	}
 }

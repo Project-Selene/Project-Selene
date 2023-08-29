@@ -52,7 +52,7 @@ export async function doAsync<T>(callback: (state: Draft<State>, prepared?: Awai
 	updateAppState();
 }
 
-export async function doLoad<T>(load: (state: Immutable<State>) => T | Promise<T>, assign: (state: Draft<State>, value: LoadingState<T>) => void): Promise<void> {
+export async function doLoad<T>(load: (state: Immutable<State>) => T | Promise<T>, assign: (state: Draft<State>, value: LoadingState<T>) => void, thenDo?: () => void): Promise<void> {
 	root.state = produce(root.state, (state) => { assign(state, {loading: true}); });
 	updateAppState();
 
@@ -63,6 +63,7 @@ export async function doLoad<T>(load: (state: Immutable<State>) => T | Promise<T
 		root.state = produce(root.state, (state) => { assign(state, {loading: false, success: false, error}); });
 	}
 	updateAppState();
+	thenDo?.();
 }
 
 function updateAppState() {

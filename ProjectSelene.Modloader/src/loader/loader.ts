@@ -94,6 +94,7 @@ export class Loader {
 				currentInfo: manifest,
 				enabled: true,
 				internalName: 'dev',
+				filename: '',
 			};
 			const handler = new ModHandler(mod);
 

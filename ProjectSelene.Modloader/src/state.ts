@@ -26,7 +26,6 @@ export type AppState = Immutable<State>;
 
 export interface State {
     gamesInfo: LoadingState<GamesInfo>;
-    games: LoadingState<Game>[];
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
@@ -45,16 +44,13 @@ export interface GamesInfo {
     selectedGame: number;
 }
 
-export interface Game {
-    id: number;
-}
-
 export interface Mods {
     mods: Mod[];
 }
 
 export interface Mod {
     internalName: string;
+    filename: string;
     currentInfo: ModInfo;
     enabled: boolean;
 }
