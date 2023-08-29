@@ -23,7 +23,7 @@ export class Worker {
 		workerBroadcast.addEventListener('messageerror', msg => this.pendingWorkerPromiseReject?.(msg.data));
 
 		if (window.navigator.serviceWorker) {
-			navigator.serviceWorker.register('serviceworker.js');
+			await navigator.serviceWorker.register('serviceworker.js');
     
 			const workers: MessagePort[] = [];
 			for (let i = 0; i < numberOfWorkers; i++) {

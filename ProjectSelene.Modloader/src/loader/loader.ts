@@ -1,53 +1,29 @@
-import { Mod, ModPatch, State } from '../state';
+import { Mod, ModPatch, Mods } from '../state';
 import { Filesystem } from './filesystem';
-import { Finder } from './finder';
+import { Game } from './game';
 import { ModInfo as ModHandler } from './mod-handler';
 import { transform } from './transformer';
 import { prepareWindow } from './window';
 
 export class Loader {
-	public readonly finder = new Finder();
-	private readonly filesystem = new Filesystem();
 	private prefix = '';
 	private devModIteration = 0;
 	
-	constructor() {
+	constructor(
+		private readonly filesystem: Filesystem,
+		private readonly game: Game,
+	) {
 		this.filesystem.readFile('/static/js/prefix.js').then(prefix => this.prefix = prefix);
 	}
 
-	public async play(state: State) {
-		if (!state.gamesInfo.success) {
-			const gamesInfo = await this.finder.loadGames();
-			state.gamesInfo = {data: gamesInfo, success: true, loading: false};
-			state.games = gamesInfo.games.map(() => ({}));
-		}
+	public async play() {
+		const id = this.game.getSelectedGame();
+		await this.game.mountGame();
 
-		if (!state.games[state.gamesInfo.data.selectedGame]) {
-			const [game, gamesInfo, mods] = await this.finder.openGame(state);
-			state.games = [...state.games, {data: game, success: true, loading: false}];
-			state.gamesInfo = {data: gamesInfo, success: true, loading: false};
-			state.mods = mods ? {data: mods, success: true, loading: false} : state.mods;
-		}
-
-		const selectedGameInfo = state.gamesInfo.data.games[state.gamesInfo.data.selectedGame];
-
-		if (!state.games[state.gamesInfo.data.selectedGame].success) {
-			const game = await this.finder.loadGame(state, selectedGameInfo.id);
-			state.games[state.gamesInfo.data.selectedGame] = { data: game, loading: false, success: true };
-		}
-
-		if (!state.games[state.gamesInfo.data.selectedGame].success) {
-			throw new Error('Selected game isn\'t loaded');
-		}
-
-		if (!state.mods.success) {
-			state.mods = {data: await this.finder.loadMods(state, selectedGameInfo.id), loading: false, success: true};
-		}
-
-		const code = await this.filesystem.readFile('/fs/internal/game/' + selectedGameInfo.id +  '/terra/dist/bundle.js');
+		const code = await this.filesystem.readFile('/fs/internal/game/' + id +  '/terra/dist/bundle.js');
 		const injected = transform(code, this.prefix);
 		
-		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + selectedGameInfo.id +  '/');
+		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id +  '/');
 		await this.filesystem.mountInMemory('/fs/saves/', 'save-data');
 			
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
@@ -55,7 +31,8 @@ export class Loader {
 
 		await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
 		
-		for (const mod of state.mods.data.mods) {
+		const mods = await this.game.getMods();
+		for (const mod of mods.mods) {
 			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + mod.internalName + '/');
 		}
 		
@@ -66,7 +43,7 @@ export class Loader {
 		base.href = '/fs/game/terra/';
 		doc.head.prepend(base);
 
-		prepareWindow((...args: unknown[]) => this.hookGameStart(state, ...args));
+		prepareWindow((...args: unknown[]) => this.hookGameStart(mods, ...args));
 			
 		document.open();
 		document.write(doc.documentElement.innerHTML);
@@ -74,19 +51,17 @@ export class Loader {
 	}
 	
 
-	async hookGameStart(state: State, ...args: unknown[]) {
+	async hookGameStart(mods: Mods, ...args: unknown[]) {
 		console.log('ready', ...args);
-		await this.loadMods(state);
+		await this.loadMods(mods);
 		return __projectSelene.functions['startGame'](...args);
 	}
 
-	async loadMods(state: State) {
-		if (state.mods.data?.mods) {
-			for (const mod of state.mods.data.mods) {
-				if (mod.enabled) {
-					console.log('loading mod', mod);
-					await this.loadMod(mod);
-				}
+	async loadMods(mods: Mods) {
+		for (const mod of mods.mods) {
+			if (mod.enabled) {
+				console.log('loading mod', mod);
+				await this.loadMod(mod);
 			}
 		}
 		await this.loadDevMod();

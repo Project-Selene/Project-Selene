@@ -13,7 +13,7 @@ import { root } from './state';
 import { theme } from './theme';
 
 export default function App() {
-	doLoad(() => root.loader.finder.loadGames(), (state, value) => {
+	doLoad(() => root.game.loadGames(), (state, value) => {
 		state.gamesInfo = value;
 		if (value.data?.games) {
 			state.games = value.data?.games.map(() => ({}));

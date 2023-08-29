@@ -41,15 +41,8 @@ export interface UIState {
 export interface GamesInfo {
     games: Array<{
         id: number;
-        type: 'handle';
-        handle: FileSystemDirectoryHandle;
-    } | { 
-        id: number;
-        type: 'fs';
-        path: string;
     }>;
     selectedGame: number;
-    nextId: number;
 }
 
 export interface Game {
