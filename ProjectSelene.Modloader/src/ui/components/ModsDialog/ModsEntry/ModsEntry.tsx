@@ -3,6 +3,7 @@ import Delete from '@mui/icons-material/Delete';
 import Download from '@mui/icons-material/Download';
 import { Avatar, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import React from 'react';
+import { ModInfo } from '../../../../state';
 import { doLoad, useAppState } from '../../../hooks/state';
 import { root } from '../../../state';
 
@@ -21,7 +22,7 @@ export function ModsEntry(props: {
 			name: 'None',
 			version: '0.0.0',
 		},
-		filename: '',
+		filename: moddb?.name + '.mod.zip',
 	};
 
 
@@ -29,6 +30,18 @@ export function ModsEntry(props: {
 	const hasUpdate = !!moddb && moddb.version !== mod.currentInfo.version;
 
 	const deleteMod = () => doLoad(() => root.game.deleteMod(mod.filename), (state, value) => {
+		if (value.data) {
+			state.mods = value;
+		}
+	});
+
+	const installMod = () => doLoad(async () => {
+		const content = await root.moddb.download(moddb as ModInfo);
+		if (!content) {
+			return root.game.getMods();
+		}
+		return await root.game.installMod(mod.filename, content);
+	}, (state, value) => {
 		if (value.data) {
 			state.mods = value;
 		}
@@ -52,7 +65,7 @@ export function ModsEntry(props: {
 									: <></>
 							}
 						</Typography>
-						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }}>
+						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={installMod}>
 							<Download />
 						</Button>}
 						{isInstalled && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={deleteMod}>

@@ -86,7 +86,11 @@ export class Game {
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {
-			throw new Error('Game info must me loaded before loading the game');
+			await this.loadGames();
+			if (!this.games.has(this.selectedGame)) {
+				return false;
+			}
+			return this.mountGame();
 		}
 
 		if (selectedGameInfo.type === 'handle') {
@@ -106,6 +110,20 @@ export class Game {
 			throw new Error('Not implemented yet');
 		} else {
 			const handle = await globalThis.showDirectoryPicker({ id: 'game' });
+
+			for (const game of this.games.values()) {
+				if (game.type === 'handle' && await game.handle.isSameEntry(handle)) {
+					this.selectedGame = game.id;
+
+					const stored: StoredGamesInfo = {
+						games: [...this.games.values()],
+						nextId: this.nextId,
+						selectedGame: this.selectedGame,
+					};
+					await idb.set('index', stored, gameStore);
+					return stored;
+				}
+			}
 
 			this.games.set(this.nextId, {
 				id: this.nextId,
@@ -137,7 +155,7 @@ export class Game {
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {
-			throw new Error('Game info must me loaded before loading the game');
+			return undefined;
 		}
 
 		if (selectedGameInfo.type === 'handle' && await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
@@ -195,7 +213,7 @@ export class Game {
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {
-			throw new Error('Game info must me loaded before loading the game');
+			throw new Error('Game must be opened before deleting a mod');
 		}
 
 		if (selectedGameInfo.type === 'handle') {
@@ -218,6 +236,48 @@ export class Game {
 			const path: typeof import('path') = globalThis['require']('path');
 
 			await fs.promises.unlink(path.join(selectedGameInfo.path, 'mods', filename));
+		}
+		return this.getModsInternal(id);
+	}
+
+	public async installMod(name: string, content: ReadableStream<Uint8Array>) {
+		const id = this.selectedGame;
+		const selectedGameInfo = this.games.get(id);
+		if (!selectedGameInfo) {
+			throw new Error('Game must be opened before installing a mod');
+		}
+
+		if (selectedGameInfo.type === 'handle') {
+			if (await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
+				if (await selectedGameInfo.handle.requestPermission({mode: 'readwrite'}) !== 'granted') {
+					throw new Error('Could not delete mod due to missing permissions');
+				}
+			}
+
+			const mods = await selectedGameInfo.handle.getDirectoryHandle('mods');
+			if (await mods.queryPermission({mode: 'readwrite'}) !== 'granted') {
+				if (await mods.requestPermission({mode: 'readwrite'}) !== 'granted') {
+					throw new Error('Could not delete mod due to missing permissions');
+				}
+			}
+			
+			const handle = await mods.getFileHandle(name, { create: true });
+			const writable = await handle.createWritable({ keepExistingData: false });
+			await content.pipeTo(writable);
+		} else if (selectedGameInfo.type === 'fs') {
+			const fs: typeof import('fs') = globalThis['require']('fs');
+			const path: typeof import('path') = globalThis['require']('path');
+
+			const writable = fs.createWriteStream(path.join(selectedGameInfo.path, 'mods', name));
+			const reader = content.getReader();
+			for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+				writable.write(chunk.value);
+			}
+			writable.end();
+			await new Promise<void>((resolve, reject) => {
+				writable.on('finish', () => resolve());
+				writable.on('error', () => reject());
+			});
 		}
 		return this.getModsInternal(id);
 	}

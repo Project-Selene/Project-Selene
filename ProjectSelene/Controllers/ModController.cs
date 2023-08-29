@@ -115,15 +115,14 @@ public class ModController : Controller
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download([FromRoute] int id)
     {
-        var url = (await this.context.Mods
+        var url = await this.context.Mods
             .AsNoTracking()
             .Where(mod => mod.Id == id)
             .Select(mod => mod.Versions.FirstOrDefault(v => v.VerifiedBy != null)!)
             .Where(v => v != null)
-            .ToListAsync())
             .Select(version => version!.Artifacts.First())
             .Select(artifact => artifact.Url)
-            .SingleOrDefault();
+            .SingleOrDefaultAsync();
             
         if (url == null)
         {

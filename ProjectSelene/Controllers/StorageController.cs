@@ -17,13 +17,15 @@ public class StorageController : Controller
     private readonly SeleneDbContext context;
     private readonly LoginService loginService;
     private readonly ILogger<StorageController> logger;
+    private readonly string host;
 
-    public StorageController(IStorageProviderService storageProvider, SeleneDbContext context, LoginService loginService, ILogger<StorageController> logger)
+    public StorageController(IStorageProviderService storageProvider, SeleneDbContext context, LoginService loginService, ILogger<StorageController> logger, IConfiguration configuration)
     {
         this.storageProvider = storageProvider;
         this.context = context;
         this.loginService = loginService;
         this.logger = logger;
+        this.host = new Uri(configuration["Domains:CDN"] ?? "http://localhost/").Host;
     }
 
     [HttpPost("upload")]
@@ -129,7 +131,7 @@ public class StorageController : Controller
     [HttpGet("download/{id}")]
     public async Task<IActionResult> Download([FromRoute] string id, CancellationToken cancellationToken)
     {
-        if (!Request.Host.Host.StartsWith("cdn."))
+        if (Request.Host.Host != this.host)
         {
             return this.BadRequest();
         }
