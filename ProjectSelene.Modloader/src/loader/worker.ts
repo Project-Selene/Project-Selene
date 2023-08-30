@@ -1,6 +1,7 @@
 import * as idb from 'idb-keyval';
 import { SWMessage, SWMessageResponse } from '../serviceworker/sw-message';
 import { WorkerMessage } from '../worker/worker-message';
+import { StorageFS } from './worker-storage-fs';
 
 const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
 const numberOfWorkers = 1;
@@ -10,18 +11,10 @@ const fileMap = new Map<string, File>();
 export class Worker {
 	private pendingPromiseResolve?: (data: unknown) => void;
 	private pendingPromiseReject?: (err: string) => void;
-	
-	private pendingWorkerPromiseResolve?: (data: unknown) => void;
-	private pendingWorkerPromiseReject?: (err: string) => void;
 
 	private readonly store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
 
 	async setup() {
-		workerBroadcast.addEventListener('message', msg => {
-			this.pendingWorkerPromiseResolve?.(msg.data);
-		} );
-		workerBroadcast.addEventListener('messageerror', msg => this.pendingWorkerPromiseReject?.(msg.data));
-
 		if (window.navigator.serviceWorker) {
 			await navigator.serviceWorker.register('serviceworker.js');
     
@@ -32,6 +25,32 @@ export class Worker {
 				workers.push(sharedWorker.port);
 			}
         
+			if (window['require']) {
+				for (const worker of workers) {
+					const fs = new StorageFS();
+	
+					const fsChannel = new MessageChannel();
+		
+					fsChannel.port1.onmessage = msg => {
+						if (msg.data.type === 'fs-request') {
+							(fs as unknown as {[name: string]: (target: string, source: string, path: string, response: WritableStream<Uint8Array>, content?: ReadableStream<Uint8Array>) => Promise<boolean>})[msg.data.kind](msg.data.target, msg.data.source, msg.data.path, msg.data.response, msg.data.content)
+								.then(result => fsChannel.port1.postMessage({type: 'fs-response', result, id: msg.data.id }))
+								.catch(result => fsChannel.port1.postMessage({type: 'fs-response', result, id: msg.data.id, fail: true }));
+							return;
+						} else if (msg.data.type === 'fs-response') {
+							return;
+						}
+					};
+					
+					// fsChannel.port2.postMessage({type: 'fs-request'});
+
+					await this.postMessageToSingleWorker(worker, {
+						type: 'register-fs',
+						id: Math.random(),
+						channel: fsChannel.port2,
+					}, [fsChannel.port2]);
+				}
+			}
 			const reg = await navigator.serviceWorker.ready;
 			if (reg.active) {
 				navigator.serviceWorker.addEventListener('message', event => {
@@ -66,13 +85,33 @@ export class Worker {
 			target.postMessage(message, transferables);
 		});
 	}
+	private postMessageToSingleWorker(target: MessagePort, message: WorkerMessage, transferables: Transferable[]) {
+		return new Promise((resolve, reject) => {
+			const res = (msg: MessageEvent) => {
+				resolve(msg.data);
+				workerBroadcast.removeEventListener('message', res);
+				workerBroadcast.removeEventListener('messageerror', rej);
+			};
+			const rej = (msg: MessageEvent) => {
+				reject(msg.data);
+				workerBroadcast.removeEventListener('message', res);
+				workerBroadcast.removeEventListener('messageerror', rej);
+			};
+			workerBroadcast.addEventListener('message', res);
+			workerBroadcast.addEventListener('messageerror', rej);
+
+			target.postMessage(message, transferables);
+		});
+	}
 
 	private postMessageBroadcast(message: WorkerMessage, id?: number) {
+		const rid = id;
 		return new Promise((resolve, reject) => {
 			let pendingWorkerCount = numberOfWorkers;
 			const result: unknown[] = [];
-			this.pendingWorkerPromiseResolve = data => {
-				if (id !== (data as {id?: number})?.id) {
+			const res = (msg: MessageEvent) => {
+				const data = msg.data;
+				if (rid !== (data as {id?: number})?.id) {
 					return;
 				}
 				pendingWorkerCount--;
@@ -80,9 +119,17 @@ export class Worker {
 				if (pendingWorkerCount === 0) {
 					// console.log('resolve worker message', id);
 					resolve(result);
+					workerBroadcast.removeEventListener('message', res);
+					workerBroadcast.removeEventListener('messageerror', rej);
 				}
-			} ;
-			this.pendingWorkerPromiseReject = reject;
+			};
+			const rej = (msg: MessageEvent) => {
+				reject(msg.data);
+				workerBroadcast.removeEventListener('message', res);
+				workerBroadcast.removeEventListener('messageerror', rej);
+			};
+			workerBroadcast.addEventListener('message', res);
+			workerBroadcast.addEventListener('messageerror', rej);
 
 			workerBroadcast.postMessage(message);
 		});
@@ -136,6 +183,29 @@ export class Worker {
 			type: 'filter',
 			start: mount,
 		} as SWMessage, []);
+	}
+	public async registerDirectoryFS(mount: string, dir: string) {
+		const rid = Math.random();
+		const id = 'dir-' + rid;
+		await idb.set(id, dir, this.store);
+
+		await this.postMessageBroadcast({
+			type: 'register-dir',
+			id: rid,
+			target: mount,
+			kind: 'fs',
+			source: dir,
+		}, rid);
+		
+		const sw = (await navigator.serviceWorker.ready).active;
+		if (!sw) {
+			throw new Error('No serviceworker found');
+		}
+		await this.postMessage(sw, {
+			type: 'filter',
+			start: mount,
+		} as SWMessage, []);
+		idb.del(id, this.store);
 	}
 	public async registerInMemory(mount: string, key: string) {
 		const rid = Math.random();

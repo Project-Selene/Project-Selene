@@ -1,68 +1,74 @@
 import { Storage } from './storage';
 
 export class StorageFS extends Storage {
-	private readonly fs: typeof import('fs');
-	private readonly path: typeof import('path');
-	private readonly textEncoder = new TextEncoder();
 	public constructor(
         public readonly target: string,
         private readonly source: string,
+		private readonly fsChannel: MessagePort,
 	) {
 		super();
-		this.fs = require('fs');
-		this.path = require('path');
 	}
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		try {
-			const content = await this.fs.promises.open(this.path.join(this.source, path), 'r');
-			const reader = content.createReadStream();
-			const writer = response.getWriter();
-			reader.on('data', str => typeof str === 'string' ? writer.write(this.textEncoder.encode(str)) : writer.write(str));
-			reader.on('close', () => writer.close());
-			return true;
-		} catch {
-			return false;
-		}
+		return await this.postMessage({
+			kind: 'readFile',
+			source: this.source,
+			target: this.target,
+			path,
+			response,
+		});
 	}
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		const dir = await this.fs.promises.readdir(this.path.join(this.source, path), {withFileTypes: true, encoding: 'utf-8'});
-		const result = dir.map(f => ({isDir: f.isDirectory(), name: f.name}));
-		new Blob([JSON.stringify(result)], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
-		return true;
+		return await this.postMessage({
+			kind: 'readDir',
+			source: this.source,
+			target: this.target,
+			path,
+			response,
+		});
 	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		new Blob(['{"state":"granted"}'], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
 	public async writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
-		try {
-			const handle = await this.fs.promises.open(this.path.join(this.source, path), 'w');
-			const writer = handle.createWriteStream();
-			content.pipeTo(new WritableStream({
-				write(data) {
-					writer.write(data);
-				},
-				close() {
-					writer.close();
-					new Blob(['{"success":true}'], {type: 'application/json'}).stream().pipeTo(response);
-				},
-				abort() {
-					new Blob(['{"success":false}'], {type: 'application/json'}).stream().pipeTo(response);
-				},
-			}));
-			return true;
-		} catch {
-			return false;
-		}
+		return await this.postMessage({
+			kind: 'writeFile',
+			source: this.source,
+			target: this.target,
+			path,
+			response,
+			content,
+		});
 	}
 	
 	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		try {
-			const stat = await this.fs.promises.stat(this.path.join(this.source, path));
-			new Blob([JSON.stringify(stat)], {type: 'application/json'}).stream().pipeTo(response);
-			return true;
-		} catch {
-			return false;
-		}
+		return await this.postMessage({
+			kind: 'stat',
+			source: this.source,
+			target: this.target,
+			path,
+			response,
+		});
+	}
+
+	private postMessage(message: {id?: number, type?: string, kind: string, target: string, source: string, path: string, response: WritableStream<Uint8Array>, content?: ReadableStream<Uint8Array>}) {
+		return new Promise<boolean>((resolve, reject) => {
+			const handler = (msg: MessageEvent) => {
+				if (msg.data.type === 'fs-response' && msg.data.id === message.id) {
+					this.fsChannel.removeEventListener('message', handler);
+					if (msg.data.fail) {
+						reject(msg.data.result);
+					} else {
+						resolve(msg.data.result);
+					}
+				}
+			};
+
+			this.fsChannel.addEventListener('message', handler);
+
+			message.id = Math.random();
+			message.type = 'fs-request';
+			this.fsChannel.postMessage(message, message.content ? [message.content, message.response] as unknown as Transferable[] : [message.response] as unknown as Transferable[]);
+		});
 	}
 }

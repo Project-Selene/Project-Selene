@@ -60,6 +60,12 @@ export type RegisterDir = {
     target: string,
     source: string,
 } | {
+    type: 'register-dir',
+    id: number,
+    kind: 'fs',
+    target: string,
+    source: string,
+} | {
     type: 'register-patches' | 'unregister-patches',
     id: number,
     kind: 'json' | 'raw',
@@ -67,4 +73,8 @@ export type RegisterDir = {
         target: string,
         source: string,
     }[]
+} | {
+    type: 'register-fs',
+    id: number,
+    channel: MessagePort,
 };

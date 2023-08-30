@@ -5,6 +5,7 @@ import { Patcher } from './patcher';
 import { PatcherJSON } from './patcher-json';
 import { PatcherRaw } from './patcher-raw';
 import { Storage } from './storage';
+import { StorageFS } from './storage-fs';
 import { StorageHandles } from './storage-handles';
 import { StorageHttp } from './storage-http';
 import { StorageIndexedDB } from './storage-indexeddb';
@@ -25,6 +26,7 @@ const patchers: Patcher[] = [
 	rawPatcher,
 	new PatcherJSON(readFile),
 ];
+let fsChannel: MessagePort;
 
 async function handleMessage(event: MessageEvent) {
 	const data: WorkerMessage = event.data;
@@ -49,6 +51,8 @@ async function handleMessage(event: MessageEvent) {
 			const sourcePath = data.source.substring(sourceStorage.target.length);
 
 			storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
+		} else if (data.kind === 'fs') {
+			storages.unshift(new StorageFS(data.target, data.source, fsChannel));
 		} else {
 			throw new Error('Not implemented yet: ' + data.kind);
 		}
@@ -70,6 +74,12 @@ async function handleMessage(event: MessageEvent) {
 		} else if (data.kind === 'raw') {
 			rawPatcher.unregisterPatches(data.patches);
 		}
+		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
+		break;
+	}
+	case 'register-fs': {
+		fsChannel = data.channel;
+		fsChannel.onmessage = () => void 0; //Does nothing but is required for it to work
 		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
 		break;
 	}

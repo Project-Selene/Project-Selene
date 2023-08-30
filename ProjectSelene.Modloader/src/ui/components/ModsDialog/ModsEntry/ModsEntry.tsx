@@ -47,7 +47,7 @@ export function ModsEntry(props: {
 		}
 	});
 
-	return <Card>
+	return <Card key={props.id}>
 		<CardContent>
 			<Stack direction="row" spacing={2}>
 				<Stack direction="column" justifyContent="center" alignItems="center" spacing={1}>

@@ -4,7 +4,7 @@ import React from 'react';
 
 export function Character() {
 	return <>
-		<img src="juno.png" className="character"></img>
-		<img src="halo.png" className="halo"></img>
+		<img src="static/images/juno.png" className="character"></img>
+		<img src="static/images/halo.png" className="halo"></img>
 	</>;
 }

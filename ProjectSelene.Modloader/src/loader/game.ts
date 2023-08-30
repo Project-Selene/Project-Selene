@@ -25,6 +25,9 @@ export class Game {
 	private selectedGame = 0;
 	private nextId = 0;
 
+	private readonly mountedGames = new Set<number>();
+	private readonly mountedMods = new Set<string>();
+
 	constructor (
 		private readonly filesystem: Filesystem,
 	) { 
@@ -97,7 +100,22 @@ export class Game {
 			if (await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
 				await selectedGameInfo.handle.requestPermission({mode: 'read'});
 			}
+
+			if (this.mountedGames.has(id)) {
+				return true;
+			}
+			this.mountedGames.add(id);
+			
 			await this.filesystem.mountDirectoryHandle('/fs/internal/game/' + id + '/', selectedGameInfo.handle);
+			
+			return true;
+		} else if (selectedGameInfo.type === 'fs') {
+			if (this.mountedGames.has(id)) {
+				return true;
+			}
+			this.mountedGames.add(id);
+
+			await this.filesystem.mountDirectoryFS('/fs/internal/game/' + id + '/', selectedGameInfo.path);
 
 			return true;
 		}
@@ -184,7 +202,11 @@ export class Game {
 				if (!mod.isDir && mod.name.endsWith('.mod.zip')) {
 					const internalName = modId;
 					modId++;
-					await this.filesystem.mountZip('/fs/internal/mods/' + internalName + '/', '/fs/internal/game/' + gameId + '/mods/' + mod.name);
+
+					if (!this.mountedMods.has('/fs/internal/mods/' + internalName + '/')) {
+						await this.filesystem.mountZip('/fs/internal/mods/' + internalName + '/', '/fs/internal/game/' + gameId + '/mods/' + mod.name);
+						this.mountedMods.add('/fs/internal/mods/' + internalName + '/');
+					}
 	
 					try {
 						const manifestText = await this.filesystem.readFile('/fs/internal/mods/' + internalName + '/manifest.json');

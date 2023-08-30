@@ -5,13 +5,12 @@ import { startUI } from './ui/ui';
 if (process.env.NODE_ENV === 'development') {
 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
-	import('../public/index.html'); import('../public/manifest.json'); import('../public/favicon.ico'); import('../public/logo192.png'); import('../public/logo512.png'); import('../public/halo.png'); import('../public/juno.png'); import('../public/full_moon.svg');
+	import('../public/index.html'); import('../public/manifest.json'); import('../public/favicon.ico'); import('../public/static/images/halo.png'); import('../public/static/images/juno.png'); import('../public/static/images/full_moon.svg');
 	new EventSource('/esbuild').addEventListener('change', () => location.reload());
 }
 
 console.log(root);
-new Filesystem().setup();
-startUI();
+new Filesystem().setup().then(() => startUI());
 
 
 //directory allowdirs webkitdirectory

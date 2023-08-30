@@ -1,5 +1,7 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
 using ProjectSelene.Services;
@@ -83,6 +85,11 @@ using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>(
         //context.Database.EnsureCreated();
         await context.Database.MigrateAsync();
     }
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseStaticFiles();
 }
 
 app.UseCors(localCorsPolicyName);

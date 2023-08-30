@@ -114,6 +114,10 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 })()));
 
 async function fromNetworkOrCached(request: Request) {
+	if (request.url.startsWith('chrome-extension')) {
+		return fetch(request);
+	}
+	
 	if (!navigator.onLine) {
 		const cached = await caches.match(request);
 		if (cached) {

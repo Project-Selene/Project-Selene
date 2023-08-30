@@ -1,4 +1,12 @@
-import * as ts from 'typescript';
+import type * as tsType from 'typescript';
+
+if (window.process) {
+	Object.assign(window.process, {
+		browser: true,
+	});
+}
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ts: typeof tsType = require('typescript');
 
 export function transform(content: string, prefix: string) {
 	const injectedSourceFile = ts.createSourceFile('prefix.raw.mjs', prefix, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
@@ -8,7 +16,7 @@ export function transform(content: string, prefix: string) {
 		transformers: {
 			before: [
 				((ctx) => {
-					function transform(node: ts.Node): ts.Node {
+					function transform(node: tsType.Node): tsType.Node {
 						const result = ts.visitEachChild(node, transform, ctx);
 		
 						if (ts.isClassExpression(result)) {
@@ -22,7 +30,7 @@ export function transform(content: string, prefix: string) {
 												ts.factory.updateClassExpression(
 													result,
 													result.modifiers,
-													undefined as ts.Identifier | undefined,
+													undefined as tsType.Identifier | undefined,
 													result.typeParameters,
 													result.heritageClauses,
 													result.members,
@@ -38,7 +46,7 @@ export function transform(content: string, prefix: string) {
 									ts.factory.updateClassExpression(
 										result,
 										result.modifiers,
-										undefined as ts.Identifier | undefined,
+										undefined as tsType.Identifier | undefined,
 										result.typeParameters,
 										result.heritageClauses,
 										result.members,
@@ -83,9 +91,9 @@ export function transform(content: string, prefix: string) {
 													ts.factory.createPropertyAssignment(
 														result.name.text,
 														ts.factory.createFunctionExpression(
-															result.modifiers as unknown as ts.Modifier[],
+															result.modifiers as unknown as tsType.Modifier[],
 															result.asteriskToken,
-															undefined as ts.Identifier | undefined,
+															undefined as tsType.Identifier | undefined,
 															result.typeParameters,
 															result.parameters,
 															result.type,
@@ -102,9 +110,9 @@ export function transform(content: string, prefix: string) {
 								return ts.factory.createExpressionStatement(ts.factory.createCallExpression(ts.factory.createIdentifier('__injectFunction'), undefined, [
 									ts.factory.createVoidZero(),
 									ts.factory.createFunctionExpression(
-										result.modifiers as unknown as ts.Modifier[],
+										result.modifiers as unknown as tsType.Modifier[],
 										result.asteriskToken,
-										undefined as ts.Identifier | undefined,
+										undefined as tsType.Identifier | undefined,
 										result.typeParameters,
 										result.parameters,
 										result.type,
@@ -315,7 +323,7 @@ export function transform(content: string, prefix: string) {
 						}
 						return result;
 					};
-				}) as ts.TransformerFactory<ts.SourceFile>,
+				}) as tsType.TransformerFactory<tsType.SourceFile>,
 			],
 		},
 		compilerOptions: {
@@ -327,7 +335,7 @@ export function transform(content: string, prefix: string) {
 	}).outputText;
 }
 
-function hookBlock(block: ts.Block) {
+function hookBlock(block: tsType.Block) {
 	const body = [...block.statements];
 	for (let j = 0; j < body.length; j++) {
 		const stmt = body[j];

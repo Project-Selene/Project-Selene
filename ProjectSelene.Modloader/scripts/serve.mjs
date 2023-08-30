@@ -21,9 +21,15 @@ const context = await esbuild.context(
 		bundle: true,
 		sourcemap: true,
 		logLevel: 'info',
+		platform: 'node',
+		format: 'esm',
 		plugins: [
 			sassPlugin(),
 		],
+		define: {
+			'window.DEBUG': 'true',
+			'__filename': '"some.js"',
+		},
 	})
 	.catch(() => process.exit(1));
 

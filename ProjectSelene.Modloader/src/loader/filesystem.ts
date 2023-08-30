@@ -53,6 +53,10 @@ export class Filesystem {
 		console.log('mounted directory', mount);
 		await this.worker.registerDirectoryHandle(mount, dir);
 	}
+	public async mountDirectoryFS(mount: string, dir: string) {
+		console.log('mounted directory', mount);
+		await this.worker.registerDirectoryFS(mount, dir);
+	}
 	public async mountFileList(mount: string, files: FileList) {
 		console.log('mounted files', mount);
 		await this.worker.registerGameDirectoryOnDemand(mount, files);

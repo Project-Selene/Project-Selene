@@ -8,7 +8,8 @@ import { prepareWindow } from './window';
 export class Loader {
 	private prefix = '';
 	private devModIteration = 0;
-	
+	private dev = false;
+
 	constructor(
 		private readonly filesystem: Filesystem,
 		private readonly game: Game,
@@ -16,7 +17,9 @@ export class Loader {
 		this.filesystem.readFile('/static/js/prefix.js').then(prefix => this.prefix = prefix);
 	}
 
-	public async play() {
+	public async play(dev: boolean) {
+		this.dev = dev;
+
 		const id = this.game.getSelectedGame();
 		await this.game.mountGame();
 
@@ -29,7 +32,9 @@ export class Loader {
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
 		await this.filesystem.writeFile('/fs/game/terra/dist/bundle.js', injected);
 
-		await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
+		if (dev) {
+			await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
+		}
 		
 		const mods = await this.game.getMods();
 		for (const mod of mods.mods) {
@@ -64,12 +69,15 @@ export class Loader {
 				await this.loadMod(mod);
 			}
 		}
-		await this.loadDevMod();
+		
+		if (this.dev) {
+			await this.loadDevMod();
+		}
 	}
 	
 	async loadMod(mod: Mod) {
 		try {
-			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches, true);
+			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches ?? [], true);
 			const src = `/fs/mods/${mod.internalName}/main.js`;
 			const imported = await import(src);
 			imported.default(new ModHandler(mod));
