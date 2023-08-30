@@ -7,7 +7,7 @@ declare global {
 }
 
 export class ModDB {
-	private static url = window.DEBUG ? 'https://localhost:7086' : (location.protocol + '//' + location.host + '/');
+	private static url = window.DEBUG ? 'https://localhost:7086' : 'https://localhost:7086'; //TODO: real url
 	public async modList(): Promise<ModInfo[]> {
 		return (await (await fetch(ModDB.url + '/mod/list')).json()).entries;
 	}

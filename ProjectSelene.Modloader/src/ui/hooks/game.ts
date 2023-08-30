@@ -7,6 +7,6 @@ export function usePlayLoading() {
 
 export function usePlay() {
 	return () => {
-		root.loader.play(false);
+		root.loader.play('DEV' in window && !!window.DEV);
 	};
 }

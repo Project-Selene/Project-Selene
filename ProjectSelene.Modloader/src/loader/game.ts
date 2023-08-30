@@ -290,6 +290,7 @@ export class Game {
 			const fs: typeof import('fs') = globalThis['require']('fs');
 			const path: typeof import('path') = globalThis['require']('path');
 
+			await fs.promises.mkdir(path.join(selectedGameInfo.path, 'mods'), { recursive: true });
 			const writable = fs.createWriteStream(path.join(selectedGameInfo.path, 'mods', name));
 			const reader = content.getReader();
 			for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {

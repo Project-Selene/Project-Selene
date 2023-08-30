@@ -14,7 +14,7 @@ export class Loader {
 		private readonly filesystem: Filesystem,
 		private readonly game: Game,
 	) {
-		this.filesystem.readFile('/static/js/prefix.js').then(prefix => this.prefix = prefix);
+		this.filesystem.readFile('static/js/prefix.js').then(prefix => this.prefix = prefix);
 	}
 
 	public async play(dev: boolean) {
@@ -79,7 +79,7 @@ export class Loader {
 		try {
 			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches ?? [], true);
 			const src = `/fs/mods/${mod.internalName}/main.js`;
-			const imported = await import(src);
+			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(new ModHandler(mod));
 		} catch(e) {
 			console.error('could not load mod', e);
@@ -121,7 +121,7 @@ export class Loader {
 			__projectSelene.devMod.hotreload = async () => {
 				console.log('Reloading development mod');
 
-				const imported = await import(src);
+				const imported = await import(/*webpackIgnore: true*/ src);
 				imported.unload?.();
 				handler.uninject();
 				await this.registerPatches(devModPath, mod.currentInfo.patches, false);
@@ -130,7 +130,7 @@ export class Loader {
 			};
 
 			this.registerPatches(devModPath, mod.currentInfo.patches, true);
-			const imported = await import(src);
+			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(handler);
 			__projectSelene.devMod.afterMain?.(handler);
 		} catch (e) {

@@ -15,8 +15,12 @@ const context = await esbuild.context(
 			'.svg': 'file',
 			'.json': 'file',
 			'.ico': 'file',
+			'.txt': 'file',
+			'.md': 'file',
+			'.esbuild.ts': 'js', //Workaround for https://github.com/evanw/esbuild/issues/3319
 		},
-		assetNames: '[name]',
+		assetNames: '[dir]/[name]',
+		outbase: './public/',
 		outdir: './build/',
 		bundle: true,
 		sourcemap: true,
@@ -29,6 +33,7 @@ const context = await esbuild.context(
 		define: {
 			'window.DEBUG': 'true',
 			'__filename': '"some.js"',
+			'process.env.NODE_ENV': '"development"',
 		},
 	})
 	.catch(() => process.exit(1));
