@@ -1,4 +1,4 @@
-import esbuild from 'esbuild-wasm';
+import esbuild from 'esbuild';
 import { sassPlugin } from 'esbuild-sass-plugin';
 import fs from 'fs';
 import snap from 'react-snap';
@@ -50,7 +50,9 @@ await context.dispose();
 
 console.log('running snap');
 
-await snap.run();
+await snap.run({
+	puppeteerArgs: ['--no-sandbox', '--disable-setuid-sandbox'],
+});
 
 await fs.promises.rm('build/project-selene.zip', { recursive: true, force: true });
 await fs.promises.rm('build/package.json');

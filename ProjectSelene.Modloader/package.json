@@ -56,7 +56,6 @@
     "@typescript-eslint/parser": "^5.48.0",
     "esbuild": "^0.19.2",
     "esbuild-sass-plugin": "^2.13.0",
-    "esbuild-wasm": "^0.19.2",
     "eslint": "^8.31.0",
     "eslint-plugin-react": "^7.31.11",
     "react-scripts": "^5.0.1",
