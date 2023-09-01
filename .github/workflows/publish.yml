@@ -22,6 +22,10 @@ jobs:
       with:
         dotnet-version: '7.0.400'
 
+    - name: Setup dependencies
+      run: npm ci
+      working-directory: ProjectSelene.Modloader
+
     - name: Build
       run: dotnet publish -c Release -f net6.0 -r linux-arm64 --self-contained false ./ProjectSelene/
       
