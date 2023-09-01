@@ -1,4 +1,4 @@
-import esbuild from 'esbuild';
+import esbuild from 'esbuild-wasm';
 import { sassPlugin } from 'esbuild-sass-plugin';
 import fs from 'fs';
 import snap from 'react-snap';
