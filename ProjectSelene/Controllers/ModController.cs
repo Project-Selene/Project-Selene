@@ -547,7 +547,7 @@ public class ModController : Controller
                 return this.NotFound(new { id, version });
             }
 
-            var v = mod.Versions.FirstOrDefault(v => v.Id == id);
+            var v = mod.Versions.FirstOrDefault(v => v.Version == version);
             if (v == null)
             {
                 return this.NotFound(new { id, version });

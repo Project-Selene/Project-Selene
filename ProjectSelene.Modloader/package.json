@@ -21,14 +21,9 @@
   },
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "build": "react-scripts build && npm run build:worker && npm run build:sw && npm run build:prefix",
-    "build:worker": "esbuild --bundle --target=es2018 --sourcemap --outfile=./build/static/js/worker.js ./src/worker/worker.ts",
-    "build:sw": "esbuild --bundle --target=es2018 --sourcemap --outfile=./build/serviceworker.js ./src/serviceworker/serviceworker.ts",
-    "build:prefix": "esbuild --bundle --target=es2018 --sourcemap --outfile=./build/static/js/prefix.js ./src/prefix/prefix.ts",
+    "build": "node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "postbuild": "react-snap"
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": [

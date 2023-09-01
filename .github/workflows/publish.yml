@@ -1,0 +1,61 @@
+name: Publish
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-main:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: npm
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.x'
+
+    - name: Build
+      run: dotnet publish -c Release -f net6.0 -r linux-arm64 --self-contained false ./ProjectSelene/
+      
+    - name: Create SSH key
+      run: |
+        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+    - name: Upload
+      run: rsync --delete -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene.pdb ProjectSelene/bin/Release/net6.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/
+
+    - name: Restart
+      run: ssh ${{ secrets.SSH_HOST }} "sudo /bin/systemctl restart selene"
+
+  publish-api:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: npm
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Setup dependencies
+      run: npm ci
+      working-directory: ProjectSelene.Modloader.API
+    
+    - name: Publish
+      run: npm publish
+      working-directory: ProjectSelene.Modloader.API
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      continue-on-error: true

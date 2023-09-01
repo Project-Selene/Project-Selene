@@ -91,7 +91,10 @@ export class Game {
 		if (!selectedGameInfo) {
 			await this.loadGames();
 			if (!this.games.has(this.selectedGame)) {
-				return false;
+				await this.openGame();
+				if (!this.games.has(this.selectedGame)) {
+					return false;
+				}
 			}
 			return this.mountGame();
 		}

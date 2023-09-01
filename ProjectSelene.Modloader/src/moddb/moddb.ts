@@ -7,8 +7,12 @@ declare global {
 }
 
 export class ModDB {
-	private static url = window.DEBUG ? 'https://localhost:7086' : 'https://localhost:7086'; //TODO: real url
+	private static url = window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
 	public async modList(): Promise<ModInfo[]> {
+		if (navigator.userAgent === 'ReactSnap') {
+			return [];
+		}
+
 		return (await (await fetch(ModDB.url + '/mod/list')).json()).entries;
 	}
 

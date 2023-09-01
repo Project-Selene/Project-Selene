@@ -43,11 +43,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<LoginService>();
-#if DEBUG
+//#if DEBUG
 builder.Services.AddSingleton<IStorageProviderService, FSStorageService>();
-#else
-builder.Services.AddSingleton<IStorageProviderService, AWSStorageService>();
-#endif
+//#else
+//builder.Services.AddSingleton<IStorageProviderService, AWSStorageService>();
+//#endif
 
 builder.Services.AddSingleton((_) => {
     var client = new HttpClient();
@@ -97,6 +97,8 @@ app.UseCors(localCorsPolicyName);
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
