@@ -53,6 +53,7 @@ jobs:
         node-version: 20.x
         cache: npm
         registry-url: 'https://registry.npmjs.org'
+        cache-dependency-path: ProjectSelene.Modloader.API/package-lock.json
 
     - name: Setup dependencies
       run: npm ci
