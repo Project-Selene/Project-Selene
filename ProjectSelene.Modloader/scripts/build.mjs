@@ -30,7 +30,7 @@ const context = await esbuild.context(
 		bundle: true,
 		minify: true,
 		sourcemap: true,
-		logLevel: 'verbose',
+		logLevel: 'info',
 		platform: 'node',
 		format: 'esm',
 		target: 'es2018',
@@ -47,6 +47,8 @@ const context = await esbuild.context(
 
 await context.rebuild();
 await context.dispose();
+
+console.log('running snap');
 
 await snap.run();
 
