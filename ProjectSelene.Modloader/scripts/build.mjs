@@ -30,7 +30,7 @@ const context = await esbuild.context(
 		bundle: true,
 		minify: true,
 		sourcemap: true,
-		logLevel: 'info',
+		logLevel: 'verbose',
 		platform: 'node',
 		format: 'esm',
 		target: 'es2018',
