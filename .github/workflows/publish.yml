@@ -36,7 +36,10 @@ jobs:
         echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
     - name: Upload
-      run: rsync --delete -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene.pdb ProjectSelene/bin/Release/net6.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/
+      run: rsync -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene.pdb ${{ secrets.SSH_HOST }}:/home/selene/
+
+    - name: Upload wwwroot
+      run: rsync --delete -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/wwwroot/
 
     - name: Restart
       run: ssh ${{ secrets.SSH_HOST }} "sudo /bin/systemctl restart selene"
