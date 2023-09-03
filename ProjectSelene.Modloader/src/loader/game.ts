@@ -85,13 +85,13 @@ export class Game {
 		};
 	}
 
-	public async mountGame(): Promise<boolean> {
+	public async mountGame(mode: FileSystemPermissionMode = 'read'): Promise<boolean> {
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {
 			await this.loadGames();
 			if (!this.games.has(this.selectedGame)) {
-				await this.openGame();
+				await this.openGame(mode);
 				if (!this.games.has(this.selectedGame)) {
 					return false;
 				}
@@ -100,8 +100,9 @@ export class Game {
 		}
 
 		if (selectedGameInfo.type === 'handle') {
+			//mountGame only needs read but may request more to avoid multiple popups
 			if (await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
-				await selectedGameInfo.handle.requestPermission({mode: 'read'});
+				await selectedGameInfo.handle.requestPermission({mode});
 			}
 
 			if (this.mountedGames.has(id)) {
@@ -126,11 +127,11 @@ export class Game {
 		return false;
 	}
 
-	public async openGame(): Promise<GamesInfo> {
+	public async openGame(mode: FileSystemPermissionMode = 'read'): Promise<GamesInfo> {
 		if (globalThis['require']) {
 			throw new Error('Not implemented yet');
 		} else {
-			const handle = await globalThis.showDirectoryPicker({ id: 'game' });
+			const handle = await globalThis.showDirectoryPicker({ id: 'game', mode });
 
 			for (const game of this.games.values()) {
 				if (game.type === 'handle' && await game.handle.isSameEntry(handle)) {
@@ -162,7 +163,7 @@ export class Game {
 
 			
 			if (await handle.queryPermission({mode: 'read'}) !== 'granted') {
-				await handle.requestPermission({mode: 'read'});
+				await handle.requestPermission({mode});
 			}
 			await this.filesystem.mountDirectoryHandle('/fs/internal/game/' + gameHandles.selectedGame + '/', handle);
 
@@ -235,10 +236,11 @@ export class Game {
 	}
 
 	public async deleteMod(filename: string) {
+		await this.mountGame('readwrite');
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {
-			throw new Error('Game must be opened before deleting a mod');
+			throw new Error('Game must be opened before installing a mod');
 		}
 
 		if (selectedGameInfo.type === 'handle') {
@@ -266,6 +268,7 @@ export class Game {
 	}
 
 	public async installMod(name: string, content: ReadableStream<Uint8Array>) {
+		await this.mountGame('readwrite');
 		const id = this.selectedGame;
 		const selectedGameInfo = this.games.get(id);
 		if (!selectedGameInfo) {

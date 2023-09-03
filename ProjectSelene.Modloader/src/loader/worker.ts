@@ -17,9 +17,6 @@ export class Worker {
 	async setup() {
 		if (window.navigator.serviceWorker) {
 			await navigator.serviceWorker.register('serviceworker.js');
-
-			//Cache the prefix as it is the only resource we need to start the game.
-			fetch('static/js/prefix.js').catch(() => undefined);
     
 			const workers: MessagePort[] = [];
 			for (let i = 0; i < numberOfWorkers; i++) {

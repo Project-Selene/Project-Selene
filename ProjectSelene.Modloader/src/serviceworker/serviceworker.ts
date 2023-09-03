@@ -23,6 +23,8 @@ workerBroadcast.addEventListener('message', event => {
 });
 
 self.addEventListener('install', event => event.waitUntil((async () => {
+	caches.open('selene-loader')
+		.then(cache => cache.add('static/js/prefix.js'));
 	await self.skipWaiting();
 })()));
 
