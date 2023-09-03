@@ -6,7 +6,6 @@ import { transform } from './transformer';
 import { prepareWindow } from './window';
 
 export class Loader {
-	private prefix = '';
 	private devModIteration = 0;
 	private dev = false;
 
@@ -14,7 +13,6 @@ export class Loader {
 		private readonly filesystem: Filesystem,
 		private readonly game: Game,
 	) {
-		this.filesystem.readFile('static/js/prefix.js').then(prefix => this.prefix = prefix);
 	}
 
 	public async play(dev: boolean) {
@@ -22,9 +20,10 @@ export class Loader {
 
 		const id = this.game.getSelectedGame();
 		await this.game.mountGame();
+		const prefix = await this.filesystem.readFile('static/js/prefix.js');
 
 		const code = await this.filesystem.readFile('/fs/internal/game/' + id +  '/terra/dist/bundle.js');
-		const injected = transform(code, this.prefix);
+		const injected = transform(code, prefix);
 		
 		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id +  '/');
 		await this.filesystem.mountInMemory('/fs/saves/', 'save-data');
