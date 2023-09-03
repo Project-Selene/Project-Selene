@@ -58,6 +58,8 @@ export class Loader {
 
 	async hookGameStart(mods: Mods, ...args: unknown[]) {
 		console.log('ready', ...args);
+		//Stub out analytics
+		Object.getPrototypeOf(__projectSelene.classes.Analytics).prototype.isTrackingAllowed = () => false;
 		await this.loadMods(mods);
 		return __projectSelene.functions['startGame'](...args);
 	}

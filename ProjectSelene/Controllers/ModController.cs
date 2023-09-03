@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using ProjectSelene.DTOs;
 using ProjectSelene.Models;
 using ProjectSelene.Services;
+using System.Net.Mime;
 using System.Transactions;
 
 namespace ProjectSelene.Controllers;
@@ -12,11 +14,13 @@ public class ModController : Controller
 {
     private readonly SeleneDbContext context;
     private readonly LoginService loginService;
+    private readonly string cdn;
 
-    public ModController(SeleneDbContext context, LoginService loginService)
+    public ModController(SeleneDbContext context, LoginService loginService, IConfiguration configuration)
     {
         this.context = context;
         this.loginService = loginService;
+        this.cdn = configuration["Domains:CDN"] ?? "http://localhost";
     }
 
     [HttpGet("list")]
@@ -47,6 +51,7 @@ public class ModController : Controller
     }
 
     [HttpGet("details/{id}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(int))]
     public async Task<ActionResult<ModDetails>> GetModDetails([FromRoute] int id)
     {
         var mod = await this.context.Mods
@@ -77,6 +82,7 @@ public class ModController : Controller
     }
 
     [HttpGet("details/{id}/{version}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
     public async Task<ActionResult<VersionDetails>> GetVersionDetails([FromRoute] int id, [FromRoute] string version)
     {
         var mod = await this.context.Mods
@@ -112,31 +118,15 @@ public class ModController : Controller
         return this.Ok(new VersionDetails(v));
     }
 
-    [HttpGet("download/{id}")]
-    public async Task<IActionResult> Download([FromRoute] int id)
-    {
-        var url = await this.context.Mods
-            .AsNoTracking()
-            .Where(mod => mod.Id == id)
-            .Select(mod => mod.Versions.FirstOrDefault(v => v.VerifiedBy != null)!)
-            .Where(v => v != null)
-            .Select(version => version!.Artifacts.First())
-            .Select(artifact => artifact.Url)
-            .SingleOrDefaultAsync();
-            
-        if (url == null)
-        {
-            return this.NotFound(id);
-        }
-
-        return this.Redirect(url);
-    }
-
     [HttpGet("download/{id}/{version}")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
     public async Task<IActionResult> Download([FromRoute] int id, [FromRoute] string version)
     {
         var url = (await this.context.Mods
             .AsNoTracking()
+            .Include(m => m.Versions)
+            .ThenInclude(v => v.Artifacts)
             .Where(mod => mod.Id == id)
             .Select(mod => mod.Versions.First(v => v.Version == version && v.VerifiedBy != null))
             .Where(v => v != null)
@@ -147,37 +137,20 @@ public class ModController : Controller
 
         if (url == null)
         {
-            return this.NotFound(new { id, version });
+            return this.NotFound(new VersionResult(id, version));
         }
 
         return this.Redirect(url);
     }
 
-
-    [HttpGet("download/{id}/{version}/{artifact}")]
-    public async Task<IActionResult> Download([FromRoute] int id, [FromRoute] string version, [FromRoute] int artifact)
-    {
-        var url = (await this.context.Mods
-            .AsNoTracking()
-            .Where(mod => mod.Id == id)
-            .Select(mod => mod.Versions.First(v => v.Version == version && v.VerifiedBy != null))
-            .Where(v => v != null)
-            .ToListAsync())
-            .Select(version => version!.Artifacts.ElementAtOrDefault(artifact))
-            .Where(artifact => artifact != null)
-            .Select(artifact => artifact!.Url)
-            .SingleOrDefault();
-
-        if (url == null)
-        {
-            return this.NotFound(new { id, version, artifact });
-        }
-
-        return this.Redirect(url);
-    }
 
     [HttpPost("create/version/{id}")]
-    public async Task<IActionResult> UploadVersion([FromBody]VersionUpload versionUpload, [FromRoute]int id)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(VersionResult))]
+    public async Task<ActionResult<VersionResult>> UploadVersion([FromBody]VersionUpload versionUpload, [FromRoute]int id)
     {
         if (!loginService.IsLoggedIn(HttpContext))
         {
@@ -208,13 +181,10 @@ public class ModController : Controller
                 return this.Conflict(new {id, version = versionUpload.Version});
             }
 
-            var objects = user.StoredObjects.Where(so => versionUpload.StoredObjects.Contains(so.Id)).ToList();
-            foreach (var so in versionUpload.StoredObjects)
+            var storedObject = user.StoredObjects.Where(so => versionUpload.StoredObject == so.Id).FirstOrDefault();
+            if (storedObject == null)
             {
-                if (!objects.Any(o => o.Id == so))
-                {
-                    return NotFound(new { id = so });
-                }
+                return NotFound(versionUpload.StoredObject);
             }
 
             mod.Versions.Add(new ModVersion()
@@ -222,14 +192,13 @@ public class ModController : Controller
                 Version = versionUpload.Version,
                 SubmittedOn = DateTime.Now,
                 SubmittedBy = user,
-                Artifacts = versionUpload.Artifacts.Select(url => new Artifact()
-                {
-                    Url = url
-                }).Concat(versionUpload.StoredObjects.Select(so => new Artifact()
-                {
-                    Url = Request.Scheme + "://" + Request.Host + "/storage/download/" + so, //TODO: better url
-                    StoredObject = objects.First(o => o.Id == so),
-                })).ToList()
+                Artifacts = new List<Artifact>() {
+                    new Artifact()
+                    {
+                        Url = this.cdn + "/storage/download/" + storedObject.Id,
+                        StoredObject = storedObject,
+                    },
+                },
             });
 
             await this.context.SaveChangesAsync();
@@ -241,11 +210,14 @@ public class ModController : Controller
             return this.BadRequest();
         }
 
-        return Ok(new { id, version = versionUpload.Version });
+        return new VersionResult(id, versionUpload.Version);
     }
 
     [HttpPost("create/new")]
-    public async Task<IActionResult> CreateNewMod([FromBody] CreateMod data)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(string))]
+    public async Task<ActionResult<IdResult>> CreateNewMod([FromBody] CreateMod data)
     {
         if (!loginService.IsLoggedIn(HttpContext))
         {
@@ -263,20 +235,9 @@ public class ModController : Controller
 
             using var transaction = await this.context.Database.BeginTransactionAsync();
 
-
             if (await this.context.Mods.AnyAsync(m => m.Info.Name == data.Name))
             {
-                return this.Conflict(new { name = data.Name });
-            }
-
-
-            var objects = user.StoredObjects.Where(so => data.StoredObjects.Contains(so.Id)).ToList();
-            foreach (var so in data.StoredObjects)
-            {
-                if (!objects.Any(o => o.Id == so))
-                {
-                    return NotFound(new { id = so });
-                }
+                return this.Conflict(data.Name);
             }
 
             var added = new Mod()
@@ -286,24 +247,8 @@ public class ModController : Controller
                     Name = data.Name,
                     Description = data.Description,
                 },
-                Versions = new List<ModVersion>()
-                {
-                    new ModVersion()
-                    {
-                        Version = data.Version,
-                        SubmittedOn = DateTime.Now,
-                        SubmittedBy = user,
-                Artifacts = data.Artifacts.Select(url => new Artifact()
-                {
-                    Url = url
-                }).Concat(data.StoredObjects.Select(so => new Artifact()
-                {
-                    Url = Request.Scheme + "://" + Request.Host + "/storage/download/" + so, //TODO: better url
-                    StoredObject = objects.First(o => o.Id == so),
-                })).ToList()
-
-                    }
-                }
+                Versions = new List<ModVersion>(),
+                Author = user,
             };
 
             user.Mods.Add(added);
@@ -312,8 +257,7 @@ public class ModController : Controller
 
             await this.context.SaveChangesAsync();
 
-
-            return Ok(new { id = added.Id, version = data.Version });
+            return new IdResult(added.Id);
         }
         catch
         {
@@ -323,7 +267,10 @@ public class ModController : Controller
     }
 
     [HttpPost("delete/{id}")]
-    public async Task<IActionResult> DeleteMod([FromRoute]int id)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IdResult))]
+    public async Task<ActionResult<IdResult>> DeleteMod([FromRoute]int id)
     {
         if (!this.loginService.IsLoggedIn(HttpContext))
         {
@@ -346,7 +293,7 @@ public class ModController : Controller
 
             if (mod == null)
             {
-                return this.NotFound(new { id });
+                return this.NotFound(new IdResult(id));
             }
 
             if (user.IsAdmin)
@@ -367,7 +314,7 @@ public class ModController : Controller
             }
 
             await this.context.SaveChangesAsync();
-            return this.Ok(new { id });
+            return this.Ok(new IdResult(id));
         }
         catch
         {
@@ -376,7 +323,10 @@ public class ModController : Controller
     }
 
     [HttpPost("delete/{id}/{version}")]
-    public async Task<IActionResult> DeleteVersion([FromRoute] int id, [FromRoute] string version)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
+    public async Task<ActionResult<VersionResult>> DeleteVersion([FromRoute] int id, [FromRoute] string version)
     {
         if (!this.loginService.IsLoggedIn(HttpContext))
         {
@@ -400,20 +350,20 @@ public class ModController : Controller
 
             if (mod == null)
             {
-                return this.NotFound(new { id, version });
+                return this.NotFound(new VersionResult(id, version));
             }
 
             var v = mod.Versions.FirstOrDefault(v => v.Id == id);
             if (v == null)
             {
-                return this.NotFound(new { id, version });
+                return this.NotFound(new VersionResult(id, version));
             }
 
             if (!user.IsAdmin && v.SubmittedBy != user)
             {
                 if (v.VerifiedBy == null)
                 {
-                    return this.NotFound(new { id, version }); //Pretend it doesn't exist
+                    return this.NotFound(new VersionResult(id, version)); //Pretend it doesn't exist
                 }
                 else
                 {
@@ -432,89 +382,7 @@ public class ModController : Controller
             }
 
             await this.context.SaveChangesAsync();
-            return this.Ok(new { id, version });
-        }
-        catch
-        {
-            return this.BadRequest();
-        }
-    }
-
-    [HttpPost("delete/{id}/{version}/{artifact}")]
-    public async Task<IActionResult> DeleteArtifact([FromRoute] int id, [FromRoute] string version, [FromRoute] int artifact)
-    {
-        if (!this.loginService.IsLoggedIn(HttpContext))
-        {
-            return this.StatusCode(403);
-        }
-
-        try
-        {
-            var user = await this.loginService.GetUser(HttpContext);
-            if (user == null)
-            {
-                return this.StatusCode(403);
-            }
-
-            var mod = !user.IsAdmin
-                ? user.Mods.FirstOrDefault(m => m.Id == id)
-                : await this.context.Mods
-                    .Include(m => m.Versions)
-                    .ThenInclude(v => v.VerifiedBy)
-                    .Include(m => m.Versions)
-                    .ThenInclude(v => v.Artifacts)
-                    .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (mod == null)
-            {
-                return this.NotFound(new { id, version, artifact });
-            }
-
-            var v = mod.Versions.FirstOrDefault(v => v.Id == id);
-            if (v == null)
-            {
-                return this.NotFound(new { id, version, artifact });
-            }
-
-            if (!user.IsAdmin && v.SubmittedBy != user)
-            {
-                if (v.VerifiedBy == null)
-                {
-                    return this.NotFound(new { id, version, artifact }); //Pretend it doesn't exist
-                }
-                else
-                {
-                    return this.StatusCode(403);
-                }
-            }
-
-            var a = v.Artifacts.FirstOrDefault(a => a.Id == id);
-            if (a == null)
-            {
-                return this.NotFound(new { id, version, artifact });
-            }
-
-            if (v.Artifacts.Count == 1)
-            {
-                if (mod.Versions.Count() == 1)
-                {
-                    this.context.Mods.Remove(mod);
-                    await this.context.SaveChangesAsync();
-                    return this.Ok(new { id });
-                }
-                else
-                {
-                    mod.Versions.Remove(v);
-                    await this.context.SaveChangesAsync();
-                    return this.Ok(new { id, version });
-                }
-            }
-            else
-            {
-                v.Artifacts.Remove(a);
-                await this.context.SaveChangesAsync();
-                return this.Ok(new { id, version, artifact });
-            }
+            return new VersionResult(id, version);
         }
         catch
         {

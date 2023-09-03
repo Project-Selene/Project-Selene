@@ -1,5 +1,10 @@
 .home-button-group {
-    width: 20em;
+    width: 100%;
+}
+@media (min-width:900px) {
+    .home-button-group {
+        width: 20em;
+    }
 }
 .home-button {
     background-color: #66F;

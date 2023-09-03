@@ -10,7 +10,7 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\build</BuildOutputFolder>
     <BuildCommand>npm run build</BuildCommand>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(OS)' == 'Unix' " >
-	  <FrameworkPathOverride>/usr/local/share/dotnet/shared/Microsoft.NETCore.App/7.0.10/mscorlib.dll</FrameworkPathOverride>
+  <PropertyGroup Condition=" '$(OS)' == 'Unix' ">
+    <FrameworkPathOverride>/usr/local/share/dotnet/shared/Microsoft.NETCore.App/7.0.10/mscorlib.dll</FrameworkPathOverride>
   </PropertyGroup>
 </Project>

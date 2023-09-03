@@ -275,14 +275,31 @@ export class Game {
 		if (selectedGameInfo.type === 'handle') {
 			if (await selectedGameInfo.handle.queryPermission({mode: 'read'}) !== 'granted') {
 				if (await selectedGameInfo.handle.requestPermission({mode: 'readwrite'}) !== 'granted') {
-					throw new Error('Could not delete mod due to missing permissions');
+					throw new Error('Could not install mod due to missing permissions');
 				}
+			}
+
+			const entries = selectedGameInfo.handle.keys();
+			let found = false;
+			for await (const entry of entries) {
+				if (entry === 'mods') {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				if (await selectedGameInfo.handle.queryPermission({mode: 'readwrite'}) !== 'granted') {
+					if (await selectedGameInfo.handle.requestPermission({mode: 'readwrite'}) !== 'granted') {
+						throw new Error('Could not install mod due to missing permissions');
+					}
+				}
+				await selectedGameInfo.handle.getDirectoryHandle('mods', { create: true });
 			}
 
 			const mods = await selectedGameInfo.handle.getDirectoryHandle('mods');
 			if (await mods.queryPermission({mode: 'readwrite'}) !== 'granted') {
 				if (await mods.requestPermission({mode: 'readwrite'}) !== 'granted') {
-					throw new Error('Could not delete mod due to missing permissions');
+					throw new Error('Could not install mod due to missing permissions');
 				}
 			}
 			

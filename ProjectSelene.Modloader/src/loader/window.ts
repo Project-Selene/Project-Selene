@@ -32,6 +32,14 @@ const browserNW = {
 			},
 		}],
 	},
+	Window: {
+		get: () => ({
+			on: () => {return;},
+			close: () => window.close(),
+			enterFullscreen: () => document.body.requestFullscreen(),
+			leaveFullscreen: () => document.exitFullscreen(),
+		}),
+	},
 };
 
 const browserProcess = {

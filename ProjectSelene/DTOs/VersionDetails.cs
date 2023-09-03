@@ -7,11 +7,11 @@ public record VersionDetails(
     string SubmittedBy, 
     DateTime SubmittedOn, 
     bool Verified, 
-    IEnumerable<Artifact> Artifacts
+    Artifact Artifact
 )
 {
     public VersionDetails(ModVersion version)
-        : this(version.Version, version.SubmittedBy.GithubId.ToString(), version.SubmittedOn, version.VerifiedBy != null, version.Artifacts)
+        : this(version.Version, version.SubmittedBy.GithubId.ToString(), version.SubmittedOn, version.VerifiedBy != null, version.Artifacts.First())
     {
 
     }

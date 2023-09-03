@@ -10,10 +10,10 @@
 
     .full-moon {
         position: absolute;
-        bottom: -40vw;
-        left: 28vw;
-        width: 65vw;
-        height: 65vw;
+        bottom: -60vw;
+        left: -10vw;
+        width: 120vw;
+        height: 120vw;
     }
 
     .background-stars {
@@ -24,5 +24,16 @@
         right: 0;
 
         z-index: -200;
+    }
+}
+
+@media (min-width:900px) {
+    .background-body {
+        .full-moon {
+            bottom: -40vw;
+            left: 28vw;
+            width: 65vw;
+            height: 65vw;
+        }
     }
 }

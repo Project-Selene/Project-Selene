@@ -9,8 +9,8 @@ import { PlayButton } from './PlayButton/PlayButton';
 export function HomeButtons(props: {
 	onModsOpen: () => void
 }) {
-	return <div className="home-buttons ms-5">
-		<Stack direction="column" spacing={1} justifyContent="start" className="mt-3 home-buttons">
+	return <div className="home-buttons">
+		<Stack direction="column" spacing={1} justifyContent="start" className="mt-3">
 			<PlayButton />
 			<DownloadButton />
 			<ModsButton onModsOpen={props.onModsOpen} />

@@ -1,10 +1,8 @@
-using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
 using ProjectSelene.Services;
+using ProjectSelene.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-
+    c.SupportNonNullableReferenceTypes();
+    c.SchemaFilter<RequiredNotNullableSchemaFilter>();
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
         Name = "Authorization",

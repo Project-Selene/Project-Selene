@@ -1,4 +1,5 @@
 import { ModInfo } from '../state';
+import { ModService, OpenAPI } from './generated';
 
 declare global {
 	interface Window {
@@ -7,16 +8,19 @@ declare global {
 }
 
 export class ModDB {
-	private static url = window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
+	constructor() {
+		OpenAPI.BASE = window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
+	}
+	
 	public async modList(): Promise<ModInfo[]> {
 		if (navigator.userAgent === 'ReactSnap') {
 			return [];
 		}
 
-		return (await (await fetch(ModDB.url + '/mod/list')).json()).entries;
+		return (await ModService.getModList()).entries;
 	}
 
 	public async download(mod: ModInfo) {
-		return (await fetch(ModDB.url + '/mod/download/' + mod.id)).body;
+		return (await fetch(OpenAPI.BASE + '/mod/download/' + encodeURIComponent(mod.id) + '/' + encodeURIComponent(mod.version))).body;
 	}
 }

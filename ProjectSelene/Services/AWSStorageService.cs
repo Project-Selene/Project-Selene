@@ -1,4 +1,5 @@
-﻿using Amazon;
+﻿#if false
+using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -63,3 +64,4 @@ public class AWSStorageService : IStorageProviderService, IDisposable
 
     public void Dispose() => this.s3Client.Dispose();
 }
+#endif
