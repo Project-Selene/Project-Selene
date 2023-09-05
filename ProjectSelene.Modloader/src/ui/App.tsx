@@ -6,6 +6,8 @@ import React, { useState } from 'react';
 import { Background } from './components/Background/Background';
 import { Character } from './components/Character/Character';
 import { HomeButtons } from './components/HomeButtons/HomeButtons';
+import { InfoButton } from './components/InfoButton/InfoButton';
+import { InfoDialog } from './components/InfoDialog/InfoDialog';
 import { ModsDialog } from './components/ModsDialog/ModsDialog';
 import { Title } from './components/Title/Title';
 import { doAsync, doLoad } from './hooks/state';
@@ -29,6 +31,7 @@ export default function App() {
 	});
 
 	const [modsOpen, setModsOpen] = useState(false);
+	const [infoOpen, setInfoOpen] = useState(false);
 
 	return <ThemeProvider theme={theme}>
 		<div className="body">
@@ -37,6 +40,8 @@ export default function App() {
 			<Character />
 			<Background />
 			<ModsDialog open={modsOpen} onClose={() => setModsOpen(false)} />
+			<InfoDialog open={infoOpen} onClose={() => setInfoOpen(false)} />
+			<InfoButton onClick={() => setInfoOpen(true)} />
 		</div>
 	</ThemeProvider>;
 }
