@@ -16,6 +16,9 @@ export class Worker {
 
 	async setup() {
 		if (window.navigator.serviceWorker) {
+			if (navigator.serviceWorker.controller) {
+				await (await navigator.serviceWorker.ready).unregister();
+			}
 			await navigator.serviceWorker.register('serviceworker.js');
     
 			const workers: MessagePort[] = [];
