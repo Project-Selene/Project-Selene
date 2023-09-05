@@ -78,7 +78,8 @@ async function addFolderToZip(zip, folderPath, parentFolder = '') {
 }
 
 const zip = new JsZip();
-await addFolderToZip(zip, 'build/');
+await addFolderToZip(zip, 'build/', 'selene');
+zip.file('package.json', await fs.promises.readFile('./public/package.json'));
 const buffer = await zip.generateAsync({ type: 'nodebuffer' });
 await fs.promises.writeFile('build/project-selene.zip', buffer);
 
