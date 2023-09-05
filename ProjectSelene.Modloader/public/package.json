@@ -9,5 +9,8 @@
   "id" : "terraGame",
   "width": 1280,
   "height": 720
+ },
+ "icons": {
+  "256": "terra/page/img/favicon.png"
  }
 }
