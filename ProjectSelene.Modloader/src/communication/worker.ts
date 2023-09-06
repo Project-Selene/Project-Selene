@@ -1,0 +1,1 @@
+export const WORKER_COUNT = 1;

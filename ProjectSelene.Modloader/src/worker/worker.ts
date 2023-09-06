@@ -1,6 +1,8 @@
 /// <reference lib="WebWorker" />
 
 import * as idb from 'idb-keyval';
+import { BroadcastCommunication } from '../communication/broadcast';
+import { SingleCommunication } from '../communication/single';
 import { Patcher } from './patcher';
 import { PatcherJSON } from './patcher-json';
 import { PatcherRaw } from './patcher-raw';
@@ -11,14 +13,10 @@ import { StorageHttp } from './storage-http';
 import { StorageIndexedDB } from './storage-indexeddb';
 import { StorageLink } from './storage-link';
 import { StorageZip } from './storage-zip';
-import { WorkerMessage } from './worker-message';
+import { RegisterDir, RegisterFs, RegisterPatches, RequestData, UnregisterPatches } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
 export type { };
 declare const self: SharedWorkerGlobalScope;
-
-const store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
-const workerBroadcast = new BroadcastChannel('project-selene-worker-broadcast');
-workerBroadcast.addEventListener('message', handleMessage);
 
 const storages: Storage[] = [];
 const rawPatcher = new PatcherRaw(readFile);
@@ -26,138 +24,57 @@ const patchers: Patcher[] = [
 	rawPatcher,
 	new PatcherJSON(readFile),
 ];
-let fsChannel: MessagePort;
 
-async function handleMessage(event: MessageEvent) {
-	const data: WorkerMessage = event.data;
-	switch (data.type) {
-	case 'register-dir': {
-		if (data.kind === 'handle') {
-			const handle = await idb.get(data.handle, store);
-			if (!handle) {
-				workerBroadcast.postMessage({type: 'error', id: data.id} as WorkerMessage);
-				return;
-			}
-			storages.unshift(new StorageHandles(data.target, handle));
-		} else if (data.kind === 'indexed') {
-			storages.unshift(new StorageIndexedDB(data.target, data.key));
-		} else if (data.kind === 'zip') {
-			storages.unshift(new StorageZip(data.target, data.source, readFile));
-		} else if (data.kind === 'http') {
-			storages.unshift(new StorageHttp(data.target, data.source));
-		} else if (data.kind === 'link') {
-			const sourceStorage = storages.filter(s => data.source.startsWith(s.target))
-				.sort((a, b) => b.target.length - a.target.length)[0];
-			const sourcePath = data.source.substring(sourceStorage.target.length);
+const store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
+const workerBroadcast = new BroadcastCommunication('project-selene-worker-broadcast');
+let fsChannel: SingleCommunication;
+let swChannel: SingleCommunication;
 
-			storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
-		} else if (data.kind === 'fs') {
-			storages.unshift(new StorageFS(data.target, data.source, fsChannel));
-		} else {
-			throw new Error('Not implemented yet: ' + data.kind);
+workerBroadcast.on('register-dir', async (data: RegisterDir) => {
+	if (data.kind === 'handle') {
+		const handle = await idb.get(data.handle, store);
+		if (!handle) {
+			throw new Error('Could not find handle');
 		}
-		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
-		break;
+		storages.unshift(new StorageHandles(data.target, handle));
+	} else if (data.kind === 'indexed') {
+		storages.unshift(new StorageIndexedDB(data.target, data.key));
+	} else if (data.kind === 'zip') {
+		storages.unshift(new StorageZip(data.target, data.source, readFile));
+	} else if (data.kind === 'http') {
+		storages.unshift(new StorageHttp(data.target, data.source));
+	} else if (data.kind === 'link') {
+		const sourceStorage = storages.filter(s => data.source.startsWith(s.target))
+			.sort((a, b) => b.target.length - a.target.length)[0];
+		const sourcePath = data.source.substring(sourceStorage.target.length);
+
+		storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
+	} else if (data.kind === 'fs') {
+		storages.unshift(new StorageFS(data.target, data.source, fsChannel));
+	} else {
+		throw new Error('Not implemented yet: ' + data.kind);
 	}
-	case 'register-patches': {
-		if (data.kind === 'json') {
-			patchers[1].registerPatches(data.patches);
-		} else if (data.kind === 'raw') {
-			rawPatcher.registerPatches(data.patches);
-		}
-		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
-		break;
+});
+
+workerBroadcast.on('register-patches', (data: RegisterPatches) => {
+	if (data.kind === 'json') {
+		patchers[1].registerPatches(data.patches);
+	} else if (data.kind === 'raw') {
+		rawPatcher.registerPatches(data.patches);
 	}
-	case 'unregister-patches': {
-		if (data.kind === 'json') {
-			patchers[1].unregisterPatches(data.patches);
-		} else if (data.kind === 'raw') {
-			rawPatcher.unregisterPatches(data.patches);
-		}
-		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
-		break;
+});
+
+workerBroadcast.on('unregister-patches', (data: UnregisterPatches) => {
+	if (data.kind === 'json') {
+		patchers[1].unregisterPatches(data.patches);
+	} else if (data.kind === 'raw') {
+		rawPatcher.unregisterPatches(data.patches);
 	}
-	case 'register-fs': {
-		fsChannel = data.channel;
-		fsChannel.onmessage = () => void 0; //Does nothing but is required for it to work
-		workerBroadcast.postMessage({type: 'ok', id: data.id} as WorkerMessage);
-		break;
-	}
-	case 'fetch': {
-		const pathname = decodeURI(new URL(data.request.url).pathname);
-		let target: Storage | null = null;
-		for (const storage of storages) {
-			if (pathname.startsWith(storage.target)) {
-				if (!target || target.target.length < storage.target.length) {
-					target = storage;
-				}
-			}
-		}
-		console.log('handling: ', data.request.url, target);
-		if (target) {
-			const path = pathname.slice(target.target.length);
-			let result: boolean;
-			switch (data.request.headers['x-sw-command']) {
-			case 'writeFile': 
-				result = await target.writeFile(path, data.request.body, data.response);
-				break;
-			case 'readDir': 
-				result = await target.readDir(path, data.response);
-				break;
-			case 'isWritable':
-				result = await target.writeGranted(data.response);
-				break;
-			case 'stat':
-				result = await target.stat(path, data.response);
-				break;
-			default: {
-				result = await readFileWithPatches(pathname, target, path, data.response);
-				break;
-			}
-			}
-			
-			if (result) {
-				workerBroadcast.postMessage({
-					type: 'response',
-					id: data.id,
-					response: {
-						status: 200,
-						headers: {
-							'content-type': 'text/javascript',
-						},
-					},
-				} as WorkerMessage);
-			} else {
-				new Blob([], {type: 'text/plain'}).stream().pipeTo(data.response);
-				workerBroadcast.postMessage({
-					type: 'response',
-					id: data.id,
-					response: {
-						status: 404,
-					},
-				} as WorkerMessage);
-			}
-		} else {
-			const result = await readFileWithPatches(pathname, null, null, data.response);
-			if (result) {
-				workerBroadcast.postMessage({
-					type: 'response',
-					id: data.id,
-					response: {
-						status: 200,
-						headers: {
-							'content-type': 'text/javascript',
-						},
-					},
-				} as WorkerMessage);
-			}
-		}
-		break;
-	}
-	default:
-		break;
-	}
-}
+});
+
+workerBroadcast.on('register-fs', (data: RegisterFs) => {
+	fsChannel = new SingleCommunication(data.channel);
+});
 
 async function readFileWithPatches(pathname: string, target: Storage | null, path: string | null, response: WritableStream<Uint8Array>): Promise<boolean> {
 	const applicable = patchers.filter(p => p.hasPatch(pathname));
@@ -217,10 +134,71 @@ async function readFile(pathname: string) {
 self.addEventListener('connect', event => {
 	const port = event.ports[0];
 
-	port.addEventListener('message', handleMessage);
+	swChannel = new SingleCommunication(port);
 
-	port.addEventListener('messageerror', event => {
-		console.error('Error sending message to worker: ', event.data);
+	swChannel.on('fetch', async ({request, response}: {request: RequestData, response: WritableStream<Uint8Array>}): Promise<ResponseInit> => {
+		const pathname = decodeURI(new URL(request.url).pathname);
+		let target: Storage | null = null;
+		for (const storage of storages) {
+			if (pathname.startsWith(storage.target)) {
+				if (!target || target.target.length < storage.target.length) {
+					target = storage;
+				}
+			}
+		}
+		console.log('handling: ', request.url, target);
+		if (target) {
+			const path = pathname.slice(target.target.length);
+			let result: boolean;
+			switch (request.headers['x-sw-command']) {
+			case 'writeFile': 
+				result = await target.writeFile(path, request.body, response);
+				break;
+			case 'readDir': 
+				result = await target.readDir(path, response);
+				break;
+			case 'isWritable':
+				result = await target.writeGranted(response);
+				break;
+			case 'stat':
+				result = await target.stat(path, response);
+				break;
+			default: {
+				result = await readFileWithPatches(pathname, target, path, response);
+				break;
+			}
+			}
+			
+			if (result) {
+				return {
+					status: 200,
+					headers: {
+						'content-type': 'text/javascript',
+					},
+				};
+			} else {
+				new Blob([], {type: 'text/plain'}).stream().pipeTo(response);
+				return { 
+					status: 404,
+				} ;
+			}
+		} else {
+			const result = await readFileWithPatches(pathname, null, null, response);
+			if (result) {
+				return {
+					status: 200,
+					headers: {
+						'content-type': 'text/javascript',
+					},
+				};
+			}
+		}
+		return {
+			status: 500,
+			headers: {
+				'content-type': 'text/plain',
+			},
+		};
 	});
 
 	port.start();
