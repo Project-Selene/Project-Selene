@@ -42,14 +42,17 @@ self.addEventListener('install', event => event.waitUntil((async () => {
 })()));
 
 self.addEventListener('activate', event => event.waitUntil((async () => {
+	await install();
+	await self.clients.claim();
+})()));
+
+async function install() {
 	const ids = new Set(await idb.get('clients', store) as string[] ?? []);
 	const activeIds = (await self.clients.matchAll({type: 'window'})).filter(c => ids.has(c.id)).map(c => c.id);
-	console.warn('activating', activeIds);
 	await idb.set('clients', activeIds, store);
 	await coms.sendToClients('install', {}, activeIds);
-	await self.clients.claim();
-	console.warn('activated!');
-})()));
+}
+install().catch(err => console.error(err));
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
 	if (event.request.headers.get('Accept') === 'text/event-stream') {
