@@ -42,7 +42,6 @@ self.addEventListener('install', event => event.waitUntil((async () => {
 })()));
 
 self.addEventListener('activate', event => event.waitUntil((async () => {
-	console.warn('sw activate');
 	await install();
 	await self.clients.claim();
 })()));
@@ -54,7 +53,6 @@ async function install() {
 	await coms.sendToClients('install', {}, activeIds);
 }
 const installed = install().catch(err => console.error(err));
-console.warn('sw start');
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
 	await installed;
