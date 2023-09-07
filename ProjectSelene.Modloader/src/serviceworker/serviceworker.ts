@@ -53,10 +53,11 @@ async function install() {
 	await idb.set('clients', activeIds, store);
 	await coms.sendToClients('install', {}, activeIds);
 }
-install().catch(err => console.error(err));
+const installed = install().catch(err => console.error(err));
 console.warn('sw start');
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
+	await installed;
 	if (event.request.headers.get('Accept') === 'text/event-stream') {
 		return fetch(event.request);
 	}
