@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import * as fileApi from './lib/file-api';
-import { serve } from './lib/serve';
 
 test.beforeEach(async ({ page, browserName }) => {
 	await page.addInitScript(fileApi.mockFileApi(browserName));
-	await serve();
+	await page.addInitScript(async () => navigator.serviceWorker.controller ? await (await navigator.serviceWorker.ready).unregister() : true);
+	// await serve();
 
 });
 

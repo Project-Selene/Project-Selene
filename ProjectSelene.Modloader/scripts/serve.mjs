@@ -41,5 +41,5 @@ const context = await esbuild.context(
 context.watch();
 context.serve({
 	servedir: './build/',
-	port: 8080,
+	port: +(process.argv[2] ?? 8080),
 });

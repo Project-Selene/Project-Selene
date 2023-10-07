@@ -91,7 +91,15 @@ export class Loader {
 
 	async loadDevMod() {
 		try {
-			await fetch('http://localhost:8182/manifest.json'); //Check if mod exists
+			let found = false;
+			while (!found) {
+				try {
+					await fetch('http://localhost:8182/manifest.json'); //Check if mod exists
+					found = true;
+				} catch {
+					await new Promise(resolve => setTimeout(resolve, 5000));
+				}
+			}
 
 			const devModPath = '/fs/dev-mod/' + (this.devModIteration++) + '/';
 
@@ -123,7 +131,11 @@ export class Loader {
 				console.log('Reloading development mod');
 
 				const imported = await import(/*webpackIgnore: true*/ src);
-				imported.unload?.();
+				try {
+					imported.unload?.();
+				} catch (e) {
+					console.error(e);
+				}
 				handler.uninject();
 				await this.registerPatches(devModPath, mod.currentInfo.patches, false);
 
