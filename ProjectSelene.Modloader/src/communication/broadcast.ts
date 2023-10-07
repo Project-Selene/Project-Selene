@@ -8,6 +8,10 @@ export class BroadcastCommunication {
 		this.channel = new BroadcastChannel(name);
 		this.channel.onmessage = () => void 0; //Does nothing but is required for it to work
 		this.channel.addEventListener('message', (event) => {
+			if (event.origin !== location.origin) {
+				return;
+			}
+			
 			const data = event.data as { id: number; success: boolean; data: unknown; };
 
 			const queue = this.messageQueue.get(data.id);
@@ -52,6 +56,10 @@ export class BroadcastCommunication {
 
 	on<T>(type: string, handle: (arg: T) => unknown | PromiseLike<unknown>) {
 		this.channel.addEventListener('message', event => {
+			if (event.origin !== location.origin) {
+				return;
+			}
+			
 			const data = event.data as { id: number; type: string; data: unknown; };
 			if (data.type === type) {
 				Promise.resolve()

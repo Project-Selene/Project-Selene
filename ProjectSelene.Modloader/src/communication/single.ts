@@ -5,6 +5,10 @@ export class SingleCommunication {
 	constructor(private readonly messagePort: MessagePort) {
 		this.messagePort.onmessage = () => void 0; //Does nothing but is required for it to work
 		this.messagePort.addEventListener('message', (event) => {
+			if (event.origin !== location.origin) {
+				return;
+			}
+
 			const data = event.data as { id: number; success: boolean; data: unknown; };
 			if (data.success) {
 				this.resolveQueue.get(data.id)?.(data.data);
@@ -35,6 +39,10 @@ export class SingleCommunication {
 
 	on<T>(type: string, handle: (arg: T) => unknown | PromiseLike<unknown>) {
 		this.messagePort.addEventListener('message', event => {
+			if (event.origin !== location.origin) {
+				return;
+			}
+			
 			const data = event.data as { id: number; type: string; data: unknown; };
 			if (data.type === type) {
 				Promise.resolve()

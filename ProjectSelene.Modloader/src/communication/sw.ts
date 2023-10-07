@@ -8,6 +8,10 @@ export class SWCommunication {
 		if (!globalThis.self || !self.clients) {
 			navigator.serviceWorker.onmessage = () => void 0; //Does nothing but is required for it to work
 			navigator.serviceWorker.addEventListener('message', (event) => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+
 				const data = event.data as { id: number; success: boolean; data: unknown; };
 	
 				const queue = this.messageQueue.get(data.id);
@@ -23,6 +27,10 @@ export class SWCommunication {
 		} else {
 			self.onmessage = () => void 0; //Does nothing but is required for it to work
 			self.addEventListener('message', (event) => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+				
 				const data = event.data as { id: number; success: boolean; data: unknown; };
 	
 				const queue = this.messageQueue.get(data.id);
@@ -43,6 +51,10 @@ export class SWCommunication {
 				}
 			});
 			this.swResponse.onmessage = ((event: ExtendableMessageEvent) => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+				
 				const data = event.data as { id: number; success: boolean; data: unknown; };
 	
 				const queue = this.messageQueue.get(data.id);
@@ -121,6 +133,10 @@ export class SWCommunication {
 	on<T>(type: string, handle: (arg: T, sourceId: string) => unknown | PromiseLike<unknown>) {
 		if (!globalThis.self || !self.clients) {
 			navigator.serviceWorker.addEventListener('message', event => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+
 				const data = event.data as { id: number; type: string; data: unknown; };
 				if (data.type === type) {
 					Promise.resolve()
@@ -131,6 +147,10 @@ export class SWCommunication {
 			});
 		} else {
 			self.addEventListener('message', event => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+
 				if (!(event.source instanceof Client)) {
 					event.source?.postMessage({ id: event.data?.id, success: false, data: {sourceId: (event?.source as unknown as {id?: string})?.id, message: 'Can only process messages from clients'}  });
 					return;
