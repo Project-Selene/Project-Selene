@@ -28,7 +28,7 @@ jobs:
       working-directory: ProjectSelene.Modloader
 
     - name: Build
-      run: dotnet publish -c Release -f net6.0 -r linux-arm64 --self-contained false ./ProjectSelene/
+      run: dotnet publish -c Release -f net8.0 -r linux-arm64 --self-contained false ./ProjectSelene/
       
     - name: Create SSH key
       run: |
@@ -40,7 +40,7 @@ jobs:
       run: rsync -av ProjectSelene/bin/Release/net8.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net8.0/linux-arm64/publish/ProjectSelene.pdb ${{ secrets.SSH_HOST }}:/home/selene/
 
     - name: Upload wwwroot
-      run: rsync --delete -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/wwwroot/
+      run: rsync --delete -av ProjectSelene/bin/Release/net8.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/wwwroot/
 
     - name: Restart
       run: ssh ${{ secrets.SSH_HOST }} "sudo /bin/systemctl restart selene"
