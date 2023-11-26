@@ -137,12 +137,12 @@ export class Loader {
 					console.error(e);
 				}
 				handler.uninject();
-				await this.registerPatches(devModPath, mod.currentInfo.patches, false);
+				await this.registerPatches(devModPath, mod.currentInfo.patches ?? [], false);
 
 				this.loadDevMod();
 			};
 
-			this.registerPatches(devModPath, mod.currentInfo.patches, true);
+			this.registerPatches(devModPath, mod.currentInfo.patches ?? [], true);
 			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(handler);
 			__projectSelene.devMod.afterMain?.(handler);

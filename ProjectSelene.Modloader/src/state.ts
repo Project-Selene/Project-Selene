@@ -71,7 +71,7 @@ export interface ModInfo {
     name: string;
     description: string;
     version: string;
-    patches: ModPatch[];
+    patches?: ModPatch[];
 }
 
 export interface ModDetails {

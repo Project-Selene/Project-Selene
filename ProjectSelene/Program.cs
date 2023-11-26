@@ -52,7 +52,7 @@ builder.Services.AddSingleton((_) => {
     var client = new HttpClient();
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     client.DefaultRequestHeaders.UserAgent.Clear();
-    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue(builder.Configuration["github_client_name"])));
+    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(new ProductHeaderValue(builder.Configuration["github_client_name"] ?? "")));
     return client;
 });
 
@@ -70,7 +70,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: localCorsPolicyName,
                       policy =>
                       {
-                          policy.WithOrigins(builder.Configuration["Domains:UI"], builder.Configuration["Domains:API"], builder.Configuration["Domains:CDN"]);
+                          policy.WithOrigins(builder.Configuration["Domains:UI"] ?? "", builder.Configuration["Domains:API"] ?? "", builder.Configuration["Domains:CDN"] ?? "");
                       });
 });
 

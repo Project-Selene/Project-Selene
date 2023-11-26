@@ -21,7 +21,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0.400'
+        dotnet-version: '8.0.100'
 
     - name: Setup dependencies
       run: npm ci
@@ -37,7 +37,7 @@ jobs:
         echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
     - name: Upload
-      run: rsync -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net6.0/linux-arm64/publish/ProjectSelene.pdb ${{ secrets.SSH_HOST }}:/home/selene/
+      run: rsync -av ProjectSelene/bin/Release/net8.0/linux-arm64/publish/ProjectSelene ProjectSelene/bin/Release/net8.0/linux-arm64/publish/ProjectSelene.pdb ${{ secrets.SSH_HOST }}:/home/selene/
 
     - name: Upload wwwroot
       run: rsync --delete -av ProjectSelene/bin/Release/net6.0/linux-arm64/publish/wwwroot/ ${{ secrets.SSH_HOST }}:/home/selene/wwwroot/
