@@ -28,7 +28,7 @@ export class SingleCommunication {
 					data: message,
 					type,
 				},
-                transferables as Transferable[],
+                transferables.filter(t => t) as Transferable[],
 			);
 		});
 	}

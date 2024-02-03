@@ -41,11 +41,6 @@ self.addEventListener('install', event => event.waitUntil((async () => {
 	await self.skipWaiting();
 })()));
 
-self.addEventListener('activate', event => event.waitUntil((async () => {
-	await install();
-	await self.clients.claim();
-})()));
-
 async function install() {
 	const ids = new Set(await idb.get('clients', store) as string[] ?? []);
 	const activeIds = (await self.clients.matchAll({type: 'window'})).filter(c => ids.has(c.id)).map(c => c.id);
@@ -53,6 +48,11 @@ async function install() {
 	await coms.sendToClients('install', {}, activeIds);
 }
 const installed = install().catch(err => console.error(err));
+
+self.addEventListener('activate', event => event.waitUntil((async () => {
+    await installed;
+    await self.clients.claim();
+})()));
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
 	await installed;
@@ -84,7 +84,7 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 				response: stream.writable,
 			}, 
 			stream.writable,
-			...(event.request.body ? [event.request.body] : []),
+			event.request.body,
 			) as Promise<ResponseInit>;
 
 			return new Response(
