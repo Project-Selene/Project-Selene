@@ -1,47 +1,17 @@
 import './App.scss';
 
 import { ThemeProvider } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 
-import { Background } from './components/Background/Background';
-import { Character } from './components/Character/Character';
-import { HomeButtons } from './components/HomeButtons/HomeButtons';
-import { InfoButton } from './components/InfoButton/InfoButton';
-import { InfoDialog } from './components/InfoDialog/InfoDialog';
-import { ModsDialog } from './components/ModsDialog/ModsDialog';
-import { Title } from './components/Title/Title';
-import { doAsync, doLoad } from './hooks/state';
-import { root } from './state';
+import { Provider } from 'react-redux';
+import { TitleScreen } from './components/TitleScreen/TitleScreen';
+import { store } from './state/state.reducer';
 import { theme } from './theme';
 
 export default function App() {
-	doLoad(() => root.game.loadGames(), (state, value) => {
-		state.gamesInfo = value;
-	}, () => {
-		doAsync(async (state) => {
-			const mods = await root.game.tryGetMods();
-			if (mods) {
-				state.mods = { data: mods, loading: false, success: true };
-			}
-		});
-	});
-
-	doLoad(() => root.moddb.modList(), (state, value) => {
-		state.modDb.mods = value;
-	});
-
-	const [modsOpen, setModsOpen] = useState(false);
-	const [infoOpen, setInfoOpen] = useState(false);
-
-	return <ThemeProvider theme={theme}>
-		<div className="body">
-			<Title />
-			<HomeButtons onModsOpen={() => setModsOpen(true)} />
-			<Character />
-			<Background />
-			<ModsDialog open={modsOpen} onClose={() => setModsOpen(false)} />
-			<InfoDialog open={infoOpen} onClose={() => setInfoOpen(false)} />
-			<InfoButton onClick={() => setInfoOpen(true)} />
-		</div>
-	</ThemeProvider>;
+	return <Provider store={store}>
+		<ThemeProvider theme={theme}>
+			<TitleScreen />
+		</ThemeProvider>
+	</Provider>;
 }

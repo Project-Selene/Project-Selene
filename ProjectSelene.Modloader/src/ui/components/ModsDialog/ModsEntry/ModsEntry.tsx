@@ -3,16 +3,15 @@ import Delete from '@mui/icons-material/Delete';
 import Download from '@mui/icons-material/Download';
 import { Avatar, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import React from 'react';
-import { ModInfo } from '../../../../state';
-import { doLoad, useAppState } from '../../../hooks/state';
-import { root } from '../../../state';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, deleteMod, installMod, selectAvailableMod, selectInstalledMod, store } from '../../../state/state.reducer';
 
 export function ModsEntry(props: {
 	id: number
 }) {
-	const moddb = useAppState(state => state.modDb.mods.data?.find(m => m.id === props.id));
+	const moddb = useSelector((state: RootState) => selectAvailableMod(state, props.id));
 
-	const rawmod = useAppState(state => state.mods.data?.mods.find(m => m.currentInfo.id === props.id));
+	const rawmod = useSelector((state: RootState) => selectInstalledMod(state, props.id));
 	const mod = rawmod ?? {
 		enabled: false,
 		internalName: -(moddb?.id ?? Number.MAX_VALUE) + '',
@@ -29,23 +28,7 @@ export function ModsEntry(props: {
 	const isInstalled = !!rawmod;
 	const hasUpdate = !!moddb && moddb.version !== mod.currentInfo.version;
 
-	const deleteMod = () => doLoad(() => root.game.deleteMod(mod.filename), (state, value) => {
-		if (value.data) {
-			state.mods = value;
-		}
-	});
-
-	const installMod = () => doLoad(async () => {
-		const content = await root.moddb.download(moddb as ModInfo);
-		if (!content) {
-			return root.game.getMods();
-		}
-		return await root.game.installMod(mod.filename, content);
-	}, (state, value) => {
-		if (value.data) {
-			state.mods = value;
-		}
-	});
+	const dispatch = useDispatch<typeof store.dispatch>();
 
 	return <Card key={props.id}>
 		<CardContent>
@@ -65,10 +48,10 @@ export function ModsEntry(props: {
 									: <></>
 							}
 						</Typography>
-						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={installMod}>
+						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(installMod({ filename: mod.filename, id: moddb?.id ?? 0, version: moddb?.version ?? '' }))}>
 							<Download />
 						</Button>}
-						{isInstalled && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={deleteMod}>
+						{isInstalled && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(deleteMod(mod.filename))}>
 							<Delete />
 						</Button>}
 					</Stack>

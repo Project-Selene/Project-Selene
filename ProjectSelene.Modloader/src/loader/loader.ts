@@ -1,4 +1,5 @@
-import { Mod, ModPatch, Mods } from '../state';
+import { Mod, ModPatch } from '../ui/state/models/mod';
+import { Mods } from '../ui/state/state.models';
 import { Filesystem } from './filesystem';
 import { Game } from './game';
 import { ModInfo as ModHandler } from './mod-handler';
@@ -22,24 +23,24 @@ export class Loader {
 		await this.game.mountGame();
 		const prefix = await this.filesystem.readFile('static/js/prefix.js');
 
-		const code = await this.filesystem.readFile('/fs/internal/game/' + id +  '/terra/dist/bundle.js');
+		const code = await this.filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
 		const injected = transform(code, prefix);
-		
-		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id +  '/');
+
+		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id + '/');
 		await this.filesystem.mountInMemory('/fs/saves/', 'save-data');
-			
+
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
 		await this.filesystem.writeFile('/fs/game/terra/dist/bundle.js', injected);
 
 		if (dev) {
 			await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
 		}
-		
+
 		const mods = await this.game.getMods();
 		for (const mod of mods.mods) {
 			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + mod.internalName + '/');
 		}
-		
+
 		const entryPointResponse = await fetch('/fs/game/terra/index-release.html');
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(await entryPointResponse.text(), 'text/html');
@@ -48,12 +49,12 @@ export class Loader {
 		doc.head.prepend(base);
 
 		prepareWindow((...args: unknown[]) => this.hookGameStart(mods, ...args));
-			
+
 		document.open();
 		document.write(doc.documentElement.innerHTML);
 		document.close();
 	}
-	
+
 
 	async hookGameStart(mods: Mods, ...args: unknown[]) {
 		console.log('ready', ...args);
@@ -70,19 +71,19 @@ export class Loader {
 				await this.loadMod(mod);
 			}
 		}
-		
+
 		if (this.dev) {
 			await this.loadDevMod();
 		}
 	}
-	
+
 	async loadMod(mod: Mod) {
 		try {
 			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches ?? [], true);
 			const src = `/fs/mods/${mod.internalName}/main.js`;
 			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(new ModHandler(mod));
-		} catch(e) {
+		} catch (e) {
 			console.error('could not load mod', e);
 			return;
 		}
@@ -118,14 +119,14 @@ export class Loader {
 			const src = devModPath + 'main.js';
 
 			__projectSelene.devMod ??= {
-				async hotreload() {return;},
+				async hotreload() { return; },
 				registerPatches: (patches) => {
 					return this.registerPatches(devModPath, patches, true);
 				},
 				unregisterPatches: (patches) => {
 					return this.registerPatches(devModPath, patches, false);
 				},
-				
+
 			};
 			__projectSelene.devMod.hotreload = async () => {
 				console.log('Reloading development mod');
@@ -154,10 +155,10 @@ export class Loader {
 	private async registerPatches(base: string, patches: ModPatch[], register: boolean) {
 		const rawPatches = patches
 			.filter(p => p.type === 'raw')
-			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length)}));
+			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) }));
 		const jsonPatches = patches
 			.filter(p => p.type === 'json')
-			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch'}));
+			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch' }));
 
 		if (register) {
 			await Filesystem.worker.registerRawPatches(rawPatches);
