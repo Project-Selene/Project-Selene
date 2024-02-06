@@ -1,6 +1,12 @@
 import { Filesystem } from './loader/filesystem';
-import { debugSetState, store } from './ui/state/state.reducer';
+import { loadState, selectStoreWithoutUI, store } from './ui/state/state.reducer';
 import { startUI } from './ui/ui';
+
+const localStored = localStorage.getItem('store');
+if (localStored) {
+	store.dispatch(loadState(JSON.parse(localStored)));
+}
+store.subscribe(() => localStorage.setItem('store', JSON.stringify(selectStoreWithoutUI(store.getState()))));
 
 import('./import.esbuild.js').catch(() => {/* We don't actually want to run it */ });
 if (process.env.NODE_ENV === 'development') {
@@ -8,7 +14,7 @@ if (process.env.NODE_ENV === 'development') {
 	if (stored) {
 		const storeData = JSON.parse(stored);
 		if (storeData) {
-			store.dispatch(debugSetState(storeData));
+			store.dispatch(loadState(storeData));
 		}
 	}
 	sessionStorage.removeItem('store');

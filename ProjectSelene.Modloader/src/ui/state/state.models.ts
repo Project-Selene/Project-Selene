@@ -2,7 +2,7 @@ import { LoadingState } from './models/loading-state';
 import { Mod, ModDetails, ModInfo, VersionDetails } from './models/mod';
 
 export interface State {
-    gamesInfo: LoadingState<GamesInfo>;
+    gamesInfo: GamesInfo;
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
@@ -14,14 +14,24 @@ export interface UIState {
     modsOpen: boolean;
     modsTab: number;
     infoOpen: boolean;
+    playing: boolean;
 }
 
 export interface GamesInfo {
-    games: Array<{
-        id: number;
-    }>;
+    games: GameInfo[];
     selectedGame: number;
 }
+
+export type GameInfo = {
+    id: number;
+    type: 'handle';
+    loaded: boolean;
+} | {
+    id: number;
+    type: 'fs';
+    path: string;
+    loaded: boolean;
+};
 
 export interface Mods {
     mods: Mod[];

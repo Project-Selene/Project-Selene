@@ -1,5 +1,5 @@
 import { Mod, ModPatch } from '../ui/state/models/mod';
-import { Mods } from '../ui/state/state.models';
+import { GameInfo, Mods } from '../ui/state/state.models';
 import { Filesystem } from './filesystem';
 import { Game } from './game';
 import { ModInfo as ModHandler } from './mod-handler';
@@ -16,11 +16,13 @@ export class Loader {
 	) {
 	}
 
-	public async play(dev: boolean) {
+	public async play(game: GameInfo, dev: boolean) {
 		this.dev = dev;
 
-		const id = this.game.getSelectedGame();
-		await this.game.mountGame();
+		const id = game.id;
+		if (!await this.game.mountGame(game)) {
+			throw new Error('Could not mount game');
+		}
 		const prefix = await this.filesystem.readFile('static/js/prefix.js');
 
 		const code = await this.filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
@@ -36,9 +38,9 @@ export class Loader {
 			await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
 		}
 
-		const mods = await this.game.getMods();
+		const mods = await this.game.getMods(game);
 		for (const mod of mods.mods) {
-			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + mod.internalName + '/');
+			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + game.id + '/' + mod.internalName + '/');
 		}
 
 		const entryPointResponse = await fetch('/fs/game/terra/index-release.html');

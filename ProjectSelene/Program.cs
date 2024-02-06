@@ -70,7 +70,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: localCorsPolicyName,
                       policy =>
                       {
-                          policy.WithOrigins(builder.Configuration["Domains:UI"] ?? "", builder.Configuration["Domains:API"] ?? "", builder.Configuration["Domains:CDN"] ?? "");
+                          policy.WithOrigins((builder.Configuration.GetSection("Domains:UI").Get<List<string>>() ?? new()).Append(builder.Configuration["Domains:API"] ?? "").Append(builder.Configuration["Domains:CDN"] ?? "").ToArray());
                       });
 });
 
