@@ -8,7 +8,7 @@ export function HomeButton(props: {
 	title: string,
 	onClick?: () => void,
 	href?: string
-	actions?: [{ title: string, onClick: () => void }],
+	actions?: { title: string, onClick: () => void }[],
 	loading?: boolean,
 	disabled?: boolean,
 }) {
@@ -16,21 +16,23 @@ export function HomeButton(props: {
 	const anchorRef = React.useRef<HTMLDivElement>(null);
 
 	return <>
-		<Stack>
-			<ButtonGroup variant="outlined" ref={anchorRef} className="home-button-group">
-				<Button className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
-					{props.title}
-				</Button>
-				{
-					props.actions ?
+		<Stack className="home-button-group">
+			{
+				props.actions ?
+					<ButtonGroup variant="outlined" ref={anchorRef}>
+						<Button className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
+							{props.title}
+						</Button>
 						<Button className="home-button" size="small" onClick={() => setOpen(true)} disabled={props.loading || props.disabled}>
 							<ArrowDropDownIcon />
 						</Button>
-						: <></>
-				}
-
-			</ButtonGroup>
-			<Menu open={open} anchorEl={anchorRef.current}>
+					</ButtonGroup>
+					:
+					<Button variant="outlined" className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
+						{props.title}
+					</Button>
+			}
+			<Menu open={open} anchorEl={anchorRef.current} onClose={() => setOpen(false)}>
 				{
 					props.actions?.map((value, i) =>
 						<MenuItem key={i} onClick={value.onClick}>
