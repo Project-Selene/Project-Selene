@@ -8,7 +8,9 @@ if (localStored) {
 }
 store.subscribe(() => localStorage.setItem('store', JSON.stringify(selectStoreWithoutUI(store.getState()))));
 
-import('./import.esbuild.js').catch(() => {/* We don't actually want to run it */ });
+const glob = 'manifest.json';
+import('../public/' + glob); //Actually includes all files in public
+
 if (process.env.NODE_ENV === 'development') {
 	const stored = sessionStorage.getItem('store');
 	if (stored) {
