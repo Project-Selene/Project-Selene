@@ -1,16 +1,10 @@
-import * as idb from 'idb-keyval';
+import { Handles } from '../handles/handles';
 import { Mod } from '../ui/state/models/mod';
 import { GameInfo, GamesInfo, Mods } from '../ui/state/state.models';
 import { Filesystem } from './filesystem';
 
-const gameStore = idb.createStore('SeleneDb-gameHandles', 'gameHandles');
-
-interface StoredGamesInfo {
-	handles: Record<number, FileSystemDirectoryHandle>;
-}
-
 export class Game {
-	private info?: StoredGamesInfo;
+	private readonly gameHandles = new Handles();
 
 	private readonly mountedGames = new Set<number>();
 	private readonly mountedMods = new Map<number, Set<string>>();
@@ -20,18 +14,13 @@ export class Game {
 	) { }
 
 	public async loadGames(games: GamesInfo): Promise<GamesInfo> {
-		const gameHandles: StoredGamesInfo = await idb.get('index', gameStore) ?? { handles: {} };
-		this.info = gameHandles;
+		await this.gameHandles.load();
 
 		games = JSON.parse(JSON.stringify(games));
 
 		for (const game of games.games) {
 			if (game.type === 'handle') {
-				if (!gameHandles.handles[game.id]) {
-					game.loaded = false;
-				} else {
-					game.loaded = await gameHandles.handles[game.id].queryPermission({ mode: 'read' }) === 'granted';
-				}
+				game.loaded = await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted');
 			} else if (game.type === 'fs') {
 				game.loaded = 'require' in globalThis;
 			}
@@ -61,23 +50,17 @@ export class Game {
 
 	public async mountGame(game: GameInfo, mode: FileSystemPermissionMode = 'read'): Promise<boolean> {
 		if (game.type === 'handle') {
-			if (!this.info) {
-				this.info = await idb.get('index', gameStore) ?? { handles: {} };
-			}
-
-			let handle = this.info.handles[game.id];
+			let handle = await this.gameHandles.get(game.id);
 			if (!handle) {
 				await this.openGame(game.id, mode);
-				handle = this.info.handles[game.id];
+				handle = await this.gameHandles.get(game.id);
 				if (!handle) {
 					return false;
 				}
 			}
 
-			if (await handle.queryPermission({ mode }) !== 'granted') {
-				if (await handle.requestPermission({ mode }) !== 'granted') {
-					return false;
-				}
+			if (!await this.gameHandles.requestPermission(game.id, { mode })) {
+				return false;
 			}
 
 			if (this.mountedGames.has(game.id)) {
@@ -105,17 +88,10 @@ export class Game {
 		if (globalThis['require']) {
 			throw new Error('Not implemented yet');
 		} else {
-			if (!this.info) {
-				this.info = await idb.get('index', gameStore) ?? { handles: {} };
-			}
-
 			const handle = await globalThis.showDirectoryPicker({ id: 'game', mode });
-			this.info.handles[id] = handle;
-			await idb.set('index', this.info, gameStore);
 
-			if (await handle.queryPermission({ mode }) !== 'granted') {
-				await handle.requestPermission({ mode });
-			}
+			await this.gameHandles.set(id, handle);
+			await this.gameHandles.requestPermission(id, { mode });
 
 			await this.filesystem.mountDirectoryHandle('/fs/internal/game/' + id + '/', handle);
 			this.mountedGames.add(id);
@@ -129,12 +105,7 @@ export class Game {
 	}
 
 	public async tryGetMods(game: GameInfo): Promise<Mods | undefined> {
-		if (!this.info) {
-			this.info = await idb.get('index', gameStore) ?? { handles: {} };
-		}
-
-		const handle = this.info.handles[game.id];
-		if (game.type === 'handle' && await handle?.queryPermission({ mode: 'read' }) !== 'granted') {
+		if (game.type === 'handle' && !await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted')) {
 			return undefined;
 		}
 
@@ -196,7 +167,7 @@ export class Game {
 		}
 
 		if (game.type === 'handle') {
-			const handle = this.info?.handles[game.id];
+			const handle = await this.gameHandles.get(game.id);
 			if (!handle) {
 				throw new Error('Game must be opened before deleting a mod');
 			}
@@ -229,61 +200,14 @@ export class Game {
 			throw new Error('Game must be opened before installing a mod');
 		}
 		if (game.type === 'handle') {
-			const gameHandle = this.info?.handles[game.id];
+			const gameHandle = await this.gameHandles.getWithPermission(game.id, { mode: 'readwrite' });
 			if (!gameHandle) {
 				throw new Error('Game must be opened before deleting a mod');
 			}
-
-
-			if (await gameHandle.queryPermission({ mode: 'read' }) !== 'granted') {
-				if (await gameHandle.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-					throw new Error('Could not install mod due to missing permissions');
-				}
-			}
-
-			const entries = gameHandle.keys();
-			let found = false;
-			for await (const entry of entries) {
-				if (entry === 'mods') {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				if (await gameHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
-					if (await gameHandle.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-						throw new Error('Could not install mod due to missing permissions');
-					}
-				}
-				await gameHandle.getDirectoryHandle('mods', { create: true });
-			}
-
-			const mods = await gameHandle.getDirectoryHandle('mods');
-			if (await mods.queryPermission({ mode: 'readwrite' }) !== 'granted') {
-				if (await mods.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-					throw new Error('Could not install mod due to missing permissions');
-				}
-			}
-
-			const handle = await mods.getFileHandle(name, { create: true });
-			const writable = await handle.createWritable({ keepExistingData: false });
-			await content.pipeTo(writable);
-		} else if (game.type === 'fs') {
-			const fs: typeof import('fs') = globalThis['require']('fs');
-			const path: typeof import('path') = globalThis['require']('path');
-
-			await fs.promises.mkdir(path.join(game.path, 'mods'), { recursive: true });
-			const writable = fs.createWriteStream(path.join(game.path, 'mods', name));
-			const reader = content.getReader();
-			for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
-				writable.write(chunk.value);
-			}
-			writable.end();
-			await new Promise<void>((resolve, reject) => {
-				writable.on('finish', () => resolve());
-				writable.on('error', () => reject());
-			});
 		}
+
+		await this.filesystem.writeFile('/fs/internal/game/' + game.id + '/mods/' + name, content);
+
 		return this.getModsInternal(game.id);
 	}
 }

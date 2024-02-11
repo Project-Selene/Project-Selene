@@ -20,18 +20,20 @@ export class StorageFS {
 		}
 	}
 	public async readDir(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		const dir = await this.fs.promises.readdir(this.path.join(source, path), {withFileTypes: true, encoding: 'utf-8'});
-		const result = dir.map(f => ({isDir: f.isDirectory(), name: f.name}));
-		new Blob([JSON.stringify(result)], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
+		const dir = await this.fs.promises.readdir(this.path.join(source, path), { withFileTypes: true, encoding: 'utf-8' });
+		const result = dir.map(f => ({ isDir: f.isDirectory(), name: f.name }));
+		new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
 	public async writeGranted(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		new Blob(['{"state":"granted"}'], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
+		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
 	public async writeFile(target: string, source: string, path: string, response: WritableStream<Uint8Array>, content: ReadableStream<Uint8Array>): Promise<boolean> {
 		try {
-			const handle = await this.fs.promises.open(this.path.join(source, path), 'w');
+			const filePath = this.path.join(source, path);
+			await this.fs.promises.mkdir(this.path.dirname(filePath), { recursive: true });
+			const handle = await this.fs.promises.open(filePath, 'w');
 			const writer = handle.createWriteStream();
 			content.pipeTo(new WritableStream({
 				write(data) {
@@ -39,10 +41,10 @@ export class StorageFS {
 				},
 				close() {
 					writer.close();
-					new Blob(['{"success":true}'], {type: 'application/json'}).stream().pipeTo(response);
+					new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
 				},
 				abort() {
-					new Blob(['{"success":false}'], {type: 'application/json'}).stream().pipeTo(response);
+					new Blob(['{"success":false}'], { type: 'application/json' }).stream().pipeTo(response);
 				},
 			}));
 			return true;
@@ -50,11 +52,11 @@ export class StorageFS {
 			return false;
 		}
 	}
-	
+
 	public async stat(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
 			const stat = await this.fs.promises.stat(this.path.join(source, path));
-			new Blob([JSON.stringify(stat)], {type: 'application/json'}).stream().pipeTo(response);
+			new Blob([JSON.stringify(stat)], { type: 'application/json' }).stream().pipeTo(response);
 			return true;
 		} catch {
 			return false;

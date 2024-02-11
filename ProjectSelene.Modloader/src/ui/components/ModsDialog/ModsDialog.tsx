@@ -4,7 +4,7 @@ import Refresh from '@mui/icons-material/Refresh';
 import { Box, Button, Dialog, DialogContent, DialogTitle, Stack, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { changeModsTab, openDirectory, selectAvailableModIds, selectInstalledModIds, selectModsDialogOpen, selectModsInitialized, selectModsTab, setModsOpen, store } from '../../state/state.reducer';
+import { changeModsTab, loadMods, openDirectory, selectAvailableModIds, selectInstalledModIds, selectModsDialogOpen, selectModsInitialized, selectModsTab, setModsOpen, store } from '../../state/state.reducer';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
 export function ModsDialog() {
@@ -23,7 +23,7 @@ export function ModsDialog() {
 				<Stack direction="row" spacing={0.5}>
 					<TextField id="outlined-basic" label="Search..." variant="outlined" />
 					{modsInitialized
-						? <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Refresh />} onClick={() => dispatch(openDirectory())}>
+						? <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Refresh />} onClick={() => dispatch(loadMods())}>
 							Refresh
 						</Button>
 						: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />} onClick={() => dispatch(openDirectory())}>

@@ -1,5 +1,11 @@
 import { Worker } from './worker';
 
+declare global {
+	interface RequestInit {
+		duplex?: 'half';
+	}
+}
+
 export class Filesystem {
 	public static readonly worker = new Worker();
 	private readonly worker = Filesystem.worker;
@@ -12,17 +18,18 @@ export class Filesystem {
 		return await (await fetch(path)).text();
 	}
 
-	public async writeFile(path: string, content: string): Promise<boolean> {
+	public async writeFile(path: string, content: BodyInit): Promise<boolean> {
 		return (await (await fetch(path, {
 			method: 'POST',
 			body: content,
 			headers: {
 				'X-SW-Command': 'writeFile',
 			},
+			duplex: 'half',
 		})).json())?.success;
 	}
 
-	public async readDir(path: string): Promise<{name: string, isDir: boolean}[]> {
+	public async readDir(path: string): Promise<{ name: string, isDir: boolean }[]> {
 		return await (await fetch(path, {
 			method: 'GET',
 			headers: {
@@ -40,7 +47,7 @@ export class Filesystem {
 		})).json();
 	}
 
-	public async stat(path: string): Promise<{ctimeMs: number}> {
+	public async stat(path: string): Promise<{ ctimeMs: number }> {
 		return await (await fetch(path, {
 			method: 'GET',
 			headers: {
@@ -48,7 +55,7 @@ export class Filesystem {
 			},
 		})).json();
 	}
-	
+
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
 		console.log('mounted directory', mount);
 		await this.worker.registerDirectoryHandle(mount, dir);
