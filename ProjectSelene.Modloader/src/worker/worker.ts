@@ -81,8 +81,8 @@ async function readFileWithPatches(pathname: string, target: Storage | null, pat
 	if (applicable.length === 0) {
 		if (!target || !path) {
 			return false; //No patches and no target file
-		} 
-		
+		}
+
 		return await target.readFile(path, response); //No patches but we have a file
 	}
 
@@ -93,10 +93,10 @@ async function readFileWithPatches(pathname: string, target: Storage | null, pat
 		//Raw patch exists -> always use it even if we have a file
 		readable = rawPatcher.patchFile(pathname, null);
 	} else {
-		if (!target || !path) { 
+		if (!target || !path) {
 			return false; //We have patches but non of them are raw and we have no file
-		} 
-		
+		}
+
 		const transformer = new TransformStream();
 		const result = await target.readFile(path, transformer.writable);
 		if (!result) {
@@ -122,7 +122,7 @@ async function readFile(pathname: string) {
 
 			const path = pathname.slice(storage.target.length);
 			const result = await storage.readFile(path, str.writable);
-				
+
 			if (result) {
 				return str.readable;
 			}
@@ -136,7 +136,7 @@ self.addEventListener('connect', event => {
 
 	swChannel = new SingleCommunication(port);
 
-	swChannel.on('fetch', async ({request, response}: {request: RequestData, response: WritableStream<Uint8Array>}): Promise<ResponseInit> => {
+	swChannel.on('fetch', async ({ request, response }: { request: RequestData, response: WritableStream<Uint8Array> }): Promise<ResponseInit> => {
 		const pathname = decodeURI(new URL(request.url).pathname);
 		let target: Storage | null = null;
 		for (const storage of storages) {
@@ -151,24 +151,27 @@ self.addEventListener('connect', event => {
 			const path = pathname.slice(target.target.length);
 			let result: boolean;
 			switch (request.headers['x-sw-command']) {
-			case 'writeFile': 
-				result = await target.writeFile(path, request.body, response);
-				break;
-			case 'readDir': 
-				result = await target.readDir(path, response);
-				break;
-			case 'isWritable':
-				result = await target.writeGranted(response);
-				break;
-			case 'stat':
-				result = await target.stat(path, response);
-				break;
-			default: {
-				result = await readFileWithPatches(pathname, target, path, response);
-				break;
+				case 'writeFile':
+					result = await target.writeFile(path, request.body, response);
+					break;
+				case 'readDir':
+					result = await target.readDir(path, response);
+					break;
+				case 'isWritable':
+					result = await target.writeGranted(response);
+					break;
+				case 'stat':
+					result = await target.stat(path, response);
+					break;
+				case 'delete':
+					result = await target.delete(path, response);
+					break;
+				default: {
+					result = await readFileWithPatches(pathname, target, path, response);
+					break;
+				}
 			}
-			}
-			
+
 			if (result) {
 				return {
 					status: 200,
@@ -177,10 +180,10 @@ self.addEventListener('connect', event => {
 					},
 				};
 			} else {
-				new Blob([], {type: 'text/plain'}).stream().pipeTo(response);
-				return { 
+				new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				return {
 					status: 404,
-				} ;
+				};
 			}
 		} else {
 			const result = await readFileWithPatches(pathname, null, null, response);

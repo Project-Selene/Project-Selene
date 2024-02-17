@@ -166,44 +166,14 @@ export class Game {
 			throw new Error('Game must be opened before deleting a mod');
 		}
 
-		if (game.type === 'handle') {
-			const handle = await this.gameHandles.get(game.id);
-			if (!handle) {
-				throw new Error('Game must be opened before deleting a mod');
-			}
+		await this.filesystem.delete('/fs/internal/game/' + game.id + '/mods/' + filename);
 
-			if (await handle.queryPermission({ mode: 'read' }) !== 'granted') {
-				if (await handle.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-					throw new Error('Could not delete mod due to missing permissions');
-				}
-			}
-
-			const mods = await handle.getDirectoryHandle('mods');
-			if (await mods.queryPermission({ mode: 'readwrite' }) !== 'granted') {
-				if (await mods.requestPermission({ mode: 'readwrite' }) !== 'granted') {
-					throw new Error('Could not delete mod due to missing permissions');
-				}
-			}
-
-			await mods.removeEntry(filename);
-		} else if (game.type === 'fs') {
-			const fs: typeof import('fs') = globalThis['require']('fs');
-			const path: typeof import('path') = globalThis['require']('path');
-
-			await fs.promises.unlink(path.join(game.path, 'mods', filename));
-		}
 		return this.getModsInternal(game.id);
 	}
 
 	public async installMod(game: GameInfo, name: string, content: ReadableStream<Uint8Array>) {
 		if (!await this.mountGame(game, 'readwrite')) {
 			throw new Error('Game must be opened before installing a mod');
-		}
-		if (game.type === 'handle') {
-			const gameHandle = await this.gameHandles.getWithPermission(game.id, { mode: 'readwrite' });
-			if (!gameHandle) {
-				throw new Error('Game must be opened before deleting a mod');
-			}
 		}
 
 		await this.filesystem.writeFile('/fs/internal/game/' + game.id + '/mods/' + name, content);

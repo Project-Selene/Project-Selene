@@ -56,6 +56,15 @@ export class Filesystem {
 		})).json();
 	}
 
+	public async delete(path: string): Promise<boolean> {
+		return (await (await fetch(path, {
+			method: 'DELETE',
+			headers: {
+				'X-SW-Command': 'delete',
+			},
+		})).json())?.success;
+	}
+
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
 		console.log('mounted directory', mount);
 		await this.worker.registerDirectoryHandle(mount, dir);
