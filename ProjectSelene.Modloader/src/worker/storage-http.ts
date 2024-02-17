@@ -17,7 +17,7 @@ export class StorageHttp extends Storage {
 			console.error(e);
 			return false;
 		}
-		
+
 	}
 	public async readDir(): Promise<boolean> {
 		return false; //If this is ever needed we can implement it for dev mods
@@ -32,6 +32,10 @@ export class StorageHttp extends Storage {
 	}
 
 	public async writeFile(): Promise<boolean> {
+		return false;
+	}
+
+	public async delete(): Promise<boolean> {
 		return false;
 	}
 }

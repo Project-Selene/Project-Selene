@@ -30,7 +30,7 @@ export class Worker {
 	async setup() {
 		if (window.navigator.serviceWorker) {
 			await navigator.serviceWorker.register('serviceworker.js');
-    
+
 			const workers: MessagePort[] = [];
 			for (let i = 0; i < WORKER_COUNT; i++) {
 				const sharedWorker = new SharedWorker('static/js/worker.js', 'Project Selene Worker ' + (i + 1));
@@ -39,11 +39,11 @@ export class Worker {
 			}
 
 
-        
+
 			if (window['require']) {
 				for (const worker of workers) {
 					const fs = new StorageFS();
-	
+
 					const fsChannel = new MessageChannel();
 
 					const fsComs = new SingleCommunication(fsChannel.port1);
@@ -51,9 +51,10 @@ export class Worker {
 					fsComs.on('readDir', (args: FsMessage) => fs.readDir(args.target, args.source, args.path, args.response));
 					fsComs.on('writeFile', (args: FsMessageWrite) => fs.writeFile(args.target, args.source, args.path, args.response, args.content));
 					fsComs.on('stat', (args: FsMessage) => fs.stat(args.target, args.source, args.path, args.response));
-					
+					fsComs.on('delete', (args: FsMessage) => fs.delete(args.target, args.source, args.path, args.response));
 
-					await new SingleCommunication(worker).send('register-fs', {channel: fsChannel.port2}, fsChannel.port2);
+
+					await new SingleCommunication(worker).send('register-fs', { channel: fsChannel.port2 }, fsChannel.port2);
 				}
 			}
 			const reg = await navigator.serviceWorker.ready;
@@ -66,7 +67,7 @@ export class Worker {
 						sharedWorker.port.start();
 						workers.push(sharedWorker.port);
 					}
-				
+
 					await this.swChannel.sendToSW('workers', workers, ...workers);
 					await Promise.all(this.filters.map(f => this.swChannel.sendToSW('filter', f)));
 				});
@@ -86,7 +87,7 @@ export class Worker {
 			kind: 'handle',
 			handle: id,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -97,7 +98,7 @@ export class Worker {
 	}
 	public async registerGameDirectoryOnDemand(mount: string, files: FileList) {
 		const names = Array.from(files).map(f => f.webkitRelativePath.slice(f.webkitRelativePath.indexOf('/') + 1));
-		
+
 		for (const file of files) {
 			fileMap.set(mount + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1), file);
 		}
@@ -107,7 +108,7 @@ export class Worker {
 			kind: 'on-demand',
 			files: names,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -121,7 +122,7 @@ export class Worker {
 			kind: 'fs',
 			source: dir,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -135,7 +136,7 @@ export class Worker {
 			kind: 'indexed',
 			key,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -149,7 +150,7 @@ export class Worker {
 			kind: 'zip',
 			source,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -163,7 +164,7 @@ export class Worker {
 			kind: 'link',
 			source,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -177,7 +178,7 @@ export class Worker {
 			kind: 'http',
 			source,
 		} satisfies RegisterDir);
-		
+
 		const sw = (await navigator.serviceWorker.ready).active;
 		if (!sw) {
 			throw new Error('No serviceworker found');
@@ -187,18 +188,18 @@ export class Worker {
 	}
 
 	public async registerJSONPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+		target: string,
+		source: string,
+	}[]) {
 		await workerBroadcast.send('register-patches', {
 			kind: 'json',
 			patches,
 		} satisfies RegisterPatches);
 	}
 	public async unregisterJSONPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+		target: string,
+		source: string,
+	}[]) {
 		await workerBroadcast.send('unregister-patches', {
 			kind: 'json',
 			patches,
@@ -206,18 +207,18 @@ export class Worker {
 	}
 
 	public async registerRawPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+		target: string,
+		source: string,
+	}[]) {
 		await workerBroadcast.send('register-patches', {
 			kind: 'raw',
 			patches,
 		} satisfies RegisterPatches);
 	}
 	public async unregisterRawPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+		target: string,
+		source: string,
+	}[]) {
 		await workerBroadcast.send('unregister-patches', {
 			kind: 'raw',
 			patches,

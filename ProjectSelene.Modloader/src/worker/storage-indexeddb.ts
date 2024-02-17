@@ -4,13 +4,13 @@ import { Storage } from './storage';
 export class StorageIndexedDB extends Storage {
 	private readonly store: idb.UseStore;
 	public constructor(
-        public readonly target: string,
-        private readonly key: string,
+		public readonly target: string,
+		private readonly key: string,
 	) {
 		super();
 		this.store = idb.createStore('SeleneDb-worker-store-' + key, 'worker-store-' + key);
 	}
-	
+
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
 			const content: string | undefined = await idb.get('content_' + path, this.store);
@@ -18,7 +18,7 @@ export class StorageIndexedDB extends Storage {
 				return false;
 			}
 
-			new Blob([content], {type: 'text/plain'}).stream().pipeTo(response); //Do not wait here
+			new Blob([content], { type: 'text/plain' }).stream().pipeTo(response); //Do not wait here
 			return true;
 		} catch {
 			return false;
@@ -29,7 +29,7 @@ export class StorageIndexedDB extends Storage {
 		return true;
 	}
 	private async readDirAsync(path: string, response: WritableStream<Uint8Array>): Promise<void> {
-		const result: {name: string, isDir: boolean}[] = [];
+		const result: { name: string, isDir: boolean }[] = [];
 		try {
 			const keys = await idb.keys(this.store);
 			for (const key of keys) {
@@ -50,11 +50,11 @@ export class StorageIndexedDB extends Storage {
 				}
 			}
 		} finally {
-			new Blob([JSON.stringify(result)], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
+			new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		}
 	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
-		new Blob(['{"state":"granted"}'], {type: 'application/json'}).stream().pipeTo(response); //Do not wait here
+		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
 	public async writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
@@ -67,9 +67,9 @@ export class StorageIndexedDB extends Storage {
 			const time = new Date().getTime();
 			await idb.set('content_' + path, contentText, this.store);
 			await idb.set('ctimeMs_' + path, time, this.store);
-			await new Blob(['{"success":true}'], {type: 'application/json'}).stream().pipeTo(response);
+			await new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
 		} catch {
-			await new Blob(['{"success":false}'], {type: 'application/json'}).stream().pipeTo(response);
+			await new Blob(['{"success":false}'], { type: 'application/json' }).stream().pipeTo(response);
 		}
 	}
 
@@ -80,7 +80,32 @@ export class StorageIndexedDB extends Storage {
 				return false;
 			}
 
-			new Blob([JSON.stringify({ctimeMs})], {type: 'text/plain'}).stream().pipeTo(response); //Do not wait here
+			new Blob([JSON.stringify({ ctimeMs })], { type: 'text/plain' }).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	public async delete(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		this.deleteAsync(path, response);
+		return true;
+	}
+
+	private async deleteAsync(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const keys = await idb.keys(this.store);
+			for (const key of keys) {
+				const str = key.toString();
+				if (str.startsWith('content_' + path)) {
+					await idb.del(key, this.store);
+				}
+				if (str.startsWith('ctimeMs_' + path)) {
+					await idb.del(key, this.store);
+				}
+			}
+
+			new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
 			return true;
 		} catch {
 			return false;

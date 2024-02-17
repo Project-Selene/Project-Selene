@@ -62,4 +62,14 @@ export class StorageFS {
 			return false;
 		}
 	}
+
+	public async delete(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			await this.fs.promises.rm(this.path.join(source, path), { recursive: true });
+			new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 }

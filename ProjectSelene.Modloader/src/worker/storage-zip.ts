@@ -32,7 +32,7 @@ export class StorageZip extends Storage {
 			console.error(e);
 			return false;
 		}
-		
+
 	}
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
@@ -48,14 +48,14 @@ export class StorageZip extends Storage {
 			}
 
 			(async (zip: JSZip, response: WritableStream<Uint8Array>) => {
-				const result: {name: string, isDir: boolean}[] = [];
+				const result: { name: string, isDir: boolean }[] = [];
 				zip.forEach((name, file) => {
 					result.push({
 						name,
 						isDir: file.dir,
 					});
 				});
-				await new Blob([JSON.stringify(result)], {type: 'application/json'}).stream().pipeTo(response);
+				await new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response);
 			})(zip, response);
 			return true;
 		} catch (e) {
@@ -77,7 +77,7 @@ export class StorageZip extends Storage {
 				return false;
 			}
 
-			new Blob([JSON.stringify({ctimeMs: file.date.getTime()})], {type: 'application/json'}).stream().pipeTo(response);
+			new Blob([JSON.stringify({ ctimeMs: file.date.getTime() })], { type: 'application/json' }).stream().pipeTo(response);
 			return true;
 		} catch {
 			return false;
@@ -89,6 +89,10 @@ export class StorageZip extends Storage {
 	}
 
 	public async writeFile(): Promise<boolean> {
+		return false;
+	}
+
+	public async delete(): Promise<boolean> {
 		return false;
 	}
 }

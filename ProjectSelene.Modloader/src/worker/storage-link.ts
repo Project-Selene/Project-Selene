@@ -23,4 +23,7 @@ export class StorageLink extends Storage {
 	public stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		return this.sourceStorage.stat(this.sourcePath + path, response);
 	}
+	public delete(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		return this.sourceStorage.delete(this.sourcePath + path, response);
+	}
 }

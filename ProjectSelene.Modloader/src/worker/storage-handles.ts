@@ -69,6 +69,18 @@ export class StorageHandles extends Storage {
 		}
 	}
 
+	public async delete(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const dir = await this.resolveFolder(parts.slice(0, parts.length - 1), 'readwrite', false);
+			await dir.removeEntry(parts[parts.length - 1], { recursive: true });
+			new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
 	private async resolveFolder(path: string[], mode: FileSystemPermissionMode, create: boolean) {
 		let dir = await this.ensurePermissions(this.dir, mode);
 		for (const part of path) {
