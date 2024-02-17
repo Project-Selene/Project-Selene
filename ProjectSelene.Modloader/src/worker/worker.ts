@@ -79,7 +79,7 @@ workerBroadcast.on('register-fs', (data: RegisterFs) => {
 async function readFileWithPatches(pathname: string, target: Storage | null, path: string | null, response: WritableStream<Uint8Array>): Promise<boolean> {
 	const applicable = patchers.filter(p => p.hasPatch(pathname));
 	if (applicable.length === 0) {
-		if (!target || !path) {
+		if (!target || path === null) {
 			return false; //No patches and no target file
 		}
 

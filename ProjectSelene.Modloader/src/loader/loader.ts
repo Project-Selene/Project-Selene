@@ -23,16 +23,13 @@ export class Loader {
 		if (!await this.game.mountGame(game)) {
 			throw new Error('Could not mount game');
 		}
-		const prefix = await this.filesystem.readFile('static/js/prefix.js');
-
-		const code = await this.filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
-		const injected = transform(code, prefix);
+		const injected = await this.transformCached(id);
 
 		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id + '/');
 		await this.filesystem.mountInMemory('/fs/saves/', 'save-data');
 
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
-		await this.filesystem.writeFile('/fs/game/terra/dist/bundle.js', injected);
+		await this.filesystem.mountLink('/fs/game/terra/dist/bundle.js', injected);
 
 		if (dev) {
 			await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
@@ -55,6 +52,31 @@ export class Loader {
 		document.open();
 		document.write(doc.documentElement.innerHTML);
 		document.close();
+	}
+
+	private async transformCached(id: number) {
+		const hash = await crypto.subtle.digest('SHA-256', await (await fetch('/fs/internal/game/' + id + '/terra/dist/bundle.js')).arrayBuffer());
+		const hashString = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+		await this.filesystem.mountInMemory('/cache', 'cache');
+		const files = await this.filesystem.readDir('/cache/');
+		const existing = files.find(f => f.name === 'game-' + hashString + '.js');
+		if (existing) {
+			return '/cache/' + existing.name;
+		}
+
+		//Limit cache size
+		if (files.length > 3) {
+			const dates = await Promise.all(files.map(async f => (await this.filesystem.stat('/cache/' + f.name)).ctimeMs));
+			const oldest = files[dates.indexOf(Math.min(...dates))];
+			await this.filesystem.delete('/cache/' + oldest.name);
+		}
+
+		const code = await this.filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
+		const prefix = await this.filesystem.readFile('static/js/prefix.js');
+		const result = transform(code, prefix);
+		await this.filesystem.writeFile('/cache/game-' + hashString + '.js', result);
+		return '/cache/game-' + hashString + '.js';
 	}
 
 

@@ -13,7 +13,7 @@ export class StorageIndexedDB extends Storage {
 
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
-			const content: string | undefined = await idb.get('content_' + path, this.store);
+			const content: ArrayBuffer | undefined = await idb.get('content_' + path, this.store);
 			if (content === undefined) {
 				return false;
 			}
@@ -63,7 +63,7 @@ export class StorageIndexedDB extends Storage {
 	}
 	private async writeFileAsync(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<void> {
 		try {
-			const contentText = await new Response(content).text();
+			const contentText = await new Response(content).arrayBuffer();
 			const time = new Date().getTime();
 			await idb.set('content_' + path, contentText, this.store);
 			await idb.set('ctimeMs_' + path, time, this.store);

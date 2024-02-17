@@ -15,7 +15,13 @@ export class Filesystem {
 	}
 
 	public async readFile(path: string): Promise<string> {
-		return await (await fetch(path)).text();
+		return fetch(path)
+			.then(resp => {
+				if (!resp.ok) {
+					throw new Error('Failed to read file' + resp.status.toString());
+				}
+				return resp.text();
+			});
 	}
 
 	public async writeFile(path: string, content: BodyInit): Promise<boolean> {
