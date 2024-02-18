@@ -11,10 +11,11 @@ export interface ModPatch {
 }
 
 export interface ModInfo {
-    id: number;
+    id: string;
     name: string;
     description: string;
     version: string;
+    versions: string[];
     patches?: ModPatch[];
 }
 

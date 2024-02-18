@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectSelene;
 
@@ -10,12 +11,14 @@ using ProjectSelene;
 namespace ProjectSelene.Migrations
 {
     [DbContext(typeof(SeleneDbContext))]
-    partial class SeleneDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240218110410_ModIdGuid")]
+    partial class ModIdGuid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
@@ -52,6 +55,9 @@ namespace ProjectSelene.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("Guid")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LatestVersionNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ModInfoId")
@@ -94,10 +100,10 @@ namespace ProjectSelene.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("DownloadId")
+                    b.Property<int>("ModId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("OwnedById")
+                    b.Property<int?>("OwnedById")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("SubmittedById")
@@ -115,7 +121,7 @@ namespace ProjectSelene.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DownloadId");
+                    b.HasIndex("ModId");
 
                     b.HasIndex("OwnedById");
 
@@ -200,17 +206,15 @@ namespace ProjectSelene.Migrations
 
             modelBuilder.Entity("ProjectSelene.Models.ModVersion", b =>
                 {
-                    b.HasOne("ProjectSelene.Models.Artifact", "Download")
-                        .WithMany()
-                        .HasForeignKey("DownloadId")
+                    b.HasOne("ProjectSelene.Models.Mod", null)
+                        .WithMany("Versions")
+                        .HasForeignKey("ModId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ProjectSelene.Models.Mod", "OwnedBy")
-                        .WithMany("Versions")
-                        .HasForeignKey("OwnedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("OwnedById");
 
                     b.HasOne("ProjectSelene.Models.User", "SubmittedBy")
                         .WithMany()
@@ -221,8 +225,6 @@ namespace ProjectSelene.Migrations
                     b.HasOne("ProjectSelene.Models.User", "VerifiedBy")
                         .WithMany()
                         .HasForeignKey("VerifiedById");
-
-                    b.Navigation("Download");
 
                     b.Navigation("OwnedBy");
 

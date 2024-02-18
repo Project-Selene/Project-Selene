@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, deleteMod, installMod, selectAvailableMod, selectInstalledMod, store } from '../../../state/state.reducer';
 
 export function ModsEntry(props: {
-	id: number
+	id: string
 }) {
 	const moddb = useSelector((state: RootState) => selectAvailableMod(state, props.id));
 
@@ -48,7 +48,7 @@ export function ModsEntry(props: {
 									: <></>
 							}
 						</Typography>
-						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(installMod({ filename: mod.filename, id: moddb?.id ?? 0, version: moddb?.version ?? '' }))}>
+						{(hasUpdate || !isInstalled) && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(installMod({ filename: mod.filename, id: moddb?.id ?? '', version: moddb?.version ?? '' }))}>
 							<Download />
 						</Button>}
 						{isInstalled && <Button variant="outlined" size="small" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(deleteMod(mod.filename))}>

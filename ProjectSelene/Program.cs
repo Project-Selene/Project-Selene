@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
+using ProjectSelene.DTOs.AutoMapper;
 using ProjectSelene.Services;
 using ProjectSelene.Swagger;
 
@@ -34,11 +35,12 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
+builder.Services.AddAutoMapper(typeof(ModProfile).Assembly);
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<LoginService>();
@@ -56,9 +58,8 @@ builder.Services.AddSingleton((_) => {
     return client;
 });
 
-//var connectionString = builder.Configuration.GetConnectionString("SeleneMariaDb");ddddd
+//var connectionString = builder.Configuration.GetConnectionString("SeleneMariaDb");
 //builder.Services.AddDbContext<SeleneDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
 
 builder.Services.AddDbContext<SeleneDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SeleneSqliteDb")));
 
@@ -70,7 +71,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: localCorsPolicyName,
                       policy =>
                       {
-                          policy.WithOrigins((builder.Configuration.GetSection("Domains:UI").Get<List<string>>() ?? new()).Append(builder.Configuration["Domains:API"] ?? "").Append(builder.Configuration["Domains:CDN"] ?? "").ToArray());
+                          policy.WithOrigins(
+                          [
+                              .. (builder.Configuration.GetSection("Domains:UI").Get<List<string>>() ?? []),
+                              builder.Configuration["Domains:API"] ?? "",
+                              builder.Configuration["Domains:CDN"] ?? "",
+                          ]);
                       });
 });
 

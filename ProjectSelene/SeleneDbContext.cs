@@ -7,6 +7,7 @@ public class SeleneDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Mod> Mods => Set<Mod>();
+    public DbSet<ModVersion> ModVersion => Set<ModVersion>();
     public DbSet<StoredObject> StoredObjects => Set<StoredObject>();
 
     public SeleneDbContext(DbContextOptions options) : base(options) { }
@@ -14,23 +15,26 @@ public class SeleneDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Mod>()
-                .HasOne(m => m.Info)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(m => m.Info)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Mod>()
-                .HasMany(m => m.Versions)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(m => m.Versions)
+            .WithOne(v => v.OwnedBy)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Mod>()
+            .HasAlternateKey(m => m.Guid);
 
         modelBuilder.Entity<Artifact>()
-                .HasOne(a => a.ModVersion)
-                .WithMany(m => m.Artifacts)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(a => a.ModVersion)
+            .WithMany(m => m.Artifacts)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Artifact>()
-                .HasOne(a => a.StoredObject)
-                .WithMany(o => o.Artifacts)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(a => a.StoredObject)
+            .WithMany(o => o.Artifacts)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

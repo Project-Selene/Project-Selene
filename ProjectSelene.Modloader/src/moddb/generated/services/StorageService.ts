@@ -3,13 +3,10 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Artifact } from '../models/Artifact';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-
 export class StorageService {
-
     /**
      * @returns Artifact Success
      * @throws ApiError
@@ -20,15 +17,14 @@ export class StorageService {
             url: '/storage/upload',
         });
     }
-
     /**
-     * @param id 
+     * @param id
      * @returns any Success
      * @throws ApiError
      */
     public static postStorageDelete(
-id: string,
-): CancelablePromise<any> {
+        id: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/storage/delete/{id}',
@@ -37,15 +33,14 @@ id: string,
             },
         });
     }
-
     /**
-     * @param id 
+     * @param id
      * @returns any Success
      * @throws ApiError
      */
     public static getStorageDownload(
-id: string,
-): CancelablePromise<any> {
+        id: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/storage/download/{id}',
@@ -54,7 +49,6 @@ id: string,
             },
         });
     }
-
     /**
      * @returns string Success
      * @throws ApiError
@@ -65,5 +59,4 @@ id: string,
             url: '/storage/unverified',
         });
     }
-
 }

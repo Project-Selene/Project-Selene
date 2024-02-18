@@ -5,9 +5,7 @@
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-
 export class LoginService {
-
     /**
      * @returns any Success
      * @throws ApiError
@@ -18,7 +16,6 @@ export class LoginService {
             url: '/login',
         });
     }
-
     /**
      * @returns string Success
      * @throws ApiError
@@ -29,7 +26,6 @@ export class LoginService {
             url: '/login/url',
         });
     }
-
     /**
      * @returns boolean Success
      * @throws ApiError
@@ -40,5 +36,4 @@ export class LoginService {
             url: '/loggedin',
         });
     }
-
 }

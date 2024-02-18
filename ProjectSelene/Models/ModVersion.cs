@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ProjectSelene.Models;
+﻿namespace ProjectSelene.Models;
 
 public class ModVersion
 {
@@ -19,9 +16,10 @@ public class ModVersion
     public DateTime SubmittedOn { get; init; }
 
     public User? VerifiedBy { get; set; }
+    [Required]
+    public Artifact Download { get; set; } = new Artifact();
 
     [Required]
-    [MinLength(1)]
     public ICollection<Artifact> Artifacts { get; set; } = new List<Artifact>();
 
     [InverseProperty(nameof(Mod.Versions))]

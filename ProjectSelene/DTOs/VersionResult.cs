@@ -1,3 +1,3 @@
 ﻿namespace ProjectSelene.DTOs;
 
-public record VersionResult(int Id, string Version);
+public record VersionResult(Guid Id, string Version);

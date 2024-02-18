@@ -67,7 +67,7 @@ export const deleteMod = createAsyncThunk('deleteMod', async (name: string, { ge
 	return await game.deleteMod(gameInfo, name);
 });
 
-export const installMod = createAsyncThunk('installMod', async (mod: { filename: string, id: number, version: string }, { getState }) => {
+export const installMod = createAsyncThunk('installMod', async (mod: { filename: string, id: string, version: string }, { getState }) => {
 	const { state } = getState() as RootState;
 	const gameInfo = state.gamesInfo.games.find(g => g.id === state.gamesInfo.selectedGame);
 	if (!gameInfo) {
@@ -221,11 +221,11 @@ const slice = createSlice({
 				.map(m => m.id) ?? []),
 
 		selectInstalledMod: createSelector(
-			[(state: State) => state.mods.data?.mods, (_, id: number) => id],
+			[(state: State) => state.mods.data?.mods, (_, id: string) => id],
 			(mods, id) => mods?.find(m => m.currentInfo.id === id),
 		),
 		selectAvailableMod: createSelector(
-			[(state: State) => state.modDb.mods.data, (_, id: number) => id],
+			[(state: State) => state.modDb.mods.data, (_, id: string) => id],
 			(mods, id) => mods?.find(m => m.id === id),
 		),
 		selectStoreWithoutUI: (state) => {

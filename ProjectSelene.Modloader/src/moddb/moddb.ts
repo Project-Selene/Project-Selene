@@ -20,7 +20,7 @@ export class ModDB {
 		return (await ModService.getModList()).entries;
 	}
 
-	public async download(id: number, version: string) {
+	public async download(id: string, version: string) {
 		return (await fetch(OpenAPI.BASE + '/mod/download/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
 	}
 }

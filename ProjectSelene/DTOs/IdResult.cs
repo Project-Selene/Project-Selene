@@ -1,3 +1,3 @@
 ﻿namespace ProjectSelene.DTOs;
 
-public record IdResult(int Id);
+public record IdResult(Guid Id);
