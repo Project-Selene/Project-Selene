@@ -72,10 +72,6 @@ workerBroadcast.on('unregister-patches', (data: UnregisterPatches) => {
 	}
 });
 
-workerBroadcast.on('register-fs', (data: RegisterFs) => {
-	fsChannel = new SingleCommunication(data.channel);
-});
-
 async function readFileWithPatches(pathname: string, target: Storage | null, path: string | null, response: WritableStream<Uint8Array>): Promise<boolean> {
 	const applicable = patchers.filter(p => p.hasPatch(pathname));
 	if (applicable.length === 0) {
@@ -135,6 +131,10 @@ self.addEventListener('connect', event => {
 	const port = event.ports[0];
 
 	swChannel = new SingleCommunication(port);
+
+	swChannel.on('register-fs', (data: RegisterFs) => {
+		fsChannel = new SingleCommunication(data.channel);
+	});
 
 	swChannel.on('fetch', async ({ request, response }: { request: RequestData, response: WritableStream<Uint8Array> }): Promise<ResponseInit> => {
 		const pathname = decodeURI(new URL(request.url).pathname);
