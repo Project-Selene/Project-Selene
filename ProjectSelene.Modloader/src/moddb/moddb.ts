@@ -17,7 +17,7 @@ export class ModDB {
 			return [];
 		}
 
-		return (await ModService.getModList()).entries;
+		return (await ModService.getApiModList()).entries;
 	}
 
 	public async download(id: string, version: string) {

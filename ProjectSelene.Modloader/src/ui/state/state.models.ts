@@ -1,3 +1,4 @@
+import { UserInfo } from '../../moddb/generated';
 import { LoadingState } from './models/loading-state';
 import { Mod, ModDetails, ModInfo, VersionDetails } from './models/mod';
 
@@ -8,6 +9,8 @@ export interface State {
     mods: LoadingState<Mods>;
 
     ui: UIState;
+
+    user?: UserInfo;
 }
 
 export interface UIState {

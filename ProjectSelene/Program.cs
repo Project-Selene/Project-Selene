@@ -1,9 +1,11 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
 using ProjectSelene.DTOs.AutoMapper;
 using ProjectSelene.Services;
 using ProjectSelene.Swagger;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +43,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddAutoMapper(typeof(ModProfile).Assembly);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddScoped<LoginService>();
 //#if DEBUG
@@ -77,6 +80,7 @@ builder.Services.AddCors(options =>
                               builder.Configuration["Domains:API"] ?? "",
                               builder.Configuration["Domains:CDN"] ?? "",
                           ]);
+                          policy.WithHeaders("content-type", "authorization");
                       });
 });
 

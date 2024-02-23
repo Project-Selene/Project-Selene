@@ -9,8 +9,9 @@ using System.Transactions;
 
 namespace ProjectSelene.Controllers;
 
-[Route("mod")]
-public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService, IConfiguration configuration) : Controller
+[ApiController]
+[Route("api/[controller]")]
+public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService, IConfiguration configuration) : ControllerBase
 {
     private readonly string cdn = configuration["Domains:CDN"] ?? "http://localhost";
 

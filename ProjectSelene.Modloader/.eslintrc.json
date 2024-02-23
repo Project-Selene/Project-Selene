@@ -7,6 +7,7 @@
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
         "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
@@ -43,5 +44,10 @@
         "@typescript-eslint/semi": ["error"],
         "comma-dangle": "off",
         "@typescript-eslint/comma-dangle": ["error", "always-multiline"]
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
     }
 }

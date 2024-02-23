@@ -13,10 +13,10 @@ export class ModService {
      * @returns ModList Success
      * @throws ApiError
      */
-    public static getModList(): CancelablePromise<ModList> {
+    public static getApiModList(): CancelablePromise<ModList> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/mod/list',
+            url: '/api/Mod/list',
         });
     }
     /**
@@ -25,13 +25,13 @@ export class ModService {
      * @returns void
      * @throws ApiError
      */
-    public static getModDownload(
+    public static getApiModDownload(
         id: string,
         version: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/mod/download/{id}/{version}',
+            url: '/api/Mod/download/{id}/{version}',
             path: {
                 'id': id,
                 'version': version,
@@ -47,13 +47,13 @@ export class ModService {
      * @returns void
      * @throws ApiError
      */
-    public static postModCreateVersion(
+    public static postApiModCreateVersion(
         id: string,
         requestBody?: VersionUpload,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mod/create/version/{id}',
+            url: '/api/Mod/create/version/{id}',
             path: {
                 'id': id,
             },
@@ -72,12 +72,12 @@ export class ModService {
      * @returns void
      * @throws ApiError
      */
-    public static postModCreateNew(
+    public static postApiModCreateNew(
         requestBody?: CreateMod,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mod/create/new',
+            url: '/api/Mod/create/new',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -92,12 +92,12 @@ export class ModService {
      * @returns void
      * @throws ApiError
      */
-    public static postModDelete(
+    public static postApiModDelete(
         id: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mod/delete/{id}',
+            url: '/api/Mod/delete/{id}',
             path: {
                 'id': id,
             },
@@ -114,13 +114,13 @@ export class ModService {
      * @returns void
      * @throws ApiError
      */
-    public static postModDelete1(
+    public static postApiModDelete1(
         id: string,
         version: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mod/delete/{id}/{version}',
+            url: '/api/Mod/delete/{id}/{version}',
             path: {
                 'id': id,
                 'version': version,
@@ -138,13 +138,13 @@ export class ModService {
      * @returns any Success
      * @throws ApiError
      */
-    public static postModVerify(
+    public static postApiModVerify(
         id: number,
         version: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/mod/verify/{id}/{version}',
+            url: '/api/Mod/verify/{id}/{version}',
             path: {
                 'id': id,
                 'version': version,

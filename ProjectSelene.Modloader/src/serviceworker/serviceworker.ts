@@ -19,15 +19,15 @@ const store = idb.createStore('SeleneDb-sw-cache', 'sw-cache');
 
 const coms = new SWCommunication();
 coms.on('workers', async (worker: MessagePort[], id) => {
-	const reg = workers.get(id) ?? {filter: [], workers: [], lastWorker: 0} as WorkerRegistration; 
+	const reg = workers.get(id) ?? { filter: [], workers: [], lastWorker: 0 } as WorkerRegistration;
 	reg.workers = worker.map(port => new SingleCommunication(port));
 	workers.set(id, reg);
-	
+
 	await idb.set('clients', [...workers.keys()], store);
 });
 
 coms.on('filter', async (filter: string, id) => {
-	const reg = workers.get(id) ?? {filter: [], workers: [], lastWorker: 0} as WorkerRegistration; 
+	const reg = workers.get(id) ?? { filter: [], workers: [], lastWorker: 0 } as WorkerRegistration;
 	reg.filter.push(filter);
 	workers.set(id, reg);
 
@@ -37,21 +37,21 @@ coms.on('filter', async (filter: string, id) => {
 self.addEventListener('install', event => event.waitUntil((async () => {
 	caches.open('selene-loader')
 		.then(cache => cache.add('static/js/prefix.js'))
-		.catch(() => {/* Ignore error that happens if we are local - we don't need a cache for local */});
+		.catch(() => {/* Ignore error that happens if we are local - we don't need a cache for local */ });
 	await self.skipWaiting();
 })()));
 
 async function install() {
 	const ids = new Set(await idb.get('clients', store) as string[] ?? []);
-	const activeIds = (await self.clients.matchAll({type: 'window'})).filter(c => ids.has(c.id)).map(c => c.id);
+	const activeIds = (await self.clients.matchAll({ type: 'window' })).filter(c => ids.has(c.id)).map(c => c.id);
 	await idb.set('clients', activeIds, store);
 	await coms.sendToClients('install', {}, activeIds);
 }
 const installed = install().catch(err => console.error(err));
 
 self.addEventListener('activate', event => event.waitUntil((async () => {
-    await installed;
-    await self.clients.claim();
+	await installed;
+	await self.clients.claim();
 })()));
 
 self.addEventListener('fetch', event => event.respondWith((async () => {
@@ -82,7 +82,7 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 					clientId: event.clientId,
 				},
 				response: stream.writable,
-			}, 
+			},
 			stream.writable,
 			event.request.body,
 			) as Promise<ResponseInit>;
@@ -98,10 +98,10 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 })()));
 
 async function fromNetworkOrCached(request: Request) {
-	if (request.url.startsWith('chrome-extension')) {
+	if (request.url.startsWith('chrome-extension') || request.method !== 'GET') {
 		return fetch(request);
 	}
-	
+
 	if (!navigator.onLine) {
 		const cached = await caches.match(request);
 		if (cached) {
@@ -111,7 +111,7 @@ async function fromNetworkOrCached(request: Request) {
 
 	try {
 		const response = await fetch(request);
-		
+
 		const cache = await caches.open('selene-loader');
 		await cache.put(request, response.clone());
 

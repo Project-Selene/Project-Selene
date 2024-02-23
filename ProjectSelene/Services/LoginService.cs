@@ -10,6 +10,7 @@ public class LoginService
     private readonly ILogger logger;
     private readonly SymmetricSecurityKey jwtKey;
     private readonly SeleneDbContext context;
+    private readonly string tokenIssuer;
 
     public LoginService(ILoggerFactory loggerFactory, IConfiguration configuration, SeleneDbContext context)
     {
@@ -18,6 +19,7 @@ public class LoginService
         this.logger = loggerFactory.CreateLogger<LoginService>();
         this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         this.context = context;
+        this.tokenIssuer = configuration["token_issuer"] ?? "";
     }
     public bool IsLoggedIn(HttpContext HttpContext)
     {
@@ -27,13 +29,13 @@ public class LoginService
     public async Task<User> GetUser(HttpContext HttpContext)
     {
         var userClaims = this.GetUserClaims(HttpContext);
-        var githubIdClaim = userClaims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (githubIdClaim == null)
+        var idClaim = userClaims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+        if (idClaim == null)
         {
             throw new UnauthorizedAccessException(); 
         }
 
-        var id = int.Parse(githubIdClaim.Value);
+        var id = int.Parse(idClaim.Value);
 
         var result = await this.context.Users
             .Include(u => u.Mods)
@@ -42,7 +44,7 @@ public class LoginService
             .Include(u => u.StoredObjects)
             .ThenInclude(o => o.Artifacts)
             .ThenInclude(a => a.ModVersion)
-            .FirstOrDefaultAsync(c => c.GithubId == id);
+            .FirstOrDefaultAsync(c => c.Id == id);
         if (result != null)
         {
             return result;
@@ -102,7 +104,7 @@ public class LoginService
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 ValidateAudience = false,
-                ValidIssuer = "https://functionsproject.azurewebsites.net/",
+                ValidIssuer = this.tokenIssuer,
                 ValidAlgorithms = new[] { "HS256" },
             }, out var _);
         }

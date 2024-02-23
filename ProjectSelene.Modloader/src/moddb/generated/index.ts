@@ -8,10 +8,15 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Artifact } from './models/Artifact';
+export type { CompleteLogin } from './models/CompleteLogin';
 export type { CreateMod } from './models/CreateMod';
 export type { Entry } from './models/Entry';
 export type { IdResult } from './models/IdResult';
+export type { LoginInfo } from './models/LoginInfo';
+export { LoginType } from './models/LoginType';
 export type { ModList } from './models/ModList';
+export type { ProblemDetails } from './models/ProblemDetails';
+export type { UserInfo } from './models/UserInfo';
 export type { VersionResult } from './models/VersionResult';
 export type { VersionUpload } from './models/VersionUpload';
 

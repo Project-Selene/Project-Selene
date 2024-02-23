@@ -17,7 +17,6 @@ const context = await esbuild.context(
 			'.ico': 'file',
 			'.txt': 'file',
 			'.md': 'file',
-			'.esbuild.ts': 'js', //Workaround for https://github.com/evanw/esbuild/issues/3319
 		},
 		assetNames: '[dir]/[name]',
 		outbase: './public/',

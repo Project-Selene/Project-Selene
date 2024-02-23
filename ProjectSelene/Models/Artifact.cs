@@ -14,5 +14,5 @@ public class Artifact
     public StoredObject? StoredObject { get; init; }
 
     [JsonIgnore]
-    public ModVersion ModVersion { get; init; } = new();
+    public ModVersion ModVersion { get; init; } = null!;
 }

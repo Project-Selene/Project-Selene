@@ -1,92 +1,185 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using ProjectSelene.DTOs;
+using ProjectSelene.Models;
 using ProjectSelene.Services;
 
 namespace ProjectSelene.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
 public class LoginController : Controller
 {
     private readonly ILogger logger;
-    private readonly string githubAuthorizeEndpoint;
+    private readonly string tokenIssuer;
     private readonly string githubTokenEndpoint;
+    private readonly string discordTokenEndpoint;
     private readonly SymmetricSecurityKey jwtKey;
     private readonly HttpClient httpClient;
     private readonly LoginService loginService;
+    private readonly LoginInfo loginInfo;
+    private readonly SeleneDbContext context;
+    private readonly IMapper mapper;
 
-    public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, LoginService loginService)
+    public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, LoginService loginService, SeleneDbContext context, IMapper mapper)
     {
         var jwtSecret = configuration["jwt_secret"] ?? throw new ArgumentNullException("jwt_secret", "jwt_secret is required");
 
         this.logger = loggerFactory.CreateLogger<LoginController>();
-        this.githubAuthorizeEndpoint = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&scope=read:user&redirect_uri={configuration["github_redirect_uri"]}";
-        this.githubTokenEndpoint = $"https://github.com/login/oauth/access_token?client_id={configuration["github_client_id"]}&client_secret={configuration["github_client_secret"]}&code=";
+        this.tokenIssuer = configuration["token_issuer"] ?? "";
+        this.githubTokenEndpoint = $"https://github.com/login/oauth/access_token?client_id={configuration["github_client_id"]}&client_secret={configuration["github_client_secret"]}&redirect_uri={configuration["github_redirect_uri"]}&code=";
+        this.discordTokenEndpoint = $"https://discord.com/api/oauth2/token?grant_type=authorization_code&client_id={configuration["discord_client_id"]}&client_secret={configuration["discord_client_secret"]}&redirect_uri={configuration["discord_redirect_uri"]}&code=";
         this.jwtKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         this.httpClient = httpClient;
         this.loginService = loginService;
+        this.context = context;
+        this.mapper = mapper;
+
+        this.loginInfo = new LoginInfo()
+        {
+            GithubUrl = $"https://github.com/login/oauth/authorize?client_id={configuration["github_client_id"]}&redirect_uri={configuration["github_redirect_uri"]}",
+            DiscordUrl = $"https://discord.com/api/oauth2/authorize?response_type=code&scope=identify&prompt=none&client_id={configuration["discord_client_id"]}&redirect_uri={configuration["discord_redirect_uri"]}"
+        };
     }
 
-    [HttpGet("login")]
-    public Task<RedirectResult> Login()
+    [HttpGet]
+    public LoginInfo Login() => this.loginInfo;
+
+
+    [HttpPost("complete")]
+    public async Task<ActionResult<string>> Complete(CompleteLogin dto)
     {
-        return Task.FromResult(Redirect(this.githubAuthorizeEndpoint));
-    }
-
-
-    [HttpGet("login/url")]
-    public Task<string> LoginURL()
-    {
-        return Task.FromResult(this.githubAuthorizeEndpoint);
-    }
-
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet("completelogin")]
-    public async Task<ActionResult<string>> Complete()
-    {
-        string queryString = HttpContext.Request.QueryString.ToUriComponent();
-        var query = HttpUtility.ParseQueryString(queryString);
-        string code = query.Get("code")!;
-        if (string.IsNullOrWhiteSpace(code))
+        if (dto.Type == LoginType.Github)
         {
-            return BadRequest();
-        }
-
-        using var tokenResponse = await this.httpClient.GetAsync(githubTokenEndpoint + Uri.EscapeDataString(code));
-        var tokens = await JsonSerializer.DeserializeAsync<GithubTokens>(tokenResponse.Content.ReadAsStream());
-        if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
-        {
-            return BadRequest();
-        }
-
-        var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
-        userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.token_type, tokens.access_token);
-        using var userDataResponse = await this.httpClient.SendAsync(userDataRequest);
-        var userData = await JsonSerializer.DeserializeAsync<GithubUser>(userDataResponse.Content.ReadAsStream());
-        if (userData == null)
-        {
-            return BadRequest();
-        }
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateEncodedJwt(new SecurityTokenDescriptor()
-        {
-            Issuer = "https://functionsproject.azurewebsites.net/",
-            SigningCredentials = new SigningCredentials(jwtKey, "HS256"),
-            Claims = new Dictionary<string, object>()
+            string code = dto.Token;
+            if (string.IsNullOrWhiteSpace(code))
             {
-                { ClaimTypes.NameIdentifier, userData.id }
+                return BadRequest();
             }
-        });
 
-        this.logger.LogInformation($"User {userData.id} logged in successfully");
+            using var tokenResponse = await this.httpClient.GetAsync(githubTokenEndpoint + Uri.EscapeDataString(code));
+            var tokens = await JsonSerializer.DeserializeAsync<GithubTokens>(tokenResponse.Content.ReadAsStream());
+            if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
+            {
+                return BadRequest();
+            }
 
-        return Ok(token);
+            var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
+            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.token_type, tokens.access_token);
+            using var userDataResponse = await this.httpClient.SendAsync(userDataRequest);
+            var userData = await JsonSerializer.DeserializeAsync<GithubUser>(userDataResponse.Content.ReadAsStream());
+            if (userData == null)
+            {
+                return BadRequest();
+            }
+
+            var user = await this.context.Users.FirstOrDefaultAsync(u => u.GithubId == userData.id);
+            if (user == null)
+            {
+                user = new User()
+                {
+                    GithubId = userData.id
+                };
+                this.context.Users.Add(user);
+            }
+            user.Name = userData.name ?? userData.login;
+            user.AvatarUrl = userData.avatar_url;
+            await this.context.SaveChangesAsync();
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateEncodedJwt(new SecurityTokenDescriptor()
+            {
+                Issuer = this.tokenIssuer,
+                SigningCredentials = new SigningCredentials(jwtKey, "HS256"),
+                Claims = new Dictionary<string, object>()
+                {
+                    { ClaimTypes.NameIdentifier, user.Id }
+                }
+            });
+
+            this.logger.LogInformation($"User {user.Id} ({user.Name}) logged in successfully using Github");
+
+            return Ok(token);
+        }
+        else if (dto.Type == LoginType.Discord)
+        {
+            string code = dto.Token;
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return BadRequest();
+            }
+
+            using var tokenResponse = await this.httpClient.GetAsync(discordTokenEndpoint + Uri.EscapeDataString(code));
+            var tokens = await JsonSerializer.DeserializeAsync<DiscordTokens>(tokenResponse.Content.ReadAsStream());
+            if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
+            {
+                return BadRequest();
+            }
+
+            var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/v10/users/@me");
+            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.token_type, tokens.access_token);
+            using var userDataResponse = await this.httpClient.SendAsync(userDataRequest);
+            var userData = await JsonSerializer.DeserializeAsync<DiscordUser>(userDataResponse.Content.ReadAsStream());
+            if (userData == null)
+            {
+                return BadRequest();
+            }
+
+            var user = await this.context.Users.FirstOrDefaultAsync(u => u.DiscordId == userData.id);
+            if (user == null)
+            {
+                user = new User()
+                {
+                    DiscordId = userData.id
+                };
+                this.context.Users.Add(user);
+            }
+            user.Name = userData.global_name ?? userData.username;
+            if (userData.avatar != null)
+            {
+                user.AvatarUrl = "https://cdn.discordapp.com/" + user.DiscordId + "/" + userData.avatar + ".png";
+            }
+
+            await this.context.SaveChangesAsync();
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateEncodedJwt(new SecurityTokenDescriptor()
+            {
+                Issuer = this.tokenIssuer,
+                SigningCredentials = new SigningCredentials(jwtKey, "HS256"),
+                Claims = new Dictionary<string, object>()
+                {
+                    { ClaimTypes.NameIdentifier, user.Id }
+                }
+            });
+            this.logger.LogInformation($"User {user.Id} ({user.Name}) logged in successfully using Discord");
+
+            return Ok(token);
+        }
+        else
+        {
+            return BadRequest();
+        }
     }
 
     [HttpGet("loggedin")]
     public bool IsLoggedIn() => this.loginService.IsLoggedIn(HttpContext);
+
+    [HttpGet("current")]
+    public async Task<ActionResult<UserInfo>> CurrentUser()
+    {
+        var user = await this.loginService.GetUser(HttpContext);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+        return this.mapper.Map<UserInfo>(user);
+    }
 
 
     private record GithubTokens
@@ -99,5 +192,25 @@ public class LoginController : Controller
     private record GithubUser
     {
         public int id { get; set; }
+        public string login { get; set; } = string.Empty;
+        public string? name { get; set; } = string.Empty;
+        public string avatar_url { get; set; } = string.Empty;
+    }
+
+    private record DiscordTokens
+    {
+        public string access_token { get; set; } = string.Empty;
+        public string scope { get; set; } = string.Empty;
+        public string token_type { get; set; } = string.Empty;
+        public string refresh_token { get; set; } = string.Empty;
+        public int expires_in { get; set; }
+    }
+
+    private record DiscordUser
+    {
+        public ulong id { get; set; }
+        public string username { get; set; } = string.Empty;
+        public string? global_name { get; set; }
+        public string? avatar { get; set; }
     }
 }

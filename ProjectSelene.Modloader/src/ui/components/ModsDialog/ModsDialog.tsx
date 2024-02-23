@@ -1,10 +1,10 @@
 import Close from '@mui/icons-material/Close';
 import OpenInNew from '@mui/icons-material/OpenInNew';
 import Refresh from '@mui/icons-material/Refresh';
-import { Box, Button, Dialog, DialogContent, DialogTitle, Stack, Tab, Tabs, TextField } from '@mui/material';
+import { Avatar, Box, Button, Dialog, DialogContent, DialogTitle, Stack, Tab, Tabs, TextField } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { changeModsTab, loadModList, loadMods, openDirectory, selectAvailableModIds, selectInstalledModIds, selectModsDialogOpen, selectModsInitialized, selectModsTab, setModsOpen, store } from '../../state/state.reducer';
+import { changeModsTab, loadModList, loadMods, login, logout, openDirectory, selectAvailableModIds, selectInstalledModIds, selectIsLoggedIn, selectModsDialogOpen, selectModsInitialized, selectModsTab, selectUserAvatarUrl, setModsOpen, store } from '../../state/state.reducer';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
 export function ModsDialog() {
@@ -13,6 +13,8 @@ export function ModsDialog() {
 	const currentTab = useSelector(selectModsTab);
 	const installedModIds = useSelector(selectInstalledModIds);
 	const availableModIds = useSelector(selectAvailableModIds);
+	const isLoggedIn = useSelector(selectIsLoggedIn);
+	const userAvatarUrl = useSelector(selectUserAvatarUrl);
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
@@ -32,6 +34,15 @@ export function ModsDialog() {
 					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />} onClick={() => dispatch(setModsOpen(false))}>
 						Close
 					</Button>
+					{
+						isLoggedIn
+							? <Button variant="outlined" onClick={() => dispatch(logout())}>
+								<Avatar alt="User" src={userAvatarUrl ?? ''} />
+							</Button>
+							: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(login())}>
+								Login
+							</Button>
+					}
 				</Stack>
 			</Stack>
 		</DialogTitle>

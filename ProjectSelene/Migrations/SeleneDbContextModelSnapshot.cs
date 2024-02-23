@@ -150,13 +150,27 @@ namespace ProjectSelene.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("DiscordId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("GithubId")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("DiscordId");
+
+                    b.HasIndex("GithubId");
 
                     b.ToTable("Users");
                 });

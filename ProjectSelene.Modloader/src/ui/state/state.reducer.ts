@@ -2,7 +2,7 @@ import { PayloadAction, configureStore, createAsyncThunk, createSelector, create
 import { Filesystem } from '../../loader/filesystem';
 import { Game } from '../../loader/game';
 import { Loader } from '../../loader/loader';
-import { LoginService } from '../../moddb/generated';
+import { LoginService, LoginType, OpenAPI } from '../../moddb/generated';
 import { ModDB } from '../../moddb/moddb';
 import { GameInfo, GamesInfo, State } from './state.models';
 
@@ -11,10 +11,27 @@ const game = new Game(fs);
 const moddb = new ModDB();
 export const loader = new Loader(fs, game);
 
-export const login = createAsyncThunk('login', async () => {
-	const url = await LoginService.getLoginUrl();
-	window.open(url, '_blank');
+export const login = createAsyncThunk('login', async (_, { getState }) => {
+	const url = new URL((await LoginService.getApiLogin()).githubUrl);
+	const { state } = getState() as RootState;
+	const id = Math.random().toString(36).substring(2);
+	localStorage.setItem('loginstate', JSON.stringify({ [id]: state }));
+	url.searchParams.set('state', id);
+	location.href = url.toString();
+});
 
+export const completeLogin = createAsyncThunk('completeLogin', async (code: string, { dispatch }) => {
+	const token = await LoginService.postApiLoginComplete({ type: LoginType.GITHUB, token: code });
+	localStorage.setItem('token', token);
+	OpenAPI.TOKEN = token;
+
+	dispatch(getUser());
+
+	return true;
+});
+
+export const getUser = createAsyncThunk('getUser', async () => {
+	return await LoginService.getApiLoginCurrent();
 });
 
 export const loadMods = createAsyncThunk('loadMods', async (gamesInfo: GamesInfo | void, { getState }) => {
@@ -139,6 +156,11 @@ const slice = createSlice({
 		changeModsTab: (state, { payload }: PayloadAction<number>) => {
 			state.ui.modsTab = payload;
 		},
+		logout: (state) => {
+			state.user = undefined;
+			localStorage.removeItem('token');
+			OpenAPI.TOKEN = undefined;
+		},
 	},
 	extraReducers(builder) {
 		builder.addCase(loadGames.pending, (state) => {
@@ -201,6 +223,12 @@ const slice = createSlice({
 		builder.addCase(play.rejected, (state) => {
 			state.ui.playing = false;
 		});
+		builder.addCase(getUser.fulfilled, (state, { payload }) => {
+			state.user = payload;
+		});
+		builder.addCase(getUser.rejected, (state) => {
+			state.user = undefined;
+		});
 	},
 	selectors: {
 		selectInfoDialogOpen: (state) => state.ui.infoOpen,
@@ -228,6 +256,8 @@ const slice = createSlice({
 			[(state: State) => state.modDb.mods.data, (_, id: string) => id],
 			(mods, id) => mods?.find(m => m.id === id),
 		),
+		selectIsLoggedIn: (state) => !!state.user,
+		selectUserAvatarUrl: (state) => state.user?.avatarUrl,
 		selectStoreWithoutUI: (state) => {
 			return {
 				...state, ui: {
@@ -246,6 +276,7 @@ export const {
 	setInfoOpen,
 	setModsOpen,
 	changeModsTab,
+	logout,
 } = slice.actions;
 export const {
 	selectInfoDialogOpen,
@@ -257,6 +288,8 @@ export const {
 	selectInstalledModIds,
 	selectAvailableModIds,
 	selectAvailableMod,
+	selectIsLoggedIn,
+	selectUserAvatarUrl,
 	selectInstalledMod,
 	selectStoreWithoutUI,
 } = slice.selectors;
