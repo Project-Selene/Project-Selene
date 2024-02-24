@@ -22,7 +22,6 @@ export type RegisterDir = {
 } | {
     kind: 'on-demand',
     target: string,
-    files: string[],
 } | {
     kind: 'zip',
     target: string,

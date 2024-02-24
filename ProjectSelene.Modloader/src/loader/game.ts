@@ -23,6 +23,8 @@ export class Game {
 				game.loaded = await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted');
 			} else if (game.type === 'fs') {
 				game.loaded = 'require' in globalThis;
+			} else if (game.type === 'filelist') {
+				game.loaded = this.mountedGames.has(game.id);
 			}
 		}
 
@@ -39,6 +41,9 @@ export class Game {
 				});
 			}
 		}
+
+		//Completely remove filelist games that are not loaded because once they are gone we have no way to load them again
+		games.games = games.games.filter(g => g.type !== 'filelist' || g.loaded);
 
 		const selectedGame = games.games.find(g => g.id === games.selectedGame);
 		if (!selectedGame) {
@@ -79,6 +84,15 @@ export class Game {
 			await this.filesystem.mountDirectoryFS('/fs/internal/game/' + game.id + '/', game.path);
 
 			return true;
+		} else if (game.type === 'filelist') {
+			if (mode === 'readwrite') {
+				return false;
+			}
+
+			if (this.mountedGames.has(game.id)) {
+				return true;
+			}
+			return false;
 		}
 
 		return false;
@@ -87,7 +101,7 @@ export class Game {
 	public async openGame(id: number, mode: FileSystemPermissionMode = 'read'): Promise<GameInfo> {
 		if (globalThis['require']) {
 			throw new Error('Not implemented yet');
-		} else {
+		} else if ('showDirectoryPicker' in globalThis) {
 			const handle = await globalThis.showDirectoryPicker({ id: 'game', mode });
 
 			await this.gameHandles.set(id, handle);
@@ -99,6 +113,35 @@ export class Game {
 			return {
 				id,
 				type: 'handle',
+				loaded: true,
+			};
+		} else {
+			if (mode === 'readwrite') {
+				throw new Error('Not supported in this browser');
+			}
+
+			const folderPicker = document.createElement('input');
+			folderPicker.type = 'file';
+			folderPicker.webkitdirectory = true;
+			const files = await new Promise<FileList>((resolve, reject) => {
+				folderPicker.addEventListener('change', () => {
+					if (folderPicker.files) {
+						resolve(folderPicker.files);
+					} else {
+						reject(new Error('No files selected'));
+					}
+				});
+				folderPicker.addEventListener('error', (e) => {
+					reject(e);
+				});
+				folderPicker.click();
+			});
+			await this.filesystem.mountFileList('/fs/internal/game/' + id + '/', files);
+			this.mountedGames.add(id);
+
+			return {
+				id,
+				type: 'filelist',
 				loaded: true,
 			};
 		}

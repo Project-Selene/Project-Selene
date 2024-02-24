@@ -1,5 +1,11 @@
 const originalRequire = window.require;
 
+declare global {
+	interface Navigator {
+		keyboard: unknown;
+	}
+}
+
 export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 	const global: ProjectSeleneGlobal = {
 		classes: {},
@@ -17,6 +23,55 @@ export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 		nw: 'nw' in window ? window.nw : browserNW,
 		process: window.process ?? browserProcess,
 	});
+
+	if (!navigator.keyboard) {
+		Object.assign(navigator, {
+			//Firefox and Safari do not support this
+			keyboard: navigator.keyboard ?? {
+				async getLayoutMap() {
+					return {
+						has() {
+							return false;
+						},
+					};
+				},
+			},
+		});
+	}
+
+	if (!AudioParam.prototype.cancelAndHoldAtTime) {
+		//Firefox does not support this
+		Object.assign(AudioParam.prototype, {
+			cancelAndHoldAtTime(this: AudioParam, time: number) {
+				this.cancelScheduledValues(time);
+				this.setValueAtTime(this.value, time);
+			},
+		});
+	}
+	if (!AudioListener.prototype.positionX) {
+		const original = AudioContext;
+		//Firefox does not support this
+		Object.assign(globalThis, {
+			AudioContext: function () {
+				const ctx = new original();
+				Object.defineProperty(ctx, 'listener', {
+					value: {
+						positionX: ctx.listener.positionX ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						positionY: ctx.listener.positionY ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						positionZ: ctx.listener.positionZ ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						forwardX: ctx.listener.forwardX ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						forwardY: ctx.listener.forwardY ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						forwardZ: ctx.listener.forwardZ ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						upX: ctx.listener.upX ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						upY: ctx.listener.upY ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+						upZ: ctx.listener.upZ ?? { linearRampToValueAtTime: () => { } } as unknown as AudioParam,
+					},
+					enumerable: true,
+				});
+				return ctx;
+			},
+		});
+	}
 }
 
 const browserNW = {
@@ -34,7 +89,7 @@ const browserNW = {
 	},
 	Window: {
 		get: () => ({
-			on: () => {return;},
+			on: () => { return; },
 			close: () => window.close(),
 			enterFullscreen: () => document.body.requestFullscreen(),
 			leaveFullscreen: () => document.exitFullscreen(),
@@ -84,20 +139,20 @@ function requireFS() {
 					const path = '/fs/game/' + name.replace('data/local/terra/', '');
 					// console.log('readdir', path, options);
 
-					const result: {name: string, isDir: boolean}[] =  await (await fetch(path, {
+					const result: { name: string, isDir: boolean }[] = await (await fetch(path, {
 						method: 'GET',
 						headers: {
 							'X-SW-Command': 'readDir',
 						},
 					})).json();
 					const mapped = result.map(e => ({
-						name: e.name, 
-						isDirectory(){return e.isDir;}, 
-						isFile(){return !e.isDir;},
+						name: e.name,
+						isDirectory() { return e.isDir; },
+						isFile() { return !e.isDir; },
 					}));
-					callback(undefined,mapped);
+					callback(undefined, mapped);
 				},
-			} as Record<string | symbol, unknown>)[prop] ?? original[prop] ?? (() => {throw new Error('Cannot be used in browser');})();
+			} as Record<string | symbol, unknown>)[prop] ?? original[prop] ?? (() => { throw new Error('Cannot be used in browser'); })();
 		},
 		set(original, p, newValue) {
 			original[p] = newValue;
@@ -145,7 +200,7 @@ function requireFSPromises() {
 				rename(from: string, to: string) {
 					console.log('rename', from, to);
 				},
-			} as Record<string | symbol, unknown>)[prop] ?? (() => {throw new Error('Cannot be used in browser');})();
+			} as Record<string | symbol, unknown>)[prop] ?? (() => { throw new Error('Cannot be used in browser'); })();
 		},
 	});
 }

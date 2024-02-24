@@ -23,7 +23,7 @@ export class StorageFS extends Storage {
 			target: this.target,
 			path,
 			response,
-		});
+		}, response);
 	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
@@ -36,7 +36,7 @@ export class StorageFS extends Storage {
 			path,
 			response,
 			content,
-		});
+		}, content, response);
 	}
 
 	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
@@ -45,7 +45,7 @@ export class StorageFS extends Storage {
 			target: this.target,
 			path,
 			response,
-		});
+		}, response);
 	}
 
 	public async delete(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
@@ -54,6 +54,6 @@ export class StorageFS extends Storage {
 			target: this.target,
 			path,
 			response,
-		});
+		}, response);
 	}
 }

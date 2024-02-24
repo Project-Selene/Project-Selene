@@ -4,11 +4,10 @@ import { SingleCommunication } from '../communication/single';
 import { SWCommunication } from '../communication/sw';
 import { WORKER_COUNT } from '../communication/worker';
 import { RegisterDir, RegisterPatches, UnregisterPatches } from '../worker/worker-message';
+import { StorageFileList } from './worker-storage-filelist';
 import { StorageFS } from './worker-storage-fs';
 
 const workerBroadcast = new BroadcastCommunication('project-selene-worker-broadcast');
-
-const fileMap = new Map<string, File>();
 
 interface FsMessage {
 	target: string,
@@ -26,6 +25,7 @@ export class Worker {
 	private swChannel!: SWCommunication;
 	private readonly store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
 	private readonly filters: string[] = [];
+	private readonly fileListFS = new StorageFileList();
 
 	async setup() {
 		if (window.navigator.serviceWorker) {
@@ -57,6 +57,18 @@ export class Worker {
 					await new SingleCommunication(worker).send('register-fs', { channel: fsChannel.port2 }, fsChannel.port2);
 				}
 			}
+
+			for (const worker of workers) {
+				const fileListChannel = new MessageChannel();
+
+				const fsComs = new SingleCommunication(fileListChannel.port1);
+				fsComs.on('readFile', (args: FsMessage) => this.fileListFS.readFile(args.target, args.path, args.response));
+				fsComs.on('readDir', (args: FsMessage) => this.fileListFS.readDir(args.target, args.path, args.response));
+				fsComs.on('stat', (args: FsMessage) => this.fileListFS.stat(args.target, args.path, args.response));
+
+				await new SingleCommunication(worker).send('register-filelist', { channel: fileListChannel.port2 }, fileListChannel.port2);
+			}
+
 			const reg = await navigator.serviceWorker.ready;
 			if (reg.active) {
 				this.swChannel = new SWCommunication();
@@ -97,16 +109,13 @@ export class Worker {
 		idb.del(id, this.store);
 	}
 	public async registerGameDirectoryOnDemand(mount: string, files: FileList) {
-		const names = Array.from(files).map(f => f.webkitRelativePath.slice(f.webkitRelativePath.indexOf('/') + 1));
-
 		for (const file of files) {
-			fileMap.set(mount + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1), file);
+			this.fileListFS.registerFile(mount + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1), file);
 		}
 
 		await workerBroadcast.send('register-dir', {
 			target: mount,
 			kind: 'on-demand',
-			files: names,
 		} satisfies RegisterDir);
 
 		const sw = (await navigator.serviceWorker.ready).active;

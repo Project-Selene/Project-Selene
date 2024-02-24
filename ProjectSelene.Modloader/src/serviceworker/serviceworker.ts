@@ -73,18 +73,34 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 
 			const stream = new TransformStream();
 
+			let body: ReadableStream<Uint8Array> | null = event.request.body;
+			if ((event.request.method === 'POST' || event.request.method === 'PUT') && !body) {
+				//Firefox doesn't support body so just read everything and turn it into a stream
+				const tstream = new TransformStream();
+				body = tstream.readable;
+
+				const writer = tstream.writable.getWriter();
+
+				event.request.arrayBuffer()
+					.then(buffer => {
+						writer.write(new Uint8Array(buffer));
+						writer.close();
+					})
+					.catch(() => writer.abort());
+			}
+
 			const response = worker.send('fetch', {
 				request: {
 					method: event.request.method,
 					url: event.request.url,
 					headers: toObject(event.request.headers),
-					body: event.request.body,
+					body,
 					clientId: event.clientId,
 				},
 				response: stream.writable,
 			},
 			stream.writable,
-			event.request.body,
+			body,
 			) as Promise<ResponseInit>;
 
 			return new Response(

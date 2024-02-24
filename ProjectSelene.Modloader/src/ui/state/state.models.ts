@@ -34,6 +34,10 @@ export type GameInfo = {
     type: 'fs';
     path: string;
     loaded: boolean;
+} | {
+    id: number;
+    type: 'filelist';
+    loaded: boolean;
 };
 
 export interface Mods {

@@ -7,6 +7,7 @@ import { Patcher } from './patcher';
 import { PatcherJSON } from './patcher-json';
 import { PatcherRaw } from './patcher-raw';
 import { Storage } from './storage';
+import { StorageFileList } from './storage-filelist';
 import { StorageFS } from './storage-fs';
 import { StorageHandles } from './storage-handles';
 import { StorageHttp } from './storage-http';
@@ -27,6 +28,7 @@ const patchers: Patcher[] = [
 
 const store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
 const workerBroadcast = new BroadcastCommunication('project-selene-worker-broadcast');
+let fileListChannel: SingleCommunication;
 let fsChannel: SingleCommunication;
 let swChannel: SingleCommunication;
 
@@ -52,7 +54,7 @@ workerBroadcast.on('register-dir', async (data: RegisterDir) => {
 	} else if (data.kind === 'fs') {
 		storages.unshift(new StorageFS(data.target, data.source, fsChannel));
 	} else {
-		throw new Error('Not implemented yet: ' + data.kind);
+		storages.unshift(new StorageFileList(data.target, fileListChannel));
 	}
 });
 
@@ -134,6 +136,9 @@ self.addEventListener('connect', event => {
 
 	swChannel.on('register-fs', (data: RegisterFs) => {
 		fsChannel = new SingleCommunication(data.channel);
+	});
+	swChannel.on('register-filelist', (data: RegisterFs) => {
+		fileListChannel = new SingleCommunication(data.channel);
 	});
 
 	swChannel.on('fetch', async ({ request, response }: { request: RequestData, response: WritableStream<Uint8Array> }): Promise<ResponseInit> => {
