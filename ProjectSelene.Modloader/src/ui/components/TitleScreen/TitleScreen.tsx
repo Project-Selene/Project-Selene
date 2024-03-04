@@ -4,6 +4,7 @@ import { HomeButtons } from '../HomeButtons/HomeButtons';
 import { InfoButton } from '../InfoButton/InfoButton';
 import { InfoDialog } from '../InfoDialog/InfoDialog';
 import { ModsDialog } from '../ModsDialog/ModsDialog';
+import { OpenDialog } from '../OpenDialog/OpenDialog';
 import { Title } from '../Title/Title';
 import './TitleScreen.scss';
 
@@ -16,6 +17,7 @@ export function TitleScreen() {
 		<Character />
 		<Background />
 		<ModsDialog />
+		<OpenDialog />
 		<InfoDialog />
 		<InfoButton />
 	</div>;
