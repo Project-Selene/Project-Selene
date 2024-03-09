@@ -1,17 +1,38 @@
-import { expect, test } from '@playwright/test';
+import { Browser, Page, expect, test } from '@playwright/test';
+import type { BuildContext, BuildOptions } from 'esbuild';
 import * as fileApi from './lib/file-api';
+import { serve } from './lib/serve';
 
-test.beforeEach(async ({ page, browserName }) => {
+let esbuildContext: BuildContext<BuildOptions>;
+let url: string;
+
+let browser: Browser;
+let page: Page;
+
+test.beforeAll(async () => {
+	const result = await serve();
+	esbuildContext = result.context;
+	url = result.url;
+});
+
+test.beforeEach(async ({ browserName, context }) => {
+	browser = await context.browser()!.browserType().launch();
+	page = await browser.newPage();
 	await page.addInitScript(fileApi.mockFileApi(browserName));
-	await page.addInitScript(async () => navigator.serviceWorker.controller ? await (await navigator.serviceWorker.ready).unregister() : true);
-	// await serve();
+});
 
+test.afterEach(async () => {
+	await page.close();
+	await browser.close();
+});
+
+test.afterAll(async () => {
+	await esbuildContext.dispose();
 });
 
 
-test('open game directory', async ({ page }) => {
-	test.setTimeout(0);
-	await page.goto('http://localhost:8081/');
+test('open game directory', async () => {
+	await page.goto(url);
 	await fileApi.createFile(page, '/terra/terra/dist/bundle.js', 'console.log("hi")');
 	await fileApi.createFile(page, '/terra/terra/index-release.html', '<html><body><h1>hi</h1></body></html>');
 	const fileChooserPromise = fileApi.nextShowDirectoryPicker(page, '/terra');
@@ -20,9 +41,8 @@ test('open game directory', async ({ page }) => {
 	expect(await page.getByRole('button', { name: 'Play' }).elementHandle()).toBeTruthy();
 });
 
-test('open game directory after mods dialog', async ({ page }) => {
-	test.setTimeout(0);
-	await page.goto('http://localhost:8081/');
+test('open game directory after mods dialog', async () => {
+	await page.goto(url);
 	await page.getByRole('button', { name: 'Mods' }).click();
 	await page.getByRole('button', { name: 'Close' }).click();
 	await page.getByRole('button', { name: 'Play' }).click();
@@ -30,12 +50,11 @@ test('open game directory after mods dialog', async ({ page }) => {
 	const fileChooserPromise = fileApi.nextShowDirectoryPicker(page, '/terra');
 	await page.getByRole('button', { name: 'Play' }).click();
 	await fileChooserPromise;
-	expect(await page.getByRole('button', { name: 'Play' }).elementHandle()).toBeTruthy();
+	await page.locator('text=Play').waitFor({ state: 'visible', timeout: 1000 });
 });
 
-test('open game directory in mods dialog', async ({ page }) => {
-	test.setTimeout(0);
-	await page.goto('http://localhost:8081/');
+test('open game directory in mods dialog', async () => {
+	await page.goto(url);
 	await fileApi.createFile(page, '/terra/terra/dist/bundle.js', 'console.log("hi")');
 	await page.getByRole('button', { name: 'Mods' }).click();
 	const fileChooserPromise = fileApi.nextShowDirectoryPicker(page, '/terra');
@@ -43,9 +62,8 @@ test('open game directory in mods dialog', async ({ page }) => {
 	await fileChooserPromise;
 });
 
-test('open game directory aborted', async ({ page }) => {
-	test.setTimeout(0);
-	await page.goto('http://localhost:8081/');
+test('open game directory aborted', async () => {
+	await page.goto(url);
 	await fileApi.createFile(page, '/terra/terra/dist/bundle.js', 'console.log("hi")');
 	const fileChooserPromise = fileApi.nextShowDirectoryPicker(page, '');
 	await page.getByRole('button', { name: 'Play' }).click();

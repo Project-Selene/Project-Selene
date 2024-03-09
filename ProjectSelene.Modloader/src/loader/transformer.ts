@@ -1,7 +1,7 @@
 import type * as tsType from 'typescript';
 
-if (window.process) {
-	Object.assign(window.process, {
+if (globalThis.process) {
+	Object.assign(globalThis.process, {
 		browser: true,
 	});
 }

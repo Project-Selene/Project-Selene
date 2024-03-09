@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@playwright/test": "^1.41.2",
+    "@playwright/test": "^1.42.1",
     "@testing-library/jest-dom": "^6.4.1",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -65,7 +65,8 @@
     "postcss": "^8.4.35",
     "postcss-modules": "^6.0.0",
     "react-snap": "^1.23.0",
-    "sass": "^1.70.0"
+    "sass": "^1.70.0",
+    "ts-jest": "^29.1.2"
   },
   "overrides": {
     "typescript": "~5.3.3"
