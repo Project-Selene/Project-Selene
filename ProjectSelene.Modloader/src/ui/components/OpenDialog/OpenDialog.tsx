@@ -2,6 +2,7 @@ import { Box, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { setModsOpen, store } from '../../state/state.reducer';
+import { InfoIcon } from './InfoIcon';
 import { InfoPointer } from './InfoPointer';
 import classes from './OpenDialog.module.scss';
 
@@ -10,41 +11,78 @@ export function OpenDialog() {
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
-	return <Dialog open={open} maxWidth={false} fullWidth={true} onClose={() => dispatch(setModsOpen(false))}>
+	return <Dialog open={open} maxWidth={false} fullWidth={false} onClose={() => dispatch(setModsOpen(false))}>
 		<DialogTitle>
 			<Stack direction="row" justifyContent="space-between">
-				<span>Open Game</span>
+				<span>Finding the game directory using Steam</span>
 			</Stack>
 		</DialogTitle>
-		<DialogContent sx={{ height: '80vh' }}>
-			<Box sx={{ display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'center', gap: 3 }}>
-				<Box sx={{ flexBasis: '40%', alignSelf: 'center' }}>
-					<p>
-						<Typography variant="subtitle1">Step 1: Open Steam</Typography>
-						<Typography variant="body1">Open Steam and navigate to the library tab.</Typography>
-					</p>
-					<p>
-						<Typography variant="subtitle1">Step 2: Right Click on Game</Typography>
-						<Typography variant="body1">Right click on the game you want to open and select properties.</Typography>
-					</p>
-				</Box>
-				<Box sx={{ flexBasis: '40%' }}>
-					<Typography variant="subtitle1">
-						<InfoPointer x={10} y={0.5} rotate={0} text="1" />
-					</Typography>
-					<img src="static/images/open_guide_steam_properties.png" className={classes.property}></img>
+		<DialogContent sx={{ maxWidth: '100em' }}>
+			<div>
+				<Box sx={{ display: { sm: 'table', xs: 'flex' }, borderSpacing: 8, flexDirection: 'column' }}>
+					<Box sx={{ display: { sm: 'table-row', xs: 'flex' }, flexDirection: 'column' }}>
+						<Box sx={{
+							display: 'table-cell',
+							verticalAlign: 'middle',
+							width: { sm: '30em', xs: '100%' },
+							minWidth: '10em',
+						}}>
+							<Box sx={{
+								width: 'fit-content',
+								margin: 'auto',
+							}}>
+								<Typography variant="subtitle1">Step <InfoIcon text="1" />: Open Steam</Typography>
+								<Typography variant="subtitle1">Step <InfoIcon text="2" />: Right Click on Game</Typography>
+								<Typography variant="subtitle1">Step <InfoIcon text="3" />: Click properties</Typography>
+							</Box>
+						</Box>
+						<Box sx={{
+							display: 'table-cell',
+							maxWidth: '50em',
+							paddingTop: '60px',
+							paddingLeft: { sm: 0, xs: '60px' },
+							paddingRight: { sm: 0, xs: '60px' },
+							boxSizing: 'border-box',
+							width: { sm: '40em', xs: '100%' },
+							minWidth: '10em',
+						}}>
+							<Box sx={{ width: 'fit-content' }}>
+								<Typography variant="subtitle1" sx={{ position: 'relative', overflow: 'visible' }}>
+									<InfoPointer x={5} y={4} rotate={0} text="2" />
+									<InfoPointer x={90} y={53} rotate={90} text="3" />
+								</Typography>
+								<img src="static/images/open_guide_steam_properties.png" className={classes.property}></img>
+							</Box>
 
+						</Box>
+					</Box>
+					<Box sx={{ display: { sm: 'table-row', xs: 'flex' }, flexDirection: 'column' }}>
+						<Box sx={{ display: 'table-cell', verticalAlign: 'middle' }}>
+							<Box sx={{
+								width: 'fit-content',
+								margin: 'auto',
+							}}>
+								<Typography variant="subtitle1">Step <InfoIcon text="4" />: Click on Local Files</Typography>
+								<Typography variant="subtitle1">Step <InfoIcon text="5" />: Click on Browse</Typography>
+							</Box>
+						</Box>
+						<Box sx={{ display: 'table-cell', maxWidth: '50em' }}>
+							<Box sx={{
+								width: { sm: 'fit-content', xs: '100%' },
+								maxWidth: '30em',
+								padding: { sm: 0, xs: '60px' },
+								boxSizing: 'border-box',
+							}}>
+								<Typography variant="subtitle1" sx={{ position: 'relative', overflow: 'visible' }}>
+									<InfoPointer x={2} y={20} rotate={0} text="4" />
+									<InfoPointer x={90} y={10} rotate={90} text="5" />
+								</Typography>
+								<img src="static/images/open_guide_steam_search.png" className={classes.search}></img>
+							</Box>
+						</Box>
+					</Box>
 				</Box>
-				<Box sx={{ flexBasis: '40%', alignSelf: 'center' }}>
-					<p>
-						<Typography variant="subtitle1">Step 3: Click on Local Files</Typography>
-						<Typography variant="body1">Click on the Local Files tab and then click on the Browse Local Files button.</Typography>
-					</p>
-				</Box>
-				<Box sx={{ flexBasis: '40%' }}>
-					<img src="static/images/open_guide_steam_search.png" className={classes.search}></img>
-				</Box>
-			</Box>
+			</div>
 		</DialogContent>
 	</Dialog >;
 }

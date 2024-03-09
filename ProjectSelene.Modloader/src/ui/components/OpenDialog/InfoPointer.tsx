@@ -26,18 +26,11 @@ export function InfoPointer(props: {
 			fill: '#D43C5D',
 		}}>
 			<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
-				<defs>
-					<filter id="shadow">
-						<feDropShadow dx="0.2" dy="0.8" stdDeviation="0.2" floodColor="cyan" />
-					</filter>
-				</defs>
-				{/* <g filter="url(#shadow)"> */}
 				<circle cx="20" cy="20" r="20" strokeWidth="0" />
 				<polygon points="15.75,24.25 24.25,15.75 54.25,45.75 59.25,40.75 60,60 40.75,59.25 45.75,54.25" strokeWidth="0" />
 				<text x="20" y="20" textAnchor="middle" alignmentBaseline="central" fill="currentcolor" transform={`rotate(-${props.rotate} 20 20)`}>
 					{props.text}
 				</text>
-				{/* </g> */}
 			</svg>
 		</Box>
 	</Box>;
