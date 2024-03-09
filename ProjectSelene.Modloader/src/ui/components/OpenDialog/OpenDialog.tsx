@@ -1,17 +1,15 @@
 import { Box, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { setModsOpen, store } from '../../state/state.reducer';
+import { useSelector } from 'react-redux';
+import { selectOpenDialogOpen } from '../../state/state.reducer';
 import { InfoIcon } from './InfoIcon';
 import { InfoPointer } from './InfoPointer';
 import classes from './OpenDialog.module.scss';
 
 export function OpenDialog() {
-	const open = true;
+	const open = useSelector(selectOpenDialogOpen);
 
-	const dispatch = useDispatch<typeof store.dispatch>();
-
-	return <Dialog open={open} maxWidth={false} fullWidth={false} onClose={() => dispatch(setModsOpen(false))}>
+	return <Dialog open={open} maxWidth={false} fullWidth={false}>
 		<DialogTitle>
 			<Stack direction="row" justifyContent="space-between">
 				<span>Finding the game directory using Steam</span>

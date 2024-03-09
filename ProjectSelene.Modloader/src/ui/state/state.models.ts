@@ -17,6 +17,7 @@ export interface UIState {
     modsOpen: boolean;
     modsTab: number;
     infoOpen: boolean;
+    openOpen: boolean;
     playing: boolean;
 }
 
