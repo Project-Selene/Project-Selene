@@ -1,5 +1,5 @@
 import esbuild from 'esbuild';
-import { sassPlugin } from 'esbuild-sass-plugin';
+import { sassPlugin, postcssModules } from 'esbuild-sass-plugin';
 
 const context = await esbuild.context(
 	{
@@ -17,6 +17,7 @@ const context = await esbuild.context(
 			'.ico': 'file',
 			'.txt': 'file',
 			'.md': 'file',
+			'.module.css': 'local-css',
 		},
 		assetNames: '[dir]/[name]',
 		outbase: './public/',
@@ -27,7 +28,15 @@ const context = await esbuild.context(
 		platform: 'node',
 		format: 'esm',
 		plugins: [
-			sassPlugin(),
+			sassPlugin({
+				filter: /.module.s?css$/,
+				type: 'style',
+				transform: postcssModules({}),
+			}),
+			sassPlugin({
+				filter: /.s?css$/,
+				type: 'style',
+			}),
 		],
 		define: {
 			'window.DEBUG': 'true',

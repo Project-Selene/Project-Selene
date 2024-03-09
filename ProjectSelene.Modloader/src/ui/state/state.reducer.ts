@@ -140,6 +140,7 @@ const slice = createSlice({
 			modsOpen: false,
 			modsTab: 0,
 			infoOpen: false,
+			openOpen: false,
 			playing: false,
 		},
 	} as State,
@@ -196,6 +197,7 @@ const slice = createSlice({
 
 		builder.addCase(openDirectory.pending, (state) => {
 			state.mods = { loading: true };
+			state.ui.openOpen = true;
 		});
 		builder.addCase(openDirectory.fulfilled, (state, { payload }) => {
 			state.mods = { data: payload.mods, loading: false };
@@ -206,9 +208,11 @@ const slice = createSlice({
 				state.gamesInfo.games.push(payload.game);
 			}
 			state.gamesInfo.selectedGame = payload.game.id;
+			state.ui.openOpen = false;
 		});
 		builder.addCase(openDirectory.rejected, (state, { error }) => {
 			state.mods = { failed: true, error };
+			state.ui.openOpen = false;
 		});
 
 		builder.addCase(deleteMod.fulfilled, (state, { payload }) => {
@@ -220,8 +224,9 @@ const slice = createSlice({
 		builder.addCase(play.pending, (state) => {
 			state.ui.playing = true;
 		});
-		builder.addCase(play.rejected, (state) => {
+		builder.addCase(play.rejected, (state, { error }) => {
 			state.ui.playing = false;
+			console.error(error.stack);
 		});
 		builder.addCase(getUser.fulfilled, (state, { payload }) => {
 			state.user = payload;
@@ -233,6 +238,7 @@ const slice = createSlice({
 	selectors: {
 		selectInfoDialogOpen: (state) => state.ui.infoOpen,
 		selectModsDialogOpen: (state) => state.ui.modsOpen,
+		selectOpenDialogOpen: (state) => state.ui.openOpen,
 		selectPlaying: (state) => state.ui.playing,
 		selectModsLoaded: (state) => !state.mods.loading && !state.mods.failed,
 		selectModsInitialized: (state) => state.mods.loading !== undefined,
@@ -264,6 +270,7 @@ const slice = createSlice({
 					modsOpen: false,
 					modsTab: 0,
 					infoOpen: false,
+					openOpen: false,
 					playing: false,
 				},
 			} satisfies State;
@@ -281,6 +288,7 @@ export const {
 export const {
 	selectInfoDialogOpen,
 	selectModsDialogOpen,
+	selectOpenDialogOpen,
 	selectPlaying,
 	selectModsLoaded,
 	selectModsInitialized,

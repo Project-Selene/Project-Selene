@@ -48,7 +48,7 @@ export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 			},
 		});
 	}
-	if (!AudioListener.prototype.positionX) {
+	if (!('positionX' in AudioListener.prototype)) {
 		const original = AudioContext;
 		//Firefox does not support this
 		Object.assign(globalThis, {

@@ -1,0 +1,18 @@
+@mixin images {
+    min-width: 40%;
+    max-width: 100%;
+}
+
+.property {
+    @include images;
+    aspect-ratio: 451 / 270;
+}
+
+.search {
+    @include images;
+    aspect-ratio: 1263 / 901;
+}
+
+.texts {
+    width: fit-content;
+}

@@ -1,5 +1,5 @@
 import esbuild from 'esbuild';
-import { sassPlugin } from 'esbuild-sass-plugin';
+import { sassPlugin, postcssModules } from 'esbuild-sass-plugin';
 import fs from 'fs';
 import snap from 'react-snap';
 import JsZip from 'jszip';
@@ -34,7 +34,15 @@ const context = await esbuild.context(
 		format: 'esm',
 		target: 'es2018',
 		plugins: [
-			sassPlugin(),
+			sassPlugin({
+				filter: /.module.s?css$/,
+				type: 'style',
+				transform: postcssModules({}),
+			}),
+			sassPlugin({
+				filter: /.s?css$/,
+				type: 'style',
+			}),
 		],
 		define: {
 			'window.DEBUG': 'false',
