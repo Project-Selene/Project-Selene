@@ -23,6 +23,10 @@ export function startUI() {
 	// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 	reportWebVitals();
 
+	if (document.visibilityState as string === 'prerender') {
+		return;
+	}
+
 	const url = new URL(location.href);
 	if (url.searchParams.has('code') && url.searchParams.has('state')) {
 		const state = JSON.parse(localStorage.getItem('loginstate') ?? '{}')[url.searchParams.get('state') ?? ''];

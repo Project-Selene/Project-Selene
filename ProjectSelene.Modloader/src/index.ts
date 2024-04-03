@@ -2,11 +2,13 @@ import { Filesystem } from './loader/filesystem';
 import { loadState, selectStoreWithoutUI, store } from './ui/state/state.reducer';
 import { startUI } from './ui/ui';
 
-const localStored = localStorage.getItem('store');
-if (localStored) {
-	store.dispatch(loadState(JSON.parse(localStored)));
+if (document.visibilityState as string !== 'prerender') {
+	const localStored = localStorage.getItem('store');
+	if (localStored) {
+		store.dispatch(loadState(JSON.parse(localStored)));
+	}
+	store.subscribe(() => localStorage.setItem('store', JSON.stringify(selectStoreWithoutUI(store.getState()))));
 }
-store.subscribe(() => localStorage.setItem('store', JSON.stringify(selectStoreWithoutUI(store.getState()))));
 
 const glob = 'manifest.json';
 import('../public/' + glob); //Actually includes all files in public
@@ -24,12 +26,6 @@ if (process.env.NODE_ENV === 'development') {
 		sessionStorage.setItem('store', JSON.stringify(store.getState().state));
 		return location.reload();
 	});
-}
-
-if (navigator.userAgent === 'ReactSnap') {
-	if (location.href.endsWith('404.html')) {
-		document.title = 'Project Selene 404';
-	}
 }
 
 new Filesystem().setup().then(() => startUI());

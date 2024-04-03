@@ -13,7 +13,7 @@ export class ModDB {
 	}
 
 	public async modList(): Promise<ModInfo[]> {
-		if (navigator.userAgent === 'ReactSnap') {
+		if (document.visibilityState as string === 'prerender') {
 			return [];
 		}
 

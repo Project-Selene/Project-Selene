@@ -13,6 +13,8 @@
 **/*.jfm
 **/azds.yaml
 **/bin
+**/dist
+**/build
 **/charts
 **/docker-compose*
 **/Dockerfile*
@@ -21,5 +23,6 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/*.zip
 LICENSE
 README.md

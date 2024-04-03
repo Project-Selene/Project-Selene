@@ -1,5 +1,5 @@
 export function useJSAvailable() {
-	return navigator.userAgent !== 'ReactSnap';
+	return document.visibilityState as string !== 'prerender';
 }
 
 export function useIsLocal() {

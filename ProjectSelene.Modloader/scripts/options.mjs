@@ -36,7 +36,7 @@ export const options = {
 		}),
 		sassPlugin({
 			filter: /.s?css$/,
-			type: 'style',
+			type: 'css',
 		}),
 	],
 	define: {

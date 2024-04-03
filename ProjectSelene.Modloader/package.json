@@ -62,10 +62,10 @@
     "esbuild-sass-plugin": "^3.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
+    "jsdom": "^24.0.0",
     "openapi-typescript-codegen": "^0.27.0",
     "postcss": "^8.4.35",
     "postcss-modules": "^6.0.0",
-    "react-snap": "^1.23.0",
     "sass": "^1.70.0",
     "ts-jest": "^29.1.2"
   },
