@@ -5,37 +5,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Build and push
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        platforms: ${{ matrix.platform }}
-        push: true
-        tags: ghcr.io/2767mr/project-selene:latest
+  # build:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - linux/amd64
+  #         - linux/arm64
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #   - name: Login to Docker Hub
+  #     uses: docker/login-action@v3
+  #     with:
+  #       registry: ghcr.io
+  #       username: ${{ github.actor }}
+  #       password: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Build and push
+  #     uses: docker/build-push-action@v5
+  #     with:
+  #       context: .
+  #       platforms: ${{ matrix.platform }}
+  #       push: true
+  #       tags: ghcr.io/2767mr/project-selene:latest
   publish-main:
-    needs: build
+    # needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Kubernetes context
       uses: Azure/k8s-set-context@v4
       with:
-        method: kubeconfig
+        method: service-account
         k8s-url: ${{ secrets.K8S_URL }}
         k8s-secret: ${{ secrets.K8S_SECRET }}
     - name: Deploy
