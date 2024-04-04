@@ -5,7 +5,8 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dependencies
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS dependencies
+ARG TARGETARCH
 
 # Install NodeJS
 RUN apt-get update && \
@@ -23,15 +24,15 @@ FROM dependencies AS build
     
 WORKDIR /src
 COPY ["ProjectSelene/ProjectSelene.csproj", "ProjectSelene/"]
-RUN dotnet restore "ProjectSelene/ProjectSelene.csproj"
+RUN dotnet restore -a $TARGETARCH "ProjectSelene/ProjectSelene.csproj"
 COPY ["ProjectSelene.Modloader/package.json", "ProjectSelene.Modloader/package-lock.json", "ProjectSelene.Modloader/"]
 RUN cd ProjectSelene.Modloader && npm ci
 COPY . .
 WORKDIR "/src/ProjectSelene"
-RUN dotnet build "ProjectSelene.csproj" -c Release -o /app/build
+RUN dotnet build "ProjectSelene.csproj" -a $TARGETARCH -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ProjectSelene.csproj" -c Release -o /app/publish
+RUN dotnet publish "ProjectSelene.csproj" -a $TARGETARCH -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
