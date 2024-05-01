@@ -1,6 +1,8 @@
 import esbuild from 'esbuild';
 import { options } from './options.mjs';
 
+options.define['window.DEBUG'] = 'true';
+
 const context = await esbuild.context(options)
 	.catch(() => process.exit(1));
 

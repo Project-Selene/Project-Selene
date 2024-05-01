@@ -3,6 +3,7 @@ import { ModService, OpenAPI } from './generated';
 
 declare global {
 	interface Window {
+		/** Is replaced during compilation with the actual value. Only use this as window.DEBUG. */
 		DEBUG?: boolean;
 	}
 }
