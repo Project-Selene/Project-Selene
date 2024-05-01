@@ -11,7 +11,7 @@ public record VersionDetails(
 )
 {
     public VersionDetails(ModVersion version)
-        : this(version.Version, version.SubmittedBy.GithubId.ToString(), version.SubmittedOn, version.VerifiedBy != null, version.Artifacts.First())
+        : this(version.Version, version.SubmittedBy.GithubId.ToString(), version.SubmittedOn, version.VerifiedBy != null, version.Download)
     {
 
     }

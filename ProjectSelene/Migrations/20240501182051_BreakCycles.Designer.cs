@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectSelene;
 
@@ -10,9 +11,11 @@ using ProjectSelene;
 namespace ProjectSelene.Migrations
 {
     [DbContext(typeof(SeleneDbContext))]
-    partial class SeleneDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240501182051_BreakCycles")]
+    partial class BreakCycles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -23,6 +26,9 @@ namespace ProjectSelene.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ModVersionId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("StoredObjectId")
                         .HasColumnType("TEXT");
 
@@ -31,6 +37,8 @@ namespace ProjectSelene.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ModVersionId");
 
                     b.HasIndex("StoredObjectId");
 
@@ -172,10 +180,17 @@ namespace ProjectSelene.Migrations
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
+                    b.HasOne("ProjectSelene.Models.ModVersion", "ModVersion")
+                        .WithMany("Artifacts")
+                        .HasForeignKey("ModVersionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("ProjectSelene.Models.StoredObject", "StoredObject")
                         .WithMany("Artifacts")
                         .HasForeignKey("StoredObjectId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("ModVersion");
 
                     b.Navigation("StoredObject");
                 });
@@ -202,7 +217,7 @@ namespace ProjectSelene.Migrations
             modelBuilder.Entity("ProjectSelene.Models.ModVersion", b =>
                 {
                     b.HasOne("ProjectSelene.Models.Artifact", "Download")
-                        .WithMany("ModVersions")
+                        .WithMany("DownloadModVersions")
                         .HasForeignKey("DownloadId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -245,12 +260,17 @@ namespace ProjectSelene.Migrations
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
-                    b.Navigation("ModVersions");
+                    b.Navigation("DownloadModVersions");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.Mod", b =>
                 {
                     b.Navigation("Versions");
+                });
+
+            modelBuilder.Entity("ProjectSelene.Models.ModVersion", b =>
+                {
+                    b.Navigation("Artifacts");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.StoredObject", b =>

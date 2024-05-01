@@ -40,10 +40,10 @@ public class LoginService
         var result = await this.context.Users
             .Include(u => u.Mods)
             .ThenInclude(m => m.Versions)
-            .ThenInclude(v => v.Artifacts)
+            .ThenInclude(v => v.Download)
             .Include(u => u.StoredObjects)
             .ThenInclude(o => o.Artifacts)
-            .ThenInclude(a => a.ModVersion)
+            .ThenInclude(a => a.ModVersions)
             .FirstOrDefaultAsync(c => c.Id == id);
         if (result != null)
         {

@@ -19,9 +19,6 @@ public class ModVersion
     [Required]
     public Artifact Download { get; set; } = new Artifact();
 
-    [Required]
-    public ICollection<Artifact> Artifacts { get; set; } = new List<Artifact>();
-
     [InverseProperty(nameof(Mod.Versions))]
     public Mod OwnedBy { get; init; } = new Mod();
 }

@@ -1,4 +1,4 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -139,7 +139,7 @@ export class ModService {
      * @throws ApiError
      */
     public static postApiModVerify(
-        id: number,
+        id: string,
         version: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {

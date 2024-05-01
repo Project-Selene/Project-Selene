@@ -14,5 +14,6 @@ public class Artifact
     public StoredObject? StoredObject { get; init; }
 
     [JsonIgnore]
-    public ModVersion ModVersion { get; init; } = null!;
+    [InverseProperty(nameof(ModVersion.Download))]
+    public List<ModVersion> ModVersions { get; init; } = null!;
 }

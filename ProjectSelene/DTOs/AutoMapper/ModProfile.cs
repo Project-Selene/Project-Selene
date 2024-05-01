@@ -11,7 +11,7 @@ public class ModProfile : Profile
         User? user = null;
         CreateMap<Mod, ModList.Entry>()
             .IncludeMembers(m => m.Info)
-            .ForMember(src => src.Author, opt => opt.MapFrom(m => m.Author.GithubId))
+            .ForMember(src => src.Author, opt => opt.MapFrom(m => m.Author.Name))
             .ForMember(src => src.Versions, opt => opt.MapFrom(m => m.Versions.Where(v => v.VerifiedBy != null || (user != null && v.SubmittedBy == user)).Select(v => v.Version)))
             .ForMember(src => src.Version, opt => opt.MapFrom(m => m.Versions.Where(v => v.VerifiedBy != null || (user != null && v.SubmittedBy == user)).Select(v => v.Version).Max()))
             .ForMember(src => src.Id, opt => opt.MapFrom(m => m.Guid));

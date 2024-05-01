@@ -28,8 +28,8 @@ public class SeleneDbContext : DbContext
             .HasAlternateKey(m => m.Guid);
 
         modelBuilder.Entity<Artifact>()
-            .HasOne(a => a.ModVersion)
-            .WithMany(m => m.Artifacts)
+            .HasMany(a => a.ModVersions)
+            .WithOne(m => m.Download)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Artifact>()

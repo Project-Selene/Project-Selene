@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using ProjectSelene.DTOs;
 using ProjectSelene.Models;
 using ProjectSelene.Services;
-using System.Transactions;
 
 namespace ProjectSelene.Controllers;
 
@@ -24,8 +23,8 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
             return new ModList()
             {
                 Entries = await context.Mods
+                    .Where(entry => entry.Author == user || entry.Versions.Any(v => v.VerifiedBy != null || (user != null && v.SubmittedBy == user)))
                     .ProjectTo<ModList.Entry>(mapper.ConfigurationProvider, new { user })
-                    .Where(entry => entry.Versions.Any())
                     .ToListAsync()
             };
         }
@@ -83,7 +82,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
         {
             var user = await loginService.GetUser(this.HttpContext);
 
-            using var transaction = new TransactionScope();
+            using var transaction = context.Database.BeginTransaction();
 
             var mod = await context.Mods
                     .Include(m => m.Versions)
@@ -109,18 +108,16 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
                 Version = versionUpload.Version,
                 SubmittedOn = DateTime.Now,
                 SubmittedBy = user,
-                Artifacts = new List<Artifact>() {
-                    new()
-                    {
-                        Url = this.cdn + "/storage/download/" + storedObject.Id,
-                        StoredObject = storedObject,
-                    },
+                Download =  new()
+                {
+                    Url = this.cdn + "/storage/download/" + storedObject.Id,
+                    StoredObject = storedObject,
                 },
             });
 
             await context.SaveChangesAsync();
 
-            transaction.Complete();
+            await transaction.CommitAsync();
         }
         catch
         {
@@ -163,6 +160,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
 
             var added = new Mod()
             {
+                Guid = data.Id,
                 Info = new ModInfo()
                 {
                     Name = data.Name,
@@ -294,6 +292,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
             if (mod.Versions.Count == 1)
             {
                 context.Mods.Remove(mod);
+                await context.SaveChangesAsync();
                 return this.Ok(new { id });
             }
             else
@@ -312,7 +311,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
     }
 
     [HttpPost("verify/{id}/{version}")]
-    public async Task<IActionResult> Verify([FromRoute] int id, [FromRoute] string version)
+    public async Task<IActionResult> Verify([FromRoute] Guid id, [FromRoute] string version)
     {
         if (!loginService.IsLoggedIn(this.HttpContext))
         {
@@ -330,7 +329,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
             var mod = await context.Mods
                     .Include(m => m.Versions)
                     .ThenInclude(v => v.VerifiedBy)
-                    .FirstOrDefaultAsync(m => m.Id == id);
+                    .FirstOrDefaultAsync(m => m.Guid == id);
             if (mod == null)
             {
                 return this.NotFound(new { id, version });

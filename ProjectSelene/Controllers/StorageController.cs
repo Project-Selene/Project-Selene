@@ -19,6 +19,8 @@ public class StorageController : Controller
     private readonly ILogger<StorageController> logger;
     private readonly string host;
 
+    private const int UPLOAD_LIMIT = 50 * 1024 * 1024 / 8;
+
     public StorageController(IStorageProviderService storageProvider, SeleneDbContext context, LoginService loginService, ILogger<StorageController> logger, IConfiguration configuration)
     {
         this.storageProvider = storageProvider;
@@ -43,7 +45,7 @@ public class StorageController : Controller
             return BadRequest();
         }
 
-        var unverifiedArtifactsCount = user.StoredObjects.Count(o => o.Artifacts.All(a => a.ModVersion.VerifiedBy == null));
+        var unverifiedArtifactsCount = user.StoredObjects.Count(o => o.Artifacts.All(a => a.ModVersions.Any(v => v.VerifiedBy == null)));
         if (unverifiedArtifactsCount > 5)
         {
             this.logger.LogInformation("User {userId} tried to upload more objects than allowed.", user.Id);
@@ -51,7 +53,7 @@ public class StorageController : Controller
         }
 
         MultipartReader reader = new(Request.GetMultipartBoundary(), Request.Body);
-        reader.BodyLengthLimit = 50 * 1024 * 1024 / 8;
+        reader.BodyLengthLimit = UPLOAD_LIMIT;
         var section = await reader.ReadNextSectionAsync(cancellationToken);
         if (section?.GetContentDispositionHeader() == null)
         {
@@ -137,12 +139,12 @@ public class StorageController : Controller
         }
 
         var obj = await context.StoredObjects
-            .Where(o => o.Artifacts.Any(a => a.ModVersion.VerifiedBy != null))
+            .Where(o => o.Artifacts.Any(a => a.ModVersions.Any(v => v.VerifiedBy != null)))
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (obj != null)
         {
-            Response.Headers.Add("Content-Disposition", new ContentDisposition() { FileName = "download", Inline = false }.ToString());
+            Response.Headers.Append("Content-Disposition", new ContentDisposition() { FileName = "download", Inline = false }.ToString());
 
             var memoryStream = new MemoryStream();
             await this.storageProvider.Download(id, memoryStream, cancellationToken);
@@ -171,7 +173,7 @@ public class StorageController : Controller
                 return this.NotFound(new { id });
             }
 
-            Response.Headers.Add("Content-Disposition", new ContentDisposition() { FileName = "download", Inline = false }.ToString());
+            Response.Headers.Append("Content-Disposition", new ContentDisposition() { FileName = "download", Inline = false }.ToString());
 
             var memoryStream = new MemoryStream();
             await this.storageProvider.Download(id, memoryStream, cancellationToken);
@@ -197,6 +199,6 @@ public class StorageController : Controller
             return BadRequest();
         }
 
-        return user.StoredObjects.Where(o => o.Artifacts.All(a => a.ModVersion.VerifiedBy == null)).Select(o => o.Id).ToList();
+        return user.StoredObjects.Where(o => o.Artifacts.All(a => a.ModVersions.Any(v => v.VerifiedBy == null))).Select(o => o.Id).ToList();
     }
 }
