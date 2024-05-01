@@ -45,7 +45,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
     public async Task<IActionResult> Download([FromRoute] Guid id, [FromRoute] string version)
     {
-        var isAdmin = (await loginService.GetUser(this.HttpContext))?.IsAdmin == true;
+        var isAdmin = loginService.IsLoggedIn(HttpContext) && (await loginService.GetUser(this.HttpContext))?.IsAdmin == true;
 
         var url = await context.ModVersion
             .Where(v => v.Version == version && (isAdmin || v.VerifiedBy != null) && v.OwnedBy.Guid == id)
