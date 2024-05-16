@@ -1,9 +1,11 @@
 import { Page } from '@playwright/test';
+import { RootState } from '../../src/ui/state/state.reducer';
 
 export async function sendTestCommand(page: Page, command: 'setup'): Promise<void>;
 export async function sendTestCommand(page: Page, command: 'createFile', path: string, content: string): Promise<void>;
 export async function sendTestCommand(page: Page, command: 'nextShowDirectoryPicker', folder?: string): Promise<void>;
-export async function sendTestCommand(page: Page, command: 'setup' | 'createFile' | 'nextShowDirectoryPicker', ...args: unknown[]): Promise<void> {
+export async function sendTestCommand(page: Page, command: 'loadStoreState', state: RootState['state']): Promise<void>;
+export async function sendTestCommand(page: Page, command: 'setup' | 'createFile' | 'nextShowDirectoryPicker' | 'loadStoreState', ...args: unknown[]): Promise<void> {
 	await page.evaluate(`globalThis.sendTestCommand(${JSON.stringify({ command, args })})`);
 }
 
@@ -15,4 +17,8 @@ export function createFile(page: Page, path: string, content: string) {
 }
 export function nextShowDirectoryPicker(page: Page, path: string) {
 	return sendTestCommand(page, 'nextShowDirectoryPicker', path);
+}
+
+export function loadStoreState(page: Page, state: RootState['state']) {
+	return sendTestCommand(page, 'loadStoreState', state);
 }

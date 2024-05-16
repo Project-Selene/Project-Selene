@@ -5,12 +5,13 @@ declare global {
 	interface Window {
 		/** Is replaced during compilation with the actual value. Only use this as window.DEBUG. */
 		DEBUG?: boolean;
+		TEST?: boolean;
 	}
 }
 
 export class ModDB {
 	constructor() {
-		OpenAPI.BASE = window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
+		OpenAPI.BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
 	}
 
 	public async modList(): Promise<ModInfo[]> {

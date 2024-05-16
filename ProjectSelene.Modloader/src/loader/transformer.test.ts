@@ -12,6 +12,6 @@ describe('Transformer', () => {
 		// await fs.promises.writeFile('./testdata/bundle.transformed.mjs', result);
 		const expected = await fs.promises.readFile('./testdata/bundle.transformed.mjs', 'utf-8');
 		expect(result).toBe(expected);
-		console.log(result);
+		// console.log(result);
 	});
 });

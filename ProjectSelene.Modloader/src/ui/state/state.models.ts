@@ -1,6 +1,6 @@
 import { UserInfo } from '../../moddb/generated';
 import { LoadingState } from './models/loading-state';
-import { Mod, ModDetails, ModInfo, VersionDetails } from './models/mod';
+import { Mod, ModInfo } from './models/mod';
 
 export interface State {
     gamesInfo: GamesInfo;
@@ -47,6 +47,4 @@ export interface Mods {
 
 export interface ModDb {
     mods: LoadingState<ModInfo[]>;
-    modDetails: Record<number, LoadingState<ModDetails>>
-    versionDetails: Record<number, Record<string, LoadingState<VersionDetails>>>;
 }

@@ -9,7 +9,7 @@ import { GameInfo, GamesInfo, State } from './state.models';
 const fs = new Filesystem();
 const game = new Game(fs);
 const moddb = new ModDB();
-export const loader = new Loader(fs, game);
+const loader = new Loader(fs, game);
 
 export const login = createAsyncThunk('login', async (_, { getState }) => {
 	const url = new URL((await LoginService.getApiLogin()).githubUrl);
@@ -133,8 +133,6 @@ const slice = createSlice({
 		mods: {},
 		modDb: {
 			mods: {},
-			modDetails: {},
-			versionDetails: {},
 		},
 		ui: {
 			modsOpen: false,
@@ -303,3 +301,9 @@ export const {
 } = slice.selectors;
 export const store = configureStore({ reducer: { state: slice.reducer } });
 export type RootState = ReturnType<typeof store.getState>;
+
+/** Should be used for testing only */
+export type SliceType = typeof slice;
+if (globalThis.window && window.TEST) {
+	Object.assign(window, { store, slice });
+}

@@ -17,7 +17,7 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
-	workers: 1,
+	workers: 10, // esbuild cannot use more than 10 ports
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: 'html',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -27,6 +27,13 @@ export default defineConfig({
 
 		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
 		trace: 'on-first-retry',
+	},
+
+	snapshotPathTemplate: '{testDir}/testdata/screenshots/{testFilePath}/{arg}{ext}',
+	expect: {
+		toHaveScreenshot: {
+			stylePath: 'tests/screenshot.css',
+		},
 	},
 
 	/* Configure projects for major browsers */

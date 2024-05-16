@@ -1,4 +1,6 @@
+import { RootState } from '../../src/ui/state/state.reducer.js';
 import { FileApi, setupDirectoryPicker } from './directory-picker.js';
+import { loadStoreState } from './store.js';
 
 let fileApi!: FileApi;
 
@@ -9,7 +11,8 @@ async function setupTest() {
 async function exeuteTestCommand(command: 'setup'): Promise<void>;
 async function exeuteTestCommand(command: 'createFile', path: string, content: string): Promise<void>;
 async function exeuteTestCommand(command: 'nextShowDirectoryPicker', folder?: string): Promise<void>;
-async function exeuteTestCommand(command: 'setup' | 'createFile' | 'nextShowDirectoryPicker', ...args: unknown[]): Promise<void> {
+async function exeuteTestCommand(command: 'loadStoreState', state: RootState['state']): Promise<void>;
+async function exeuteTestCommand(command: 'setup' | 'createFile' | 'nextShowDirectoryPicker' | 'loadStoreState', ...args: unknown[]): Promise<void> {
 	switch (command) {
 		case 'setup':
 			return setupTest();
@@ -17,8 +20,10 @@ async function exeuteTestCommand(command: 'setup' | 'createFile' | 'nextShowDire
 			return fileApi.createFile(args[0] as string, args[1] as string);
 		case 'nextShowDirectoryPicker':
 			return fileApi.nextShowDirectoryPicker(args[0] as string);
+		case 'loadStoreState':
+			return loadStoreState(args[0] as RootState['state']);
 		default:
-			throw new Error('unknown command');
+			throw new Error('unknown command: ' + command);
 	}
 }
 

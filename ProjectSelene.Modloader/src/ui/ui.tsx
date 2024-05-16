@@ -23,7 +23,7 @@ export function startUI() {
 	// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 	reportWebVitals();
 
-	if (document.visibilityState as string === 'prerender') {
+	if (window.TEST || document.visibilityState as string === 'prerender') {
 		return;
 	}
 
@@ -51,4 +51,8 @@ export function startUI() {
 
 	store.dispatch(loadGames());
 	store.dispatch(loadModList());
+}
+
+if (window.TEST) {
+	Object.assign(window, { startUI });
 }

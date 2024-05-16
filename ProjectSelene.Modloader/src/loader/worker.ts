@@ -20,7 +20,6 @@ interface FsMessageWrite extends FsMessage {
 	content: ReadableStream<Uint8Array>;
 }
 
-
 export class Worker {
 	private swChannel!: SWCommunication;
 	private readonly store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');

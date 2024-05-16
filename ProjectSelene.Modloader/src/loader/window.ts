@@ -1,4 +1,4 @@
-const originalRequire = window.require;
+const originalRequire = globalThis.require;
 
 declare global {
 	interface Navigator {
