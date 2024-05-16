@@ -41,6 +41,7 @@ export const options = {
 	],
 	define: {
 		'window.DEBUG': 'false',
+		'window.TEST': 'false',
 		'__filename': '"some.js"',
 		'process.env.NODE_ENV': '"production"',
 	},
