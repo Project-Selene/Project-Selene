@@ -14,8 +14,11 @@ export interface State {
 }
 
 export interface UIState {
-    modsOpen: boolean;
-    modsTab: number;
+    mods: {
+        open: boolean,
+        installedOpen: boolean,
+        availableOpen: boolean,
+    };
     infoOpen: boolean;
     openOpen: boolean;
     playing: boolean;

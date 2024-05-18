@@ -4,6 +4,30 @@ export const theme = createTheme({
 	palette: {
 		mode: 'dark',
 	},
+	components: {
+		MuiDialog: {
+			styleOverrides: {
+				paper: {
+					backgroundColor: 'hsl(0 0% 14%)', //Material design 12dp
+					backgroundImage: 'none',
+				},
+			},
+		},
+		MuiAccordion: {
+			styleOverrides: {
+				root: {
+					backgroundColor: 'hsl(0 0% 14%)', //Material design 12dp
+				},
+			},
+		},
+		MuiCard: {
+			styleOverrides: {
+				root: {
+					backgroundColor: 'hsl(0 0% 16%)', //Material design 24dp
+				},
+			},
+		},
+	},
 });
 
 theme.typography.h1 = {

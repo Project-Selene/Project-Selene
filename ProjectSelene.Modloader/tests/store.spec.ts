@@ -73,11 +73,14 @@ const filled: actions.RootState['state'] = {
 		loading: false,
 	},
 	ui: {
+		mods: {
+			open: false,
+			availableOpen: true,
+			installedOpen: true,
+		},
 		openOpen: false,
 		playing: false,
 		infoOpen: false,
-		modsOpen: false,
-		modsTab: 0,
 	},
 	user: {
 		avatarUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC0UExURf////Pz87Ozs4ODg1hYWDQ0NCAgIAQEBAAAAOPj44+Pj0BAQL+/v0xMTKenpxAQEPv7+2xsbEREROfn5ywsLCgoKDw8PLe3t4uLi6+vr1RUVDAwMHx8fO/v7zg4ON/f31BQUEhISAwMDJ+fn5eXl1xcXMvLy6urq2BgYAgICH9/f5OTk8fHx+vr69PT03h4eHBwcNfX1/f39xgYGGRkZHR0dIeHhxQUFMPDwxwcHM/Pz2hoaNNTm7YAAAAJcEhZcwAADsMAAA7DAcdvqGQAAANQSURBVHhe7drZQuIwGAVgtm6UpVAVaBEEHRY3xtHRceb932uKHEGQ0uTPn/Ym35Vic1JLtrYpGYZhGIZhGAZVuVKtWbbjuo5t1aqVMj7OiVf3k6q/cvy6hz/q12ge1L7hNBs4QK+GjwqP8PWfgldDXSlqmr+IVhsVpWq3cKgOQQe1nNQJcDi7chdVZOhq6pPhGSrIdBaiCKuycP2ue67hGgSC13+jy98OhNrfTgfF2LQQLIy5N3qZ/f9Qm3dEyhj/jqmhKIsGQqVwzgsn5p90FyjMgHQBXLeH4uqaSJTURHFl3tH1hwCujlBHnrQ+AlSRmuAaUzMsU78B1+GZkyqIIxggQk0VaQRVRKghDMOfIkSosZBGYCFCjY00AhsRasidIIEINcgiQYQaZJEgQg2ySBChpvBGqNANY0SoiZBGwDMQDZFGMESEmgHSCHgmo0v6SHSJCEUXiJM2QoAq8nzMMxsni1LkSRsjQJnUnflOF8XV9ZAoie/GpBQjUgrPMLhBugQVFGZxhVAJExTlIf+AYsrWBTaukSvsBgXZ/ECwINbnIx/KUssCS8ODwvAc4QLOtTwqFT8DPfUnZyD4LVia6k/agdBtYk3nC6ybKWpJNWXvf/vGE1SUYsI8/hxROTEzxazjf6peyvqgyzj/ZhhXR6h0a1TVf/H3XA6GUfxx12bH0XDAtP41DMMwDBHebF4fLq782F7vIlpb2nbsR4vbu8H9Aw7SInicr6I4Y002taLbuYaJORz8HGUuB3fa/mrOtzR+aC0k7kl24s6cYX381P+29pHgdO+Uvg7vlvRoZN+oTmyZv64PN6yRTebyW0rClfQjiVOeh3KLxscF1z+/tXwRbw1PCm8KT3AWYqcQvrD/95+c39ntMXiVGG/kvWXdus4Y+t1pF0+o6pigqu3q7yz7qX0yJL8YkNNMmSb+vOEA7d7/oso9rSX+nIPpkZdJ5J0qJM633pBv/Yk7VAzSj4KVOXv7/Xo5dL9DzpfNbmPWmU/U83ajVZBT/z+0fan1ig9yh61eYY4DwL7pZkh8wa8F+Leu3yvsAiQT0/oSrPBLIdYbDN7xcyHsUukePxZkVlwf3OhT3olyikqk+04+ZyWti+BsbaWNWhwKPgHX/Q+2weKkPg9r1gAAAABJRU5ErkJggg==',
@@ -103,25 +106,35 @@ const all: Action[] = [{
 }, {
 	action: actions.openDirectory.pending(''),
 }, {
-	action: actions.changeModsTab(1),
+	action: actions.toggleModsAvailable(),
 	prepare: [actions.setModsOpen(true)],
 }, {
-	action: actions.changeModsTab(0),
-	prepare: [actions.setModsOpen(true)],
-}, {
-	action: actions.changeModsTab(0),
+	action: actions.toggleModsAvailable(),
 	prepare: [
 		actions.setModsOpen(true),
-		actions.changeModsTab(1),
+		actions.toggleModsAvailable(),
 	],
 }, {
 	action: actions.setModsOpen(true),
 	prepare: [actions.loadState(filled)],
 }, {
-	action: actions.setModsOpen(true),
+	action: actions.toggleModsAvailable(),
 	prepare: [
 		actions.loadState(filled),
-		actions.changeModsTab(1),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.toggleModsInstalled(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.toggleModsAvailable(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.toggleModsInstalled(),
 	],
 }];
 

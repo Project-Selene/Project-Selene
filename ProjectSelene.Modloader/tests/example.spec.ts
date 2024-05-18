@@ -27,7 +27,7 @@ test('open game directory in mods dialog', async ({ page }) => {
 	await commands.createFile(page, '/terra/terra/dist/bundle.js', 'console.log("hi")');
 	await page.getByRole('button', { name: 'Mods' }).click();
 	const fileChooserPromise = commands.nextShowDirectoryPicker(page, '/terra');
-	await page.getByRole('heading').getByRole('button', { name: 'Open mods folder' }).click();
+	await page.getByRole('button', { name: 'Open mods folder', exact: true }).click();
 	await fileChooserPromise;
 });
 

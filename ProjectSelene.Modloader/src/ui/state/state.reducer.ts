@@ -135,8 +135,11 @@ const slice = createSlice({
 			mods: {},
 		},
 		ui: {
-			modsOpen: false,
-			modsTab: 0,
+			mods: {
+				open: false,
+				installedOpen: true,
+				availableOpen: true,
+			},
 			infoOpen: false,
 			openOpen: false,
 			playing: false,
@@ -150,10 +153,13 @@ const slice = createSlice({
 			state.ui.infoOpen = payload;
 		},
 		setModsOpen: (state, { payload }: PayloadAction<boolean>) => {
-			state.ui.modsOpen = payload;
+			state.ui.mods.open = payload;
 		},
-		changeModsTab: (state, { payload }: PayloadAction<number>) => {
-			state.ui.modsTab = payload;
+		toggleModsInstalled: (state) => {
+			state.ui.mods.installedOpen = !state.ui.mods.installedOpen;
+		},
+		toggleModsAvailable: (state) => {
+			state.ui.mods.availableOpen = !state.ui.mods.availableOpen;
 		},
 		logout: (state) => {
 			state.user = undefined;
@@ -207,6 +213,7 @@ const slice = createSlice({
 			}
 			state.gamesInfo.selectedGame = payload.game.id;
 			state.ui.openOpen = false;
+			state.ui.mods.installedOpen = true;
 		});
 		builder.addCase(openDirectory.rejected, (state, { error }) => {
 			state.mods = { failed: true, error };
@@ -235,12 +242,13 @@ const slice = createSlice({
 	},
 	selectors: {
 		selectInfoDialogOpen: (state) => state.ui.infoOpen,
-		selectModsDialogOpen: (state) => state.ui.modsOpen,
+		selectModsDialogOpen: (state) => state.ui.mods.open,
 		selectOpenDialogOpen: (state) => state.ui.openOpen,
 		selectPlaying: (state) => state.ui.playing,
 		selectModsLoaded: (state) => !state.mods.loading && !state.mods.failed,
 		selectModsInitialized: (state) => state.mods.loading !== undefined,
-		selectModsTab: (state) => state.ui.modsTab,
+		selectModsInstalledExpanded: (state) => state.mods.loading !== undefined && state.ui.mods.installedOpen,
+		selectModsAvailableExpanded: (state) => state.ui.mods.availableOpen,
 		selectInstalledModIds: memoizedSelectInstalledMods,
 		selectAvailableModIds: createSelector(
 			[
@@ -265,8 +273,11 @@ const slice = createSlice({
 		selectStoreWithoutUI: (state) => {
 			return {
 				...state, ui: {
-					modsOpen: false,
-					modsTab: 0,
+					mods: {
+						open: false,
+						installedOpen: true,
+						availableOpen: true,
+					},
 					infoOpen: false,
 					openOpen: false,
 					playing: false,
@@ -280,7 +291,8 @@ export const {
 	loadState,
 	setInfoOpen,
 	setModsOpen,
-	changeModsTab,
+	toggleModsInstalled,
+	toggleModsAvailable,
 	logout,
 } = slice.actions;
 export const {
@@ -290,7 +302,8 @@ export const {
 	selectPlaying,
 	selectModsLoaded,
 	selectModsInitialized,
-	selectModsTab,
+	selectModsInstalledExpanded,
+	selectModsAvailableExpanded,
 	selectInstalledModIds,
 	selectAvailableModIds,
 	selectAvailableMod,

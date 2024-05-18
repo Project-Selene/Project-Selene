@@ -29,7 +29,7 @@
     "generate": "openapi -i http://localhost:5086/swagger/v1/swagger.json -o src/moddb/generated",
     "build-dummy": "cd ../ProjectSelene.DummyGame && npm run build",
     "test": "eslint **/*.ts **/*.tsx && npm run build-dummy && jest && playwright test",
-    "update-snapshot": "npx playwright test --update-snapshots"
+    "update-snapshot": "node ./scripts/update-screenshots.mjs"
   },
   "eslintConfig": {
     "extends": [
