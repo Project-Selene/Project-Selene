@@ -1,20 +1,22 @@
 import * as esbuild from 'esbuild';
 import { options } from '../../scripts/options.mjs';
 
+let context!: esbuild.BuildContext<esbuild.BuildOptions>;
+
 export async function serve() {
 	options.entryPoints!['test-runtime'] = 'tests/runtime/test.ts';
 	options.minify = false;
 	options.define!['window.TEST'] = 'true';
-	const context = await esbuild.context(options)
+	context = await esbuild.context(options)
 		.catch(() => process.exit(1));
 
 	await context.watch();
-	const serve = await context.serve({
+	await context.serve({
 		servedir: './build/',
-		port: 0,
+		port: 8082,
 	});
 
-	const url = 'http://' + serve.host.replace('0.0.0.0', '127.0.0.1') + ':' + serve.port + '/';
+	const url = 'http://127.0.0.1:8082/';
 
 	for (let i = 0; i < 10; i++) {
 		try {
@@ -24,6 +26,8 @@ export async function serve() {
 			continue;
 		}
 	}
+}
 
-	return { context, url };
+export async function stopServing() {
+	await context.dispose();
 }

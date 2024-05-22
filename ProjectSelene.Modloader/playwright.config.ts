@@ -17,7 +17,6 @@ export default defineConfig({
 	forbidOnly: !!process.env.CI,
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
-	workers: 10, // esbuild cannot use more than 10 ports
 	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
 	reporter: 'html',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -74,10 +73,6 @@ export default defineConfig({
 		// },
 	],
 
-	/* Run your local dev server before starting the tests */
-	// webServer: {
-	// 	command: 'npm run serve -- 8081',
-	// 	url: 'http://localhost:8081/',
-	// 	reuseExistingServer: false,
-	// },
+	globalSetup: './tests/global/setup.ts',
+	globalTeardown: './tests/global/teardown.ts',
 });
