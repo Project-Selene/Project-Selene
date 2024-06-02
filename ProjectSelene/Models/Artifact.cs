@@ -1,19 +1,11 @@
-﻿using System.Text.Json.Serialization;
-
-namespace ProjectSelene.Models;
+﻿namespace ProjectSelene.Models;
 
 public class Artifact
 {
     [Key]
-    public int Id { get; init; }
-
-    [Required]
-    public string Url { get; init; } = "";
-
-    [JsonIgnore]
-    public StoredObject? StoredObject { get; init; }
-
-    [JsonIgnore]
-    [InverseProperty(nameof(ModVersion.Download))]
-    public List<ModVersion> ModVersions { get; init; } = null!;
+    public string Id { get; init; } = "";
+    public User Owner { get; init; } = new User();
+    public DateTime UploadedAt { get; init; }
+    public ICollection<ModVersion> ModVersions { get; init; } = new List<ModVersion>();
+    public ICollection<ModVersionDraft> ModVersionDrafts { get; init; } = new List<ModVersionDraft>();
 }

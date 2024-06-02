@@ -10,15 +10,21 @@ public class ModVersion
     public string Version { get; set; } = "0.0.0";
 
     [Required]
-    public User SubmittedBy { get; set; } = new User();
+    public User SubmittedBy { get; init; } = new User();
 
     [Required]
     public DateTime SubmittedOn { get; init; }
 
-    public User? VerifiedBy { get; set; }
     [Required]
-    public Artifact Download { get; set; } = new Artifact();
+    public User VerifiedBy { get; set; } = new User();
 
-    [InverseProperty(nameof(Mod.Versions))]
-    public Mod OwnedBy { get; init; } = new Mod();
+    [Required]
+    public DateTime VerifiedOn { get; init; }
+
+    [Required]
+    public Artifact Download { get; init; } = new Artifact();
+
+
+    [InverseProperty(nameof(Models.Mod.Versions))]
+    public Mod Mod { get; init; } = new Mod();
 }
