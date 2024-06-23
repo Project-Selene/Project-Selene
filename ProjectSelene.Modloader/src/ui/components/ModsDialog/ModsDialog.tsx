@@ -1,9 +1,9 @@
 import { OpenInNew, Refresh } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadModList, loadMods, login, logout, openDirectory, selectAvailableModIds, selectInstalledModIds, selectIsLoggedIn, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectUserAvatarUrl, setModsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
+import { loadModList, loadMods, openDirectory, selectAvailableModIds, selectInstalledModIds, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
 export function ModsDialog() {
@@ -13,8 +13,6 @@ export function ModsDialog() {
 	const availableExpanded = useSelector(selectModsAvailableExpanded);
 	const installedModIds = useSelector(selectInstalledModIds);
 	const availableModIds = useSelector(selectAvailableModIds);
-	const isLoggedIn = useSelector(selectIsLoggedIn);
-	const userAvatarUrl = useSelector(selectUserAvatarUrl);
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
@@ -24,15 +22,9 @@ export function ModsDialog() {
 				<span>Mods</span>
 				<Stack direction="row" spacing={0.5}>
 					<TextField id="outlined-basic" label="Search..." variant="outlined" />
-					{
-						isLoggedIn
-							? <Button variant="outlined" onClick={() => dispatch(logout())}>
-								<Avatar alt="User" src={userAvatarUrl ?? ''} />
-							</Button>
-							: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(login())}>
-								Login
-							</Button>
-					}
+					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(setOptionsOpen(true))}>
+						Options
+					</Button>
 					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />} onClick={() => dispatch(setModsOpen(false))}>
 						Close
 					</Button>

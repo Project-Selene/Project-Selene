@@ -72,11 +72,20 @@ const filled: actions.RootState['state'] = {
 		},
 		loading: false,
 	},
+	options: {
+		developerMode: false,
+		mods: {},
+	},
 	ui: {
 		mods: {
 			open: false,
 			availableOpen: true,
 			installedOpen: true,
+		},
+		options: {
+			open: false,
+			developerModeExpanded: false,
+			modsExpanded: {},
 		},
 		openOpen: false,
 		playing: false,
@@ -135,6 +144,58 @@ const all: Action[] = [{
 		actions.loadState(filled),
 		actions.setModsOpen(true),
 		actions.toggleModsInstalled(),
+	],
+}, {
+	action: actions.setOptionsOpen(true),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.toggleDeveloperMode(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+	],
+}, {
+	action: actions.toggleDeveloperMode(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleDeveloperMode(),
+	],
+}, {
+	action: actions.setDeveloperModeEnabled(true),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleDeveloperMode(),
+	],
+}, {
+	action: actions.toggleModOptionsExpanded('3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+	],
+}, {
+	action: actions.toggleModOptionsExpanded('3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleModOptionsExpanded('3'),
+	],
+}, {
+	action: actions.setModEnabled({ id: '3', enabled: false }),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleModOptionsExpanded('3'),
 	],
 }];
 

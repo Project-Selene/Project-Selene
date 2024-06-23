@@ -109,8 +109,7 @@ export const play = createAsyncThunk('play', async (_, { dispatch, getState }) =
 		}
 	}
 
-	const dev = ('DEV' in window && !!window.DEV) || !!new URLSearchParams(window.location.search).get('dev');
-	return await loader.play(gameInfo, dev);
+	return await loader.play(gameInfo, state.options.developerMode);
 });
 
 const memoizedSelectInstalledMods = createSelector(
@@ -134,11 +133,20 @@ const slice = createSlice({
 		modDb: {
 			mods: {},
 		},
+		options: {
+			developerMode: false,
+			mods: {},
+		},
 		ui: {
 			mods: {
 				open: false,
 				installedOpen: true,
 				availableOpen: true,
+			},
+			options: {
+				open: false,
+				developerModeExpanded: false,
+				modsExpanded: {},
 			},
 			infoOpen: false,
 			openOpen: false,
@@ -154,6 +162,22 @@ const slice = createSlice({
 		},
 		setModsOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.ui.mods.open = payload;
+		},
+		setOptionsOpen: (state, { payload }: PayloadAction<boolean>) => {
+			state.ui.options.open = payload;
+		},
+		setDeveloperModeEnabled: (state, { payload }: PayloadAction<boolean>) => {
+			state.options.developerMode = payload;
+		},
+		toggleDeveloperMode: (state) => {
+			state.ui.options.developerModeExpanded = !state.ui.options.developerModeExpanded;
+		},
+		setModEnabled: (state, { payload }: PayloadAction<{ id: string, enabled: boolean }>) => {
+			state.options.mods[payload.id] ??= { enabled: payload.enabled };
+			state.options.mods[payload.id].enabled = payload.enabled;
+		},
+		toggleModOptionsExpanded: (state, { payload }: PayloadAction<string>) => {
+			state.ui.options.modsExpanded[payload] = !state.ui.options.modsExpanded[payload];
 		},
 		toggleModsInstalled: (state) => {
 			state.ui.mods.installedOpen = !state.ui.mods.installedOpen;
@@ -249,6 +273,11 @@ const slice = createSlice({
 		selectModsInitialized: (state) => state.mods.loading !== undefined,
 		selectModsInstalledExpanded: (state) => state.mods.loading !== undefined && state.ui.mods.installedOpen,
 		selectModsAvailableExpanded: (state) => state.ui.mods.availableOpen,
+		selectOptionsOpen: (state) => state.ui.options.open,
+		selectDeveloperModeEnabled: (state) => state.options.developerMode,
+		selectDeveloperModeExpanded: (state) => state.ui.options.developerModeExpanded,
+		selectModEnabled: (state, id: string) => state.options.mods[id]?.enabled ?? true,
+		selectModExpanded: (state, id: string) => state.ui.options.modsExpanded[id] ?? false,
 		selectInstalledModIds: memoizedSelectInstalledMods,
 		selectAvailableModIds: createSelector(
 			[
@@ -278,6 +307,11 @@ const slice = createSlice({
 						installedOpen: true,
 						availableOpen: true,
 					},
+					options: {
+						open: false,
+						developerModeExpanded: false,
+						modsExpanded: {},
+					},
 					infoOpen: false,
 					openOpen: false,
 					playing: false,
@@ -291,6 +325,11 @@ export const {
 	loadState,
 	setInfoOpen,
 	setModsOpen,
+	setOptionsOpen,
+	setDeveloperModeEnabled,
+	setModEnabled,
+	toggleDeveloperMode,
+	toggleModOptionsExpanded,
 	toggleModsInstalled,
 	toggleModsAvailable,
 	logout,
@@ -304,6 +343,11 @@ export const {
 	selectModsInitialized,
 	selectModsInstalledExpanded,
 	selectModsAvailableExpanded,
+	selectOptionsOpen,
+	selectDeveloperModeEnabled,
+	selectDeveloperModeExpanded,
+	selectModEnabled,
+	selectModExpanded,
 	selectInstalledModIds,
 	selectAvailableModIds,
 	selectAvailableMod,

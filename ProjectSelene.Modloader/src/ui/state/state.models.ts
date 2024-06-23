@@ -8,9 +8,17 @@ export interface State {
     modDb: ModDb;
     mods: LoadingState<Mods>;
 
+    options: Options;
     ui: UIState;
 
     user?: UserInfo;
+}
+
+export interface Options {
+    developerMode: boolean;
+    mods: Record<string, {
+        enabled: boolean;
+    }>;
 }
 
 export interface UIState {
@@ -19,6 +27,11 @@ export interface UIState {
         installedOpen: boolean,
         availableOpen: boolean,
     };
+    options: {
+        open: boolean,
+        developerModeExpanded: boolean,
+        modsExpanded: Record<string, boolean>
+    }
     infoOpen: boolean;
     openOpen: boolean;
     playing: boolean;
