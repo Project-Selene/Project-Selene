@@ -1,4 +1,4 @@
-import { OpenInNew } from '@mui/icons-material';
+import { ExpandMore, OpenInNew } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Dialog, DialogContent, DialogTitle, Stack, Switch, Typography } from '@mui/material';
 import React from 'react';
@@ -32,7 +32,7 @@ export function OptionsDialog() {
 			<Stack direction="column" sx={{ height: '100%' }} gap={1}>
 				<Stack direction="column">
 					<Accordion expanded={developerModeExpanded} onClick={() => dispatch(toggleDeveloperMode())}>
-						<AccordionSummary>
+						<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
 							<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
 								<Typography variant="subtitle1">
 									Developer Mode

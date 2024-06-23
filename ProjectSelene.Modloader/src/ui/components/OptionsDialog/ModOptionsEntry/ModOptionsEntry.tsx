@@ -1,3 +1,4 @@
+import { ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, Stack, Switch, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,7 +17,7 @@ export function ModOptionsEntry(props: {
 	}
 
 	return <Accordion expanded={modExpanded} onClick={() => dispatch(toggleModOptionsExpanded(props.id))}>
-		<AccordionSummary>
+		<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
 			<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
 				<Typography variant="subtitle1">
 					{modInfo.currentInfo.name}
