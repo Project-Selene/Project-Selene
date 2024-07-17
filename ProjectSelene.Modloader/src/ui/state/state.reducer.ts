@@ -122,39 +122,51 @@ const memoizedSelectInstalledModsSet = createSelector(
 	memoizedSelectInstalledMods,
 	mods => new Set(mods));
 
-const slice = createSlice({
-	name: 'state',
-	initialState: {
-		gamesInfo: {
-			games: [],
-			selectedGame: -1,
-		},
+const initialState: State = {
+	gamesInfo: {
+		games: [],
+		selectedGame: -1,
+	},
+	mods: {},
+	modDb: {
 		mods: {},
-		modDb: {
-			mods: {},
+	},
+	options: {
+		developerMode: false,
+		mods: {},
+	},
+	ui: {
+		mods: {
+			open: false,
+			installedOpen: true,
+			availableOpen: true,
 		},
 		options: {
-			developerMode: false,
-			mods: {},
+			open: false,
+			developerModeExpanded: false,
+			modsExpanded: {},
 		},
-		ui: {
-			mods: {
-				open: false,
-				installedOpen: true,
-				availableOpen: true,
-			},
-			options: {
-				open: false,
-				developerModeExpanded: false,
-				modsExpanded: {},
-			},
-			infoOpen: false,
-			openOpen: false,
-			playing: false,
-		},
-	} as State,
+		infoOpen: false,
+		openOpen: false,
+		playing: false,
+	},
+};
+
+const slice = createSlice({
+	name: 'state',
+	initialState,
 	reducers: {
 		loadState: (_, { payload }: PayloadAction<State>) => {
+			payload.gamesInfo ??= initialState.gamesInfo;
+			payload.gamesInfo.games ??= [];
+			payload.mods ??= {};
+			payload.modDb ??= initialState.modDb;
+			payload.modDb.mods ??= {};
+			payload.options ??= initialState.options;
+			payload.options.mods ??= {};
+			payload.ui ??= initialState.ui;
+			payload.ui.mods ??= initialState.ui.mods;
+			payload.ui.options ??= initialState.ui.options;
 			return payload;
 		},
 		setInfoOpen: (state, { payload }: PayloadAction<boolean>) => {
