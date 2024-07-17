@@ -10,10 +10,8 @@ namespace ProjectSelene.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService, IConfiguration configuration) : ControllerBase
+public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService) : ControllerBase
 {
-    private readonly string cdn = configuration["Domains:CDN"] ?? "http://localhost";
-
     private const int DRAFT_LIMIT = 5;
 
     [HttpGet("list")]
