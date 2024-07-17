@@ -11,6 +11,11 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjectSelene.Modloader.API
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjectSelene.DummyGame", "ProjectSelene.DummyGame\ProjectSelene.DummyGame.esproj", "{9EE62BB2-6B46-415F-91EC-662E60190CED}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CE832CEB-D656-42B9-A00F-DEA8276AF36B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

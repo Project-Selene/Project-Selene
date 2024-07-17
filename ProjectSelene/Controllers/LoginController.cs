@@ -3,7 +3,6 @@ using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProjectSelene.DTOs;
 using ProjectSelene.Models;
@@ -25,6 +24,11 @@ public class LoginController : Controller
     private readonly LoginInfo loginInfo;
     private readonly SeleneDbContext context;
     private readonly IMapper mapper;
+
+    private readonly JsonSerializerOptions jsonSnakeCase = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
 
     public LoginController(ILoggerFactory loggerFactory, IConfiguration configuration, HttpClient httpClient, LoginService loginService, SeleneDbContext context, IMapper mapper)
     {
@@ -63,32 +67,32 @@ public class LoginController : Controller
             }
 
             using var tokenResponse = await this.httpClient.GetAsync(githubTokenEndpoint + Uri.EscapeDataString(code));
-            var tokens = await JsonSerializer.DeserializeAsync<GithubTokens>(tokenResponse.Content.ReadAsStream());
-            if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
+            var tokens = await JsonSerializer.DeserializeAsync<GithubTokens>(tokenResponse.Content.ReadAsStream(), jsonSnakeCase);
+            if (tokens == null || string.IsNullOrEmpty(tokens.TokenType))
             {
                 return BadRequest();
             }
 
             var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
-            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.token_type, tokens.access_token);
+            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.TokenType, tokens.AccessToken);
             using var userDataResponse = await this.httpClient.SendAsync(userDataRequest);
-            var userData = await JsonSerializer.DeserializeAsync<GithubUser>(userDataResponse.Content.ReadAsStream());
+            var userData = await JsonSerializer.DeserializeAsync<GithubUser>(userDataResponse.Content.ReadAsStream(), jsonSnakeCase);
             if (userData == null)
             {
                 return BadRequest();
             }
 
-            var user = await this.context.Users.FirstOrDefaultAsync(u => u.GithubId == userData.id);
+            var user = await this.context.Users.FirstOrDefaultAsync(u => u.GithubId == userData.Id);
             if (user == null)
             {
                 user = new User()
                 {
-                    GithubId = userData.id
+                    GithubId = userData.Id
                 };
                 this.context.Users.Add(user);
             }
-            user.Name = userData.name ?? userData.login;
-            user.AvatarUrl = userData.avatar_url;
+            user.Name = userData.Name ?? userData.Login;
+            user.AvatarUrl = userData.AvatarUrl;
             await this.context.SaveChangesAsync();
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -115,34 +119,34 @@ public class LoginController : Controller
             }
 
             using var tokenResponse = await this.httpClient.GetAsync(discordTokenEndpoint + Uri.EscapeDataString(code));
-            var tokens = await JsonSerializer.DeserializeAsync<DiscordTokens>(tokenResponse.Content.ReadAsStream());
-            if (tokens == null || string.IsNullOrEmpty(tokens.token_type))
+            var tokens = await JsonSerializer.DeserializeAsync<DiscordTokens>(tokenResponse.Content.ReadAsStream(), jsonSnakeCase);
+            if (tokens == null || string.IsNullOrEmpty(tokens.TokenType))
             {
                 return BadRequest();
             }
 
             var userDataRequest = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/v10/users/@me");
-            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.token_type, tokens.access_token);
+            userDataRequest.Headers.Authorization = new AuthenticationHeaderValue(tokens.TokenType, tokens.AccessToken);
             using var userDataResponse = await this.httpClient.SendAsync(userDataRequest);
-            var userData = await JsonSerializer.DeserializeAsync<DiscordUser>(userDataResponse.Content.ReadAsStream());
+            var userData = await JsonSerializer.DeserializeAsync<DiscordUser>(userDataResponse.Content.ReadAsStream(), jsonSnakeCase);
             if (userData == null)
             {
                 return BadRequest();
             }
 
-            var user = await this.context.Users.FirstOrDefaultAsync(u => u.DiscordId == userData.id);
+            var user = await this.context.Users.FirstOrDefaultAsync(u => u.DiscordId == userData.Id);
             if (user == null)
             {
                 user = new User()
                 {
-                    DiscordId = userData.id
+                    DiscordId = userData.Id
                 };
                 this.context.Users.Add(user);
             }
-            user.Name = userData.global_name ?? userData.username;
-            if (userData.avatar != null)
+            user.Name = userData.GlobalName ?? userData.Username;
+            if (userData.Avatar != null)
             {
-                user.AvatarUrl = "https://cdn.discordapp.com/" + user.DiscordId + "/" + userData.avatar + ".png";
+                user.AvatarUrl = "https://cdn.discordapp.com/" + user.DiscordId + "/" + userData.Avatar + ".png";
             }
 
             await this.context.SaveChangesAsync();
@@ -184,33 +188,33 @@ public class LoginController : Controller
 
     private record GithubTokens
     {
-        public string access_token { get; set; } = string.Empty;
-        public string scope { get; set; } = string.Empty;
-        public string token_type { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
+        public string Scope { get; set; } = string.Empty;
+        public string TokenType { get; set; } = string.Empty;
     }
 
     private record GithubUser
     {
-        public int id { get; set; }
-        public string login { get; set; } = string.Empty;
-        public string? name { get; set; } = string.Empty;
-        public string avatar_url { get; set; } = string.Empty;
+        public int Id { get; set; }
+        public string Login { get; set; } = string.Empty;
+        public string? Name { get; set; } = string.Empty;
+        public string AvatarUrl { get; set; } = string.Empty;
     }
 
     private record DiscordTokens
     {
-        public string access_token { get; set; } = string.Empty;
-        public string scope { get; set; } = string.Empty;
-        public string token_type { get; set; } = string.Empty;
-        public string refresh_token { get; set; } = string.Empty;
-        public int expires_in { get; set; }
+        public string AccessToken { get; set; } = string.Empty;
+        public string Scope { get; set; } = string.Empty;
+        public string TokenType { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public int ExpiresIn { get; set; }
     }
 
     private record DiscordUser
     {
-        public ulong id { get; set; }
-        public string username { get; set; } = string.Empty;
-        public string? global_name { get; set; }
-        public string? avatar { get; set; }
+        public ulong Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string? GlobalName { get; set; }
+        public string? Avatar { get; set; }
     }
 }

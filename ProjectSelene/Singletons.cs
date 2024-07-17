@@ -10,7 +10,7 @@ namespace ProjectSelene;
 public static class Singletons
 {
     public static void Register(IServiceCollection services)
-    { 
+    {
         var options = new MvcOptions();
 
         options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonSerializerOptions()));

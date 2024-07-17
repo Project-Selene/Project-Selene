@@ -85,7 +85,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IdResult))]
-    public async Task<ActionResult<IdResult>> DeleteMod([FromRoute]Guid id)
+    public async Task<ActionResult<IdResult>> DeleteMod([FromRoute] Guid id)
     {
         if (!loginService.IsLoggedIn(this.HttpContext))
         {

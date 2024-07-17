@@ -3,10 +3,10 @@
 namespace ProjectSelene.DTOs;
 
 public record VersionDetails(
-    string Version, 
-    string SubmittedBy, 
-    DateTime SubmittedOn, 
-    bool Verified, 
+    string Version,
+    string SubmittedBy,
+    DateTime SubmittedOn,
+    bool Verified,
     Artifact Artifact
 )
 {

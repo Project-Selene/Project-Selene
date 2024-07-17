@@ -32,7 +32,7 @@ public class LoginService
         var idClaim = userClaims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (idClaim == null)
         {
-            throw new UnauthorizedAccessException(); 
+            throw new UnauthorizedAccessException();
         }
 
         var id = int.Parse(idClaim.Value);

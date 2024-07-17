@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using ProjectSelene.Attributes;
 using ProjectSelene.DTOs;
-using ProjectSelene.Models;
 using ProjectSelene.Services;
 using System.Net.Mime;
 
@@ -88,7 +87,7 @@ public class ArtifactController(IMapper mapper, IStorageProviderService storageP
             if (cancellationToken.IsCancellationRequested)
             {
                 logger.LogWarning(e, "Failed to save artifact {id} to database: {version} {mod}", id, version, mod);
-            } 
+            }
             else
             {
                 logger.LogError(e, "Failed to save artifact {id} to database: {version} {mod}", id, version, mod);
@@ -198,7 +197,7 @@ public class ArtifactController(IMapper mapper, IStorageProviderService storageP
         memoryStream.Position = 0;
         return File(memoryStream, "text/plain");
     }
-    
+
     [HttpGet("unverified")]
     public async Task<ActionResult<List<UnverifiedArtifact>>> GetUnverified()
     {
