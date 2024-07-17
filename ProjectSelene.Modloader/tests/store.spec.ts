@@ -230,6 +230,9 @@ function checkScreenshot(state: RootState['state'], name: string) {
 		await page.waitForLoadState('domcontentloaded');
 		const locators = await page.locator('//img').all();
 		await Promise.all(locators.map(l => l.evaluate((e: HTMLImageElement) => e.complete || new Promise(resolve => e.onload = resolve))));
+
+		await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => queueMicrotask(resolve))));
+
 		await new Promise(resolve => setTimeout(resolve, 100));
 		await expect(page).toHaveScreenshot(name + '.png');
 	});
