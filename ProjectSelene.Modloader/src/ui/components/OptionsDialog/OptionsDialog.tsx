@@ -65,11 +65,10 @@ export function OptionsDialog() {
 						installedModIds.map(id => <ModOptionsEntry id={id} key={id}></ModOptionsEntry>)
 					}
 				</Stack>
-				{modsInitialized || <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />} onClick={() => dispatch(openDirectory())}>
+				{modsInitialized ? <></> : <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />} onClick={() => dispatch(openDirectory())}>
 					Open mods folder to show mod options
 				</Button>}
 			</Stack>
-
 		</DialogContent>
 	</Dialog >;
 }
