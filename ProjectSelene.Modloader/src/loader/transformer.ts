@@ -11,6 +11,12 @@ const ts: typeof tsType = require('typescript');
 export function transform(content: string, prefix: string) {
 	const injectedSourceFile = ts.createSourceFile('prefix.raw.mjs', prefix, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
 
+	if ('Buffer' in globalThis && !ts.sys) {
+		(ts as unknown as { setSys(arg: unknown): void }).setSys({
+			base64encode(data: string) { return Buffer.from(data).toString('base64'); },
+		});
+	}
+
 	return ts.transpileModule(content, {
 		fileName: 'bundle.original.js',
 		transformers: {
