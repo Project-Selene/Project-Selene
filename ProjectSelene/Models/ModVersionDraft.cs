@@ -15,7 +15,6 @@ public class ModVersionDraft
     [Required]
     public DateTime CreatedOn { get; init; }
 
-    [Required]
     public Artifact? Download { get; set; }
 
 

@@ -323,10 +323,16 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
             }
 
             var v = await context.ModVersionDrafts
-                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version && v.CreatedBy == user);
+                .Include(m => m.Download)
+                .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version && v.CreatedBy == user);
             if (v == null)
             {
                 return this.NotFound(new VersionResult(id, version));
+            }
+
+            if (v.Download == null)
+            {
+                return this.ValidationProblem("Cannot submit version without download artifact");
             }
 
             v.SubmittedOn = DateTime.Now;
@@ -363,6 +369,8 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
                     .ThenInclude(v => v.Versions)
                     .Include(m => m.Mod)
                     .ThenInclude(v => v.VersionDrafts)
+                    .Include(m => m.Download)
+                    .Include(m => m.CreatedBy)
                     .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version);
             if (v == null)
             {

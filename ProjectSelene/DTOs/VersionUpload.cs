@@ -3,7 +3,5 @@
 public record VersionUpload(
     [Required]
     [RegularExpression(@"^\d+\.\d+\.\d+$")]
-    string Version,
-    [Required]
-    string StoredObject
+    string Version
     );
