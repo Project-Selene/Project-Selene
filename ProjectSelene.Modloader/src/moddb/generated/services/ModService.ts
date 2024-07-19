@@ -20,64 +20,16 @@ export class ModService {
         });
     }
     /**
-     * @param id
-     * @param version
-     * @returns void
-     * @throws ApiError
-     */
-    public static getApiModDownload(
-        id: string,
-        version: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/Mod/download/{id}/{version}',
-            path: {
-                'id': id,
-                'version': version,
-            },
-            errors: {
-                404: `Not Found`,
-            },
-        });
-    }
-    /**
-     * @param id
      * @param requestBody
      * @returns void
      * @throws ApiError
      */
-    public static postApiModCreateVersion(
-        id: string,
-        requestBody?: VersionUpload,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/Mod/create/version/{id}',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Bad Request`,
-                403: `Forbidden`,
-                404: `Not Found`,
-                409: `Conflict`,
-            },
-        });
-    }
-    /**
-     * @param requestBody
-     * @returns void
-     * @throws ApiError
-     */
-    public static postApiModCreateNew(
+    public static postApiModCreate(
         requestBody?: CreateMod,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/Mod/create/new',
+            url: '/api/Mod/create',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -97,7 +49,7 @@ export class ModService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/Mod/delete/{id}',
+            url: '/api/Mod/{id}/delete',
             path: {
                 'id': id,
             },
@@ -120,7 +72,57 @@ export class ModService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/Mod/delete/{id}/{version}',
+            url: '/api/Mod/{id}/{version}/delete',
+            path: {
+                'id': id,
+                'version': version,
+            },
+            errors: {
+                400: `Bad Request`,
+                403: `Forbidden`,
+                404: `Not Found`,
+            },
+        });
+    }
+    /**
+     * @param id
+     * @param requestBody
+     * @returns void
+     * @throws ApiError
+     */
+    public static postApiModDraftCreate(
+        id: string,
+        requestBody?: VersionUpload,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/Mod/draft/{id}/create',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                403: `Forbidden`,
+                404: `Not Found`,
+                409: `Conflict`,
+            },
+        });
+    }
+    /**
+     * @param id
+     * @param version
+     * @returns void
+     * @throws ApiError
+     */
+    public static postApiModDraftDelete(
+        id: string,
+        version: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/Mod/draft/{id}/{version}/delete',
             path: {
                 'id': id,
                 'version': version,
@@ -138,13 +140,32 @@ export class ModService {
      * @returns any Success
      * @throws ApiError
      */
-    public static postApiModVerify(
+    public static postApiModDraftSubmit(
         id: string,
         version: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/Mod/verify/{id}/{version}',
+            url: '/api/Mod/draft/{id}/{version}/submit',
+            path: {
+                'id': id,
+                'version': version,
+            },
+        });
+    }
+    /**
+     * @param id
+     * @param version
+     * @returns any Success
+     * @throws ApiError
+     */
+    public static postApiModDraftVerify(
+        id: string,
+        version: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/Mod/draft/{id}/{version}/verify',
             path: {
                 'id': id,
                 'version': version,

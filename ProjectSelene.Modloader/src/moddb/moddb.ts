@@ -23,6 +23,6 @@ export class ModDB {
 	}
 
 	public async download(id: string, version: string) {
-		return (await fetch(OpenAPI.BASE + '/api/mod/download/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
+		return (await fetch(OpenAPI.BASE + '/api/Artifact/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
 	}
 }
