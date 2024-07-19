@@ -9,6 +9,8 @@ declare global {
 	}
 }
 
+const CDN_BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://cdn.projectselene.org';
+
 export class ModDB {
 	constructor() {
 		OpenAPI.BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
@@ -23,6 +25,6 @@ export class ModDB {
 	}
 
 	public async download(id: string, version: string) {
-		return (await fetch(OpenAPI.BASE + '/api/Artifact/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
+		return (await fetch(CDN_BASE + '/api/Artifact/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
 	}
 }
