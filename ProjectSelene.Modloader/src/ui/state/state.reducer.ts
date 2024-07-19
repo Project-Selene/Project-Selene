@@ -138,6 +138,7 @@ const initialState: State = {
 	ui: {
 		mods: {
 			open: false,
+			search: '',
 			installedOpen: true,
 			availableOpen: true,
 		},
@@ -201,6 +202,9 @@ const slice = createSlice({
 			state.user = undefined;
 			localStorage.removeItem('token');
 			OpenAPI.TOKEN = undefined;
+		},
+		searchForMod: (state, { payload }: PayloadAction<string>) => {
+			state.ui.mods.search = payload;
 		},
 	},
 	extraReducers(builder) {
@@ -285,6 +289,7 @@ const slice = createSlice({
 		selectModsInitialized: (state) => state.mods.loading !== undefined,
 		selectModsInstalledExpanded: (state) => state.mods.loading !== undefined && state.ui.mods.installedOpen,
 		selectModsAvailableExpanded: (state) => state.ui.mods.availableOpen,
+		selectSearchString: (state) => state.ui.mods.search,
 		selectOptionsOpen: (state) => state.ui.options.open,
 		selectDeveloperModeEnabled: (state) => state.options.developerMode,
 		selectDeveloperModeExpanded: (state) => state.ui.options.developerModeExpanded,
@@ -316,6 +321,7 @@ const slice = createSlice({
 				...state, ui: {
 					mods: {
 						open: false,
+						search: '',
 						installedOpen: true,
 						availableOpen: true,
 					},
@@ -337,6 +343,7 @@ export const {
 	loadState,
 	setInfoOpen,
 	setModsOpen,
+	searchForMod,
 	setOptionsOpen,
 	setDeveloperModeEnabled,
 	setModEnabled,
@@ -351,6 +358,7 @@ export const {
 	selectModsDialogOpen,
 	selectOpenDialogOpen,
 	selectPlaying,
+	selectSearchString,
 	selectModsLoaded,
 	selectModsInitialized,
 	selectModsInstalledExpanded,

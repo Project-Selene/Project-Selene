@@ -3,7 +3,8 @@ import Close from '@mui/icons-material/Close';
 import { Accordion, AccordionDetails, AccordionSummary, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadModList, loadMods, openDirectory, selectAvailableModIds, selectInstalledModIds, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
+import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../state/search.selector';
+import { loadModList, loadMods, openDirectory, searchForMod, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectSearchString, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
 export function ModsDialog() {
@@ -11,8 +12,9 @@ export function ModsDialog() {
 	const modsInitialized = useSelector(selectModsInitialized);
 	const installedExpanded = useSelector(selectModsInstalledExpanded);
 	const availableExpanded = useSelector(selectModsAvailableExpanded);
-	const installedModIds = useSelector(selectInstalledModIds);
-	const availableModIds = useSelector(selectAvailableModIds);
+	const installedModIds = useSelector(selectFilteredInstalledModIds);
+	const availableModIds = useSelector(selectFilteredAvailableModIds);
+	const searchString = useSelector(selectSearchString);
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
@@ -21,7 +23,7 @@ export function ModsDialog() {
 			<Stack direction="row" justifyContent="space-between">
 				<span>Mods</span>
 				<Stack direction="row" spacing={0.5}>
-					<TextField id="outlined-basic" label="Search..." variant="outlined" />
+					<TextField id="outlined-basic" label="Search..." variant="outlined" value={searchString} onChange={(e) => dispatch(searchForMod(e.target.value))} />
 					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(setOptionsOpen(true))}>
 						Options
 					</Button>

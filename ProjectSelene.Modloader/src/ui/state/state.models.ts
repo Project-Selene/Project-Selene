@@ -24,6 +24,7 @@ export interface Options {
 export interface UIState {
     mods: {
         open: boolean,
+        search: string,
         installedOpen: boolean,
         availableOpen: boolean,
     };
