@@ -2,6 +2,5 @@
 
 public class UnverifiedArtifact
 {
-    public Guid Mod { get; set; }
-    public string Version { get; set; } = "";
+    public List<UnverifiedArtifactVersion> Versions { get; set; } = [];
 }
