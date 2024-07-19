@@ -61,13 +61,24 @@ const filled: actions.RootState['state'] = {
 				currentInfo: {
 					id: '4',
 					name: 'Test Mod 4',
-					description: 'Test Description 4',
+					description: 'Description 4',
 					version: '1.3.0',
 					versions: ['1.3.0'],
 				},
 				enabled: true,
 				filename: 'mod3.mod.zip',
 				internalName: '2',
+			}, {
+				currentInfo: {
+					id: '5',
+					name: 'X Test Mod 5',
+					description: 'Y Description 5',
+					version: '1.3.0',
+					versions: ['1.3.0'],
+				},
+				enabled: true,
+				filename: 'mod3.mod.zip',
+				internalName: '3',
 			}],
 		},
 		loading: false,
@@ -79,6 +90,7 @@ const filled: actions.RootState['state'] = {
 	ui: {
 		mods: {
 			open: false,
+			search: '',
 			availableOpen: true,
 			installedOpen: true,
 		},
@@ -197,6 +209,54 @@ const all: Action[] = [{
 		actions.setOptionsOpen(true),
 		actions.toggleModOptionsExpanded('3'),
 	],
+}, {
+	action: actions.searchForMod('mo'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('mod test'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('de esc cript'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('2'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('2 3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('DESCRIPTION'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('x test'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('y desc'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
 }];
 
 interface Action {
@@ -231,7 +291,7 @@ function checkScreenshot(state: RootState['state'], name: string) {
 		const locators = await page.locator('//img').all();
 		await Promise.all(locators.map(l => l.evaluate((e: HTMLImageElement) => e.complete || new Promise(resolve => e.onload = resolve))));
 
-		await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => queueMicrotask(resolve))));
+		await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 
 		await new Promise(resolve => setTimeout(resolve, 100));
 		await expect(page).toHaveScreenshot(name + '.png');
