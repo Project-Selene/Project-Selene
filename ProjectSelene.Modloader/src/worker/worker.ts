@@ -185,7 +185,9 @@ self.addEventListener('connect', event => {
 					},
 				};
 			} else {
-				new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				if (!response.locked) {
+					new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				}
 				return {
 					status: 404,
 				};

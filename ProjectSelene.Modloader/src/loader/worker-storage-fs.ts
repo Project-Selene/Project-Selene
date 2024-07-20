@@ -16,14 +16,20 @@ export class StorageFS {
 			reader.on('close', () => writer.close());
 			return true;
 		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
 			return false;
 		}
 	}
 	public async readDir(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		const dir = await this.fs.promises.readdir(this.path.join(source, path), { withFileTypes: true, encoding: 'utf-8' });
-		const result = dir.map(f => ({ isDir: f.isDirectory(), name: f.name }));
-		new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
-		return true;
+		try {
+			const dir = await this.fs.promises.readdir(this.path.join(source, path), { withFileTypes: true, encoding: 'utf-8' });
+			const result = dir.map(f => ({ isDir: f.isDirectory(), name: f.name }));
+			new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+			return false;
+		}
 	}
 	public async writeGranted(target: string, source: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
@@ -49,6 +55,7 @@ export class StorageFS {
 			}));
 			return true;
 		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
 			return false;
 		}
 	}
@@ -59,6 +66,7 @@ export class StorageFS {
 			new Blob([JSON.stringify(stat)], { type: 'application/json' }).stream().pipeTo(response);
 			return true;
 		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
 			return false;
 		}
 	}
@@ -69,6 +77,7 @@ export class StorageFS {
 			new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response);
 			return true;
 		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
 			return false;
 		}
 	}
