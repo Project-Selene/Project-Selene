@@ -113,8 +113,8 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 				},
 				response: stream.writable,
 			},
-				stream.writable,
-				body,
+			stream.writable,
+			body,
 			) as Promise<ResponseInit>;
 
 			return new Response(
