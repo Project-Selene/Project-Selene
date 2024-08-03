@@ -134,7 +134,6 @@ const initialState: State = {
 		mods: {},
 	},
 	options: {
-		developerMode: false,
 		mods: {},
 	},
 	ui: {
@@ -146,7 +145,7 @@ const initialState: State = {
 		},
 		options: {
 			open: false,
-			developerModeExpanded: false,
+			seleneOptionsExpanded: false,
 			modsExpanded: {},
 		},
 		infoOpen: false,
@@ -182,11 +181,8 @@ const slice = createSlice({
 		setOptionsOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.ui.options.open = payload;
 		},
-		setDeveloperModeEnabled: (state, { payload }: PayloadAction<boolean>) => {
-			state.options.developerMode = payload;
-		},
-		toggleDeveloperMode: (state) => {
-			state.ui.options.developerModeExpanded = !state.ui.options.developerModeExpanded;
+		toggleSeleneOptionsExpanded: (state) => {
+			state.ui.options.seleneOptionsExpanded = !state.ui.options.seleneOptionsExpanded;
 		},
 		setModEnabled: (state, { payload }: PayloadAction<{ id: string, enabled: boolean }>) => {
 			state.options.mods[payload.id] ??= { enabled: payload.enabled };
@@ -307,8 +303,7 @@ const slice = createSlice({
 		selectModsAvailableExpanded: (state) => state.ui.mods.availableOpen,
 		selectSearchString: (state) => state.ui.mods.search,
 		selectOptionsOpen: (state) => state.ui.options.open,
-		selectDeveloperModeEnabled: (state) => state.options.developerMode,
-		selectDeveloperModeExpanded: (state) => state.ui.options.developerModeExpanded,
+		selectSeleneOptionsExpanded: (state) => state.ui.options.seleneOptionsExpanded,
 		selectModEnabled: (state, id: string) => state.options.mods[id]?.enabled ?? true,
 		selectModExpanded: (state, id: string) => state.ui.options.modsExpanded[id] ?? false,
 		selectInstalledModIds: memoizedSelectInstalledMods,
@@ -343,7 +338,7 @@ const slice = createSlice({
 					},
 					options: {
 						open: false,
-						developerModeExpanded: false,
+						seleneOptionsExpanded: false,
 						modsExpanded: {},
 					},
 					infoOpen: false,
@@ -363,9 +358,8 @@ export const {
 	setModsOpen,
 	searchForMod,
 	setOptionsOpen,
-	setDeveloperModeEnabled,
 	setModEnabled,
-	toggleDeveloperMode,
+	toggleSeleneOptionsExpanded,
 	toggleModOptionsExpanded,
 	toggleModsInstalled,
 	toggleModsAvailable,
@@ -385,8 +379,7 @@ export const {
 	selectModsInstalledExpanded,
 	selectModsAvailableExpanded,
 	selectOptionsOpen,
-	selectDeveloperModeEnabled,
-	selectDeveloperModeExpanded,
+	selectSeleneOptionsExpanded,
 	selectModEnabled,
 	selectModExpanded,
 	selectInstalledModIds,

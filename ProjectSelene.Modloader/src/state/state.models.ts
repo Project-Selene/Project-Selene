@@ -16,7 +16,6 @@ export interface State {
 }
 
 export interface Options {
-    developerMode: boolean;
     mods: Record<string, {
         enabled: boolean;
     }>;
@@ -31,7 +30,7 @@ export interface UIState {
     };
     options: {
         open: boolean,
-        developerModeExpanded: boolean,
+        seleneOptionsExpanded: boolean,
         modsExpanded: Record<string, boolean>
     }
     infoOpen: boolean;

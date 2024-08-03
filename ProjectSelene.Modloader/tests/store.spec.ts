@@ -86,7 +86,6 @@ const filled: actions.RootState['state'] = {
 		loading: false,
 	},
 	options: {
-		developerMode: false,
 		mods: {},
 	},
 	ui: {
@@ -98,7 +97,7 @@ const filled: actions.RootState['state'] = {
 		},
 		options: {
 			open: false,
-			developerModeExpanded: false,
+			seleneOptionsExpanded: false,
 			modsExpanded: {},
 		},
 		openOpen: false,
@@ -179,27 +178,27 @@ const all: Action[] = [{
 		actions.setModsOpen(true),
 	],
 }, {
-	action: actions.toggleDeveloperMode(),
+	action: actions.toggleSeleneOptionsExpanded(),
 	prepare: [
 		actions.loadState(filled),
 		actions.setModsOpen(true),
 		actions.setOptionsOpen(true),
 	],
 }, {
-	action: actions.toggleDeveloperMode(),
+	action: actions.toggleSeleneOptionsExpanded(),
 	prepare: [
 		actions.loadState(filled),
 		actions.setModsOpen(true),
 		actions.setOptionsOpen(true),
-		actions.toggleDeveloperMode(),
+		actions.toggleSeleneOptionsExpanded(),
 	],
 }, {
-	action: actions.setDeveloperModeEnabled(true),
+	action: actions.openDirectory.pending(''),
 	prepare: [
 		actions.loadState(filled),
 		actions.setModsOpen(true),
 		actions.setOptionsOpen(true),
-		actions.toggleDeveloperMode(),
+		actions.toggleSeleneOptionsExpanded(),
 	],
 }, {
 	action: actions.toggleModOptionsExpanded('3'),

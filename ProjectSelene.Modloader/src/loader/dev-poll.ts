@@ -59,6 +59,7 @@ async function poll() {
 }
 
 async function fetchDevMod() {
+	//The timeout prevents errors from filling the console.
 	await fetch('http://localhost:8182/health', { signal: AbortSignal.timeout(timeout) });
 
 	const result = await fetch('http://localhost:8182/manifest.json');

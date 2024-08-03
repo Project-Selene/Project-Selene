@@ -1,17 +1,17 @@
 import { ExpandMore, OpenInNew } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Dialog, DialogContent, DialogTitle, Stack, Switch, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Box, Button, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, logout, openDirectory, selectDeveloperModeEnabled, selectDeveloperModeExpanded, selectInstalledModIds, selectIsLoggedIn, selectModsInitialized, selectOptionsOpen, selectUserAvatarUrl, setDeveloperModeEnabled, setOptionsOpen, store, toggleDeveloperMode } from '../../../state/state.reducer';
+import { login, logout, openDirectory, selectInstalledModIds, selectIsLoggedIn, selectModsInitialized, selectOptionsOpen, selectSeleneOptionsExpanded, selectUserAvatarUrl, setOptionsOpen, store, toggleSeleneOptionsExpanded } from '../../../state/state.reducer';
+import { theme } from '../../theme';
 import { ModOptionsEntry } from './ModOptionsEntry/ModOptionsEntry';
 
 export function OptionsDialog() {
 	const open = useSelector(selectOptionsOpen);
 	const isLoggedIn = useSelector(selectIsLoggedIn);
 	const userAvatarUrl = useSelector(selectUserAvatarUrl);
-	const developerModeExpanded = useSelector(selectDeveloperModeExpanded);
-	const developerModeEnabled = useSelector(selectDeveloperModeEnabled);
+	const seleneOptionsExpanded = useSelector(selectSeleneOptionsExpanded);
 	const modsInitialized = useSelector(selectModsInitialized);
 	const installedModIds = useSelector(selectInstalledModIds);
 
@@ -31,34 +31,47 @@ export function OptionsDialog() {
 		<DialogContent sx={{ height: '70vh' }}>
 			<Stack direction="column" sx={{ height: '100%' }} gap={1}>
 				<Stack direction="column">
-					<Accordion expanded={developerModeExpanded} onClick={() => dispatch(toggleDeveloperMode())}>
+					<Accordion expanded={seleneOptionsExpanded} onClick={() => dispatch(toggleSeleneOptionsExpanded())}>
 						<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
 							<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
 								<Typography variant="subtitle1">
-									Developer Mode
+									Project Selene
 								</Typography>
-								<Switch checked={developerModeEnabled} onChange={(_, checked) => dispatch(setDeveloperModeEnabled(checked))} onClick={e => e.stopPropagation()} />
 							</Stack>
 						</AccordionSummary>
 						<AccordionDetails>
-							<Stack direction="column" spacing={1}>
-								<Stack direction="row" spacing={1} alignItems="baseline">
-									<Typography variant="body2">
-										Account
-									</Typography>
-									<div>
+							<Box sx={{ display: 'table', borderSpacing: theme.spacing(1) }}>
+								<Box sx={{ display: 'table-row' }}>
+									<Box sx={{ display: 'table-cell' }}>
+										<Typography variant="body2">
+											Open a different folder
+										</Typography>
+									</Box>
+									<Box sx={{ display: 'table-cell' }}>
+										<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />} onClick={() => dispatch(openDirectory())}>
+											Open
+										</Button>
+									</Box>
+								</Box>
+								<Box sx={{ display: 'table-row' }}>
+									<Box sx={{ display: 'table-cell' }}>
+										<Typography variant="body2">
+											Account
+										</Typography>
+									</Box>
+									<Box sx={{ display: 'table-cell' }}>
 										{
 											isLoggedIn
 												? <Button variant="outlined" onClick={() => dispatch(logout())}>
 													<Avatar alt="User" src={userAvatarUrl ?? ''} />
 												</Button>
-												: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(login())}>
+												: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<OpenInNew />} onClick={() => dispatch(login())}>
 													Login
 												</Button>
 										}
-									</div>
-								</Stack>
-							</Stack>
+									</Box>
+								</Box>
+							</Box>
 						</AccordionDetails>
 					</Accordion>
 					{

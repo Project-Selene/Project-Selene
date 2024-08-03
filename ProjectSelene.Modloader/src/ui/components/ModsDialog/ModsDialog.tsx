@@ -51,9 +51,9 @@ export function ModsDialog() {
 						</Stack>
 					</AccordionSummary>
 					<AccordionDetails>
-						<Stack direction="row" spacing={1}>
+						<Stack direction="row" spacing={1} justifyContent={installedModIds.length === 0 ? 'center' : 'start'}>
 							{
-								installedModIds.map(id => (<ModsEntry key={'i' + id} id={id} />))
+								installedModIds.length === 0 ? <Typography variant="body2">No mods installed.</Typography> : installedModIds.map(id => (<ModsEntry key={'i' + id} id={id} />))
 							}
 						</Stack>
 					</AccordionDetails>
