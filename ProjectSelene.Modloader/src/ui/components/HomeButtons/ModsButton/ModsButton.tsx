@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { setModsOpen } from '../../../state/state.reducer';
+import { setModsOpen } from '../../../../state/state.reducer';
 import { HomeButton } from '../HomeButton/HomeButton';
 
 export function ModsButton() {

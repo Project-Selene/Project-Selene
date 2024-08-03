@@ -1,5 +1,5 @@
-import { Mod, ModPatch } from '../ui/state/models/mod';
-import { GameInfo, Mods } from '../ui/state/state.models';
+import { Mod, ModPatch } from '../state/models/mod';
+import { GameInfo, Mods } from '../state/state.models';
 import { Filesystem } from './filesystem';
 import { Game } from './game';
 import { ModInfo as ModHandler } from './mod-handler';

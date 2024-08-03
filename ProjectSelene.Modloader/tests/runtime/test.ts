@@ -1,4 +1,4 @@
-import { RootState } from '../../src/ui/state/state.reducer.js';
+import { RootState } from '../../src/state/state.reducer.js';
 import { FileApi, setupDirectoryPicker } from './directory-picker.js';
 import { loadStoreState } from './store.js';
 

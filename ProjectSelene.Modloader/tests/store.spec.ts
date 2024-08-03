@@ -2,8 +2,8 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from '@playwright/test';
 import { LoginType } from '../src/moddb/generated';
-import type { RootState } from '../src/ui/state/state.reducer';
-import * as actions from '../src/ui/state/state.reducer';
+import type { RootState } from '../src/state/state.reducer';
+import * as actions from '../src/state/state.reducer';
 import { setupTests } from './lib/setup';
 
 

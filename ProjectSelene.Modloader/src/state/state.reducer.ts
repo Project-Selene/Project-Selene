@@ -1,9 +1,9 @@
 import { PayloadAction, configureStore, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
-import { Filesystem } from '../../loader/filesystem';
-import { Game } from '../../loader/game';
-import { Loader } from '../../loader/loader';
-import { LoginService, LoginType, OpenAPI } from '../../moddb/generated';
-import { ModDB } from '../../moddb/moddb';
+import { Filesystem } from '../loader/filesystem';
+import { Game } from '../loader/game';
+import { Loader } from '../loader/loader';
+import { LoginService, LoginType, OpenAPI } from '../moddb/generated';
+import { ModDB } from '../moddb/moddb';
 import { GameInfo, GamesInfo, State } from './state.models';
 
 const fs = new Filesystem();

@@ -3,7 +3,7 @@ import Close from '@mui/icons-material/Close';
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Dialog, DialogContent, DialogTitle, Stack, Switch, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, logout, openDirectory, selectDeveloperModeEnabled, selectDeveloperModeExpanded, selectInstalledModIds, selectIsLoggedIn, selectModsInitialized, selectOptionsOpen, selectUserAvatarUrl, setDeveloperModeEnabled, setOptionsOpen, store, toggleDeveloperMode } from '../../state/state.reducer';
+import { login, logout, openDirectory, selectDeveloperModeEnabled, selectDeveloperModeExpanded, selectInstalledModIds, selectIsLoggedIn, selectModsInitialized, selectOptionsOpen, selectUserAvatarUrl, setDeveloperModeEnabled, setOptionsOpen, store, toggleDeveloperMode } from '../../../state/state.reducer';
 import { ModOptionsEntry } from './ModOptionsEntry/ModOptionsEntry';
 
 export function OptionsDialog() {

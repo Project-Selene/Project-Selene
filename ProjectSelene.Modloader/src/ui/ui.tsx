@@ -4,9 +4,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { OpenAPI } from '../moddb/generated';
+import { completeLogin, getUser, loadGames, loadModList, loadState, store } from './../state/state.reducer';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { completeLogin, getUser, loadGames, loadModList, loadState, store } from './state/state.reducer';
 
 export function startUI() {
 	const root = document.getElementById('root');

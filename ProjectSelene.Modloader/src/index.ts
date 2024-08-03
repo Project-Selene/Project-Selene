@@ -1,5 +1,5 @@
 import { Filesystem } from './loader/filesystem';
-import { loadState, selectStoreWithoutUI, store } from './ui/state/state.reducer';
+import { loadState, selectStoreWithoutUI, store } from './state/state.reducer';
 import { startUI } from './ui/ui';
 
 if (document.visibilityState as string !== 'prerender') {

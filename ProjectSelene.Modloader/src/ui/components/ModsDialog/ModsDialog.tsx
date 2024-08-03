@@ -3,8 +3,8 @@ import Close from '@mui/icons-material/Close';
 import { Accordion, AccordionDetails, AccordionSummary, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../state/search.selector';
-import { loadModList, loadMods, openDirectory, searchForMod, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectSearchString, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
+import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../../state/search.selector';
+import { loadModList, loadMods, openDirectory, searchForMod, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectSearchString, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../../state/state.reducer';
 import { ModsEntry } from './ModsEntry/ModsEntry';
 
 export function ModsDialog() {

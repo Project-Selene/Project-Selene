@@ -1,4 +1,4 @@
-import { ModInfo } from '../ui/state/models/mod';
+import { ModInfo } from '../state/models/mod';
 import { ModService, OpenAPI } from './generated';
 
 declare global {

@@ -1,4 +1,4 @@
-import { UserInfo } from '../../moddb/generated';
+import { UserInfo } from '../moddb/generated';
 import { LoadingState } from './models/loading-state';
 import { Mod, ModInfo } from './models/mod';
 

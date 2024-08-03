@@ -2,7 +2,7 @@ import Close from '@mui/icons-material/Close';
 import { Button, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectInfoDialogOpen, setInfoOpen } from '../../state/state.reducer';
+import { selectInfoDialogOpen, setInfoOpen } from '../../../state/state.reducer';
 
 
 export function InfoDialog() {

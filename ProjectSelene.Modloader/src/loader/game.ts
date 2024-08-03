@@ -1,6 +1,6 @@
 import { Handles } from '../handles/handles';
-import { Mod } from '../ui/state/models/mod';
-import { GameInfo, GamesInfo, Mods } from '../ui/state/state.models';
+import { Mod } from '../state/models/mod';
+import { GameInfo, GamesInfo, Mods } from '../state/state.models';
 import { Filesystem } from './filesystem';
 
 export class Game {
