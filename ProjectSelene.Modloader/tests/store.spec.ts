@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from '@playwright/test';
 import { LoginType } from '../src/moddb/generated';
+import { Mod } from '../src/state/models/mod';
 import type { RootState } from '../src/state/state.reducer';
 import * as actions from '../src/state/state.reducer';
 import { setupTests } from './lib/setup';
@@ -44,6 +45,7 @@ const filled: actions.RootState['state'] = {
 			loading: false,
 		},
 	},
+	devMod: {},
 	mods: {
 		data: {
 			mods: [{
@@ -108,6 +110,19 @@ const filled: actions.RootState['state'] = {
 		loginType: LoginType.GITHUB,
 		name: 'Test User',
 	},
+};
+
+const devMod: Mod = {
+	currentInfo: {
+		description: 'Dev Mod Description',
+		id: 'dev',
+		name: 'Dev Mod',
+		version: '1.0.0',
+		versions: ['1.0.0'],
+	},
+	internalName: '',
+	filename: '',
+	enabled: true,
 };
 
 const all: Action[] = [{
@@ -253,6 +268,14 @@ const all: Action[] = [{
 	],
 }, {
 	action: actions.searchForMod('y desc'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.foundDevMod(devMod),
+}, {
+	action: actions.foundDevMod(devMod),
 	prepare: [
 		actions.loadState(filled),
 		actions.setModsOpen(true),
