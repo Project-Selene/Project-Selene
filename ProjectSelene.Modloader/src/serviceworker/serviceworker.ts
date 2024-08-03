@@ -35,6 +35,20 @@ coms.on('filter', async (filter: string, id) => {
 });
 
 self.addEventListener('install', event => event.waitUntil((async () => {
+	if ('addRoutes' in event) {
+		// @ts-expect-error There are no types for addRoutes yet
+		event.addRoutes([{
+			condition: { urlPattern: 'http://localhost:8182/*' },
+			source: 'network',
+		}, {
+			condition: { urlPattern: 'http://127.0.0.1:8182/*' },
+			source: 'network',
+		}, {
+			condition: { urlPattern: self.origin + '/api/*' },
+			source: 'race-network-and-fetch-handler',
+		}]);
+	}
+
 	caches.open('selene-loader')
 		.then(cache => cache.add('static/js/prefix.js'))
 		.catch(() => {/* Ignore error that happens if we are local - we don't need a cache for local */ });
@@ -99,8 +113,8 @@ self.addEventListener('fetch', event => event.respondWith((async () => {
 				},
 				response: stream.writable,
 			},
-			stream.writable,
-			body,
+				stream.writable,
+				body,
 			) as Promise<ResponseInit>;
 
 			return new Response(

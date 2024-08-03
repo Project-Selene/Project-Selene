@@ -1,5 +1,6 @@
 import { Background } from '../Background/Background';
 import { Character } from '../Character/Character';
+import { DevModHint } from '../DevModHint/DevModHint';
 import { HomeButtons } from '../HomeButtons/HomeButtons';
 import { InfoButton } from '../InfoButton/InfoButton';
 import { InfoDialog } from '../InfoDialog/InfoDialog';
@@ -22,5 +23,6 @@ export function TitleScreen() {
 		<OpenDialog />
 		<InfoDialog />
 		<InfoButton />
+		<DevModHint />
 	</div>;
 }

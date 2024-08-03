@@ -4,6 +4,7 @@ import { Game } from '../loader/game';
 import { Loader } from '../loader/loader';
 import { LoginService, LoginType, OpenAPI } from '../moddb/generated';
 import { ModDB } from '../moddb/moddb';
+import { Mod } from './models/mod';
 import { GameInfo, GamesInfo, State } from './state.models';
 
 const fs = new Filesystem();
@@ -109,7 +110,7 @@ export const play = createAsyncThunk('play', async (_, { dispatch, getState }) =
 		}
 	}
 
-	return await loader.play(gameInfo, state.options.developerMode);
+	return await loader.play(gameInfo, state.devMod.data !== undefined);
 });
 
 const memoizedSelectInstalledMods = createSelector(
@@ -128,6 +129,7 @@ const initialState: State = {
 		selectedGame: -1,
 	},
 	mods: {},
+	devMod: {},
 	modDb: {
 		mods: {},
 	},
@@ -160,6 +162,7 @@ const slice = createSlice({
 		loadState: (_, { payload }: PayloadAction<State>) => {
 			payload.gamesInfo ??= initialState.gamesInfo;
 			payload.gamesInfo.games ??= [];
+			payload.devMod ??= {};
 			payload.mods ??= {};
 			payload.modDb ??= initialState.modDb;
 			payload.modDb.mods ??= {};
@@ -205,6 +208,19 @@ const slice = createSlice({
 		},
 		searchForMod: (state, { payload }: PayloadAction<string>) => {
 			state.ui.mods.search = payload;
+		},
+		startPollingDevMod: (state) => {
+			state.devMod = { loading: true };
+		},
+		stopPollingDevMod: (state, { payload }: PayloadAction<string>) => {
+			state.devMod = { failed: true, error: payload };
+		},
+		foundDevMod: (state, { payload }: PayloadAction<Mod>) => {
+			state.devMod = { loading: false, data: payload };
+
+			if (state.ui.playing) {
+				loader.injectDevMod();
+			}
 		},
 	},
 	extraReducers(builder) {
@@ -334,8 +350,10 @@ const slice = createSlice({
 					openOpen: false,
 					playing: false,
 				},
+				devMod: {},
 			} satisfies State;
 		},
+		selectCurrentDevMod: (state) => state.devMod.data,
 	},
 });
 
@@ -352,6 +370,9 @@ export const {
 	toggleModsInstalled,
 	toggleModsAvailable,
 	logout,
+	startPollingDevMod,
+	stopPollingDevMod,
+	foundDevMod,
 } = slice.actions;
 export const {
 	selectInfoDialogOpen,
@@ -375,6 +396,7 @@ export const {
 	selectUserAvatarUrl,
 	selectInstalledMod,
 	selectStoreWithoutUI,
+	selectCurrentDevMod,
 } = slice.selectors;
 export const store = configureStore({ reducer: { state: slice.reducer } });
 export type RootState = ReturnType<typeof store.getState>;

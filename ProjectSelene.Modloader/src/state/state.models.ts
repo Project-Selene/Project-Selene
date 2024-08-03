@@ -7,6 +7,7 @@ export interface State {
 
     modDb: ModDb;
     mods: LoadingState<Mods>;
+    devMod: LoadingState<Mod>;
 
     options: Options;
     ui: UIState;

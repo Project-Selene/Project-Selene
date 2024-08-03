@@ -27,6 +27,21 @@ export const theme = createTheme({
 				},
 			},
 		},
+		MuiSnackbar: {
+			styleOverrides: {
+				root: {
+					zIndex: 1100, //Behind the dialog
+				},
+			},
+		},
+		MuiSnackbarContent: {
+			styleOverrides: {
+				root: {
+					backgroundColor: 'hsl(0 0% 16%)', //Material design 24dp
+					color: 'white',
+				},
+			},
+		},
 	},
 });
 
