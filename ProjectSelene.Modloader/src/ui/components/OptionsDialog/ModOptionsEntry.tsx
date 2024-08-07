@@ -2,7 +2,7 @@ import { ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, Stack, Switch, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, selectInstalledMod, selectModEnabled, selectModExpanded, setModEnabled, store, toggleModOptionsExpanded } from '../../../../state/state.reducer';
+import { RootState, selectInstalledMod, selectModEnabled, selectModExpanded, setModEnabled, store, toggleModOptionsExpanded } from '../../../state/state.reducer';
 
 export function ModOptionsEntry(props: {
 	id: string

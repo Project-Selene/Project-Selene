@@ -1,7 +1,7 @@
 import { CircularProgress, Slide, Snackbar, Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectStatus } from '../../../state/state.reducer';
+import { selectStatus } from '../../state/state.reducer';
 
 
 export function StatusNotification() {

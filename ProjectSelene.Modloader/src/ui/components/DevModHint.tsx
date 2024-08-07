@@ -1,7 +1,7 @@
 import { Slide, Snackbar, Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectCurrentDevMod } from '../../../state/state.reducer';
+import { selectCurrentDevMod } from '../../state/state.reducer';
 
 
 export function DevModHint() {

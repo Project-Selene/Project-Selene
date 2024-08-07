@@ -5,7 +5,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../../state/search.selector';
 import { loadModList, loadMods, openDirectory, searchForMod, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectSearchString, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../../state/state.reducer';
-import { ModsEntry } from './ModsEntry/ModsEntry';
+import { ModsEntry } from './ModsEntry';
 
 export function ModsDialog() {
 	const open = useSelector(selectModsDialogOpen);

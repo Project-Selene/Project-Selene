@@ -1,8 +1,9 @@
 import Close from '@mui/icons-material/Close';
-import { Button, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, Link, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectInfoDialogOpen, setInfoOpen } from '../../../state/state.reducer';
+import { selectInfoDialogOpen, setInfoOpen } from '../../state/state.reducer';
+import { theme } from '../theme';
 
 
 export function InfoDialog() {
@@ -19,8 +20,8 @@ export function InfoDialog() {
 		<DialogContent>
 			<Stack>
 				<Typography variant="body1">Modloader by 2767mr</Typography>
-				<Typography variant="body1">Juno art made by <a href="https://twitter.com/RioleaArt/" className="text-primary">Riolea</a></Typography>
-				<Button className="mt-3" variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />} onClick={() => dispatch(setInfoOpen(false))}>
+				<Typography variant="body1">Juno art made by <Link href="https://twitter.com/RioleaArt/">Riolea</Link></Typography>
+				<Button sx={{ marginTop: theme.spacing(3), backgroundColor: '#66F3' }} variant="outlined" endIcon={<Close />} onClick={() => dispatch(setInfoOpen(false))}>
 					Close
 				</Button>
 			</Stack>

@@ -2,8 +2,8 @@ import { Delete, Download } from '@mui/icons-material';
 import { Avatar, Card, CardContent, CardHeader, IconButton, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, deleteMod, installMod, selectAvailableMod, selectInstalledMod, selectSearchString, store } from '../../../../state/state.reducer';
-import { FilterHighlight } from '../../FilterHighlight/FilterHighlight';
+import { RootState, deleteMod, installMod, selectAvailableMod, selectInstalledMod, selectSearchString, store } from '../../../state/state.reducer';
+import { FilterHighlight } from '../FilterHighlight';
 
 export function ModsEntry(props: {
 	id: string

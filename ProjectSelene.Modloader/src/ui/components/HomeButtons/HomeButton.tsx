@@ -20,7 +20,7 @@ export function HomeButton(props: {
 			{
 				props.actions ?
 					<ButtonGroup variant="outlined" ref={anchorRef}>
-						<Button className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
+						<Button className="home-button" sx={{ width: '100%' }} onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
 							{props.title}
 						</Button>
 						<Button className="home-button" size="small" onClick={() => setOpen(true)} disabled={props.loading || props.disabled}>
@@ -28,7 +28,7 @@ export function HomeButton(props: {
 						</Button>
 					</ButtonGroup>
 					:
-					<Button variant="outlined" className="home-button w-100" onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
+					<Button variant="outlined" className="home-button" sx={{ width: '100%' }} onClick={props.onClick} href={props.href} style={{ backgroundColor: '#44E6' }} disabled={props.loading || props.disabled}>
 						{props.title}
 					</Button>
 			}

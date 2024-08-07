@@ -1,4 +1,3 @@
-import classes from './FilterHighlight.module.scss';
 
 import React from 'react';
 
@@ -42,7 +41,7 @@ export function FilterHighlight(props: { text: string, filter: string } | { chil
 		if (start > minIndex) {
 			parts.push(<React.Fragment key={minIndex}>{text.slice(minIndex, start)}</React.Fragment>);
 		}
-		parts.push(<React.Fragment key={Math.max(start, minIndex)}><span className={classes.highlight}>{text.slice(Math.max(start, minIndex), start + length)}</span></React.Fragment>);
+		parts.push(<React.Fragment key={Math.max(start, minIndex)}><span style={{ color: '#69bdfc' }}>{text.slice(Math.max(start, minIndex), start + length)}</span></React.Fragment>);
 		index = start + 1;
 		minIndex = start + length;
 	}

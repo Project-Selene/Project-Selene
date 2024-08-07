@@ -5,7 +5,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, logout, openDirectory, selectInstalledModIds, selectIsLoggedIn, selectModsInitialized, selectOptionsOpen, selectSeleneOptionsExpanded, selectUserAvatarUrl, setOptionsOpen, store, toggleSeleneOptionsExpanded } from '../../../state/state.reducer';
 import { theme } from '../../theme';
-import { ModOptionsEntry } from './ModOptionsEntry/ModOptionsEntry';
+import { ModOptionsEntry } from './ModOptionsEntry';
 
 export function OptionsDialog() {
 	const open = useSelector(selectOptionsOpen);

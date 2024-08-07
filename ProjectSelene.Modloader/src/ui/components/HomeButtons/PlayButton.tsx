@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { play, selectPlaying, store } from '../../../../state/state.reducer';
-import { useSupportsOpenFolder } from '../../../hooks/detect';
-import { HomeButton } from '../HomeButton/HomeButton';
+import { play, selectPlaying, store } from '../../../state/state.reducer';
+import { useSupportsOpenFolder } from '../../hooks/detect';
+import { HomeButton } from './HomeButton';
 
 export function PlayButton() {
 	const dispatch = useDispatch<typeof store.dispatch>();
