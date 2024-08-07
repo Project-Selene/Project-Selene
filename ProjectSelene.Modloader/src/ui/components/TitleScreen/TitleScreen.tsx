@@ -7,6 +7,7 @@ import { InfoDialog } from '../InfoDialog/InfoDialog';
 import { ModsDialog } from '../ModsDialog/ModsDialog';
 import { OpenDialog } from '../OpenDialog/OpenDialog';
 import { OptionsDialog } from '../OptionsDialog/OptionsDialog';
+import { StatusNotification } from '../StatusNotification/StatusNotification';
 import { Title } from '../Title/Title';
 import './TitleScreen.scss';
 
@@ -24,5 +25,6 @@ export function TitleScreen() {
 		<InfoDialog />
 		<InfoButton />
 		<DevModHint />
+		<StatusNotification />
 	</div>;
 }

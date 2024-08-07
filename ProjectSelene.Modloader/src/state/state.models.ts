@@ -36,6 +36,7 @@ export interface UIState {
     infoOpen: boolean;
     openOpen: boolean;
     playing: boolean;
+    status?: string;
 }
 
 export interface GamesInfo {

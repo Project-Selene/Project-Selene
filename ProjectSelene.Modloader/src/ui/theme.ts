@@ -27,13 +27,6 @@ export const theme = createTheme({
 				},
 			},
 		},
-		MuiSnackbar: {
-			styleOverrides: {
-				root: {
-					zIndex: 1100, //Behind the dialog
-				},
-			},
-		},
 		MuiSnackbarContent: {
 			styleOverrides: {
 				root: {

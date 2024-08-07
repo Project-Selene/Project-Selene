@@ -254,6 +254,8 @@ const slice = createSlice({
 		builder.addCase(openDirectory.pending, (state) => {
 			state.mods = { loading: true };
 			state.ui.openOpen = true;
+
+			state.ui.status = 'Opening directory...';
 		});
 		builder.addCase(openDirectory.fulfilled, (state, { payload }) => {
 			state.mods = { data: payload.mods, loading: false };
@@ -266,24 +268,48 @@ const slice = createSlice({
 			state.gamesInfo.selectedGame = payload.game.id;
 			state.ui.openOpen = false;
 			state.ui.mods.installedOpen = true;
+
+			state.ui.status = undefined;
 		});
 		builder.addCase(openDirectory.rejected, (state, { error }) => {
 			state.mods = { failed: true, error };
 			state.ui.openOpen = false;
+
+			state.ui.status = undefined;
 		});
 
+		builder.addCase(deleteMod.pending, (state) => {
+			state.ui.status = 'Deleting mod...';
+		});
 		builder.addCase(deleteMod.fulfilled, (state, { payload }) => {
 			state.mods = { data: payload, loading: false };
+
+			state.ui.status = undefined;
+		});
+		builder.addCase(deleteMod.rejected, (state) => {
+			state.ui.status = undefined;
+		});
+		builder.addCase(installMod.pending, (state) => {
+			state.ui.status = 'Installing mod...';
 		});
 		builder.addCase(installMod.fulfilled, (state, { payload }) => {
 			state.mods = { data: payload, loading: false };
+
+			state.ui.status = undefined;
+		});
+		builder.addCase(installMod.rejected, (state) => {
+			state.ui.status = undefined;
 		});
 		builder.addCase(play.pending, (state) => {
 			state.ui.playing = true;
+
+			state.ui.status = 'Preparing game...';
 		});
 		builder.addCase(play.rejected, (state, { error }) => {
 			state.ui.playing = false;
 			console.error(error.stack);
+
+			state.ui.status = undefined;
 		});
 		builder.addCase(getUser.fulfilled, (state, { payload }) => {
 			state.user = payload;
@@ -349,6 +375,7 @@ const slice = createSlice({
 			} satisfies State;
 		},
 		selectCurrentDevMod: (state) => state.devMod.data,
+		selectStatus: (state) => state.ui.status,
 	},
 });
 
@@ -390,6 +417,7 @@ export const {
 	selectInstalledMod,
 	selectStoreWithoutUI,
 	selectCurrentDevMod,
+	selectStatus,
 } = slice.selectors;
 export const store = configureStore({ reducer: { state: slice.reducer } });
 export type RootState = ReturnType<typeof store.getState>;

@@ -13,5 +13,6 @@ export function DevModHint() {
 		open={!!devMod}
 		TransitionComponent={Slide}
 		message={<Typography variant="body1">Developer Mod: {devMod?.currentInfo?.name}</Typography>}
+		sx={{ zIndex: 1100 }}
 	/>;
 }
