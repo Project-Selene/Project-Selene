@@ -1,7 +1,4 @@
-import CircularProgress from '@mui/material/CircularProgress';
-import Slide from '@mui/material/Slide';
-import Snackbar from '@mui/material/Snackbar';
-import Typography from '@mui/material/Typography';
+import { CircularProgress, Slide, Snackbar, Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectStatus } from '../../../state/state.reducer';
