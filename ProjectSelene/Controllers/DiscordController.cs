@@ -28,7 +28,8 @@ public class DiscordController(ILogger<DiscordController> logger, IMapper mapper
         {
 
             using var ms = new MemoryStream();
-            await HttpContext.Request.BodyReader.CopyToAsync(ms);
+            HttpContext.Request.Body.Position = 0;
+            await HttpContext.Request.Body.CopyToAsync(ms);
 
             logger.LogWarning("Body {body}", Convert.ToBase64String(ms.ToArray()));
 

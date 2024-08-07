@@ -107,6 +107,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseCors(localCorsPolicyName);
 
+app.Use((context, next) =>
+{
+    context.Request.EnableBuffering();
+    return next();
+});
+
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
