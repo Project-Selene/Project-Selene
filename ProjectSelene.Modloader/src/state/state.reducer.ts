@@ -55,12 +55,12 @@ export const loadModList = createAsyncThunk('loadModList', async () => {
 	return await moddb.modList();
 });
 
-export const openDirectory = createAsyncThunk('openDirectory', async (_, { getState }) => {
+export const openDirectory = createAsyncThunk('openDirectory', async (mode: FileSystemPermissionMode | void, { getState }) => {
 	const { state } = getState() as RootState;
 
 	const unloaded = state.gamesInfo.games.find(g => !g.loaded);
 	if (unloaded) {
-		const mounted = await game.mountGame(unloaded);
+		const mounted = await game.mountGame(unloaded, mode ?? 'read');
 		if (!mounted) {
 			throw new Error('Could not mount game');
 		}
@@ -68,7 +68,7 @@ export const openDirectory = createAsyncThunk('openDirectory', async (_, { getSt
 	}
 
 	const nextId = state.gamesInfo.games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1;
-	const gameInfo = await game.openGame(nextId);
+	const gameInfo = await game.openGame(nextId, mode ?? 'read');
 	if (!gameInfo) {
 		throw new Error('No game selected');
 	}
@@ -111,6 +111,20 @@ export const play = createAsyncThunk('play', async (_, { dispatch, getState }) =
 	}
 
 	return await loader.play(gameInfo, state.devMod.data !== undefined);
+});
+
+export const installModLoader = createAsyncThunk('installModLoader', async (_, { dispatch, getState }) => {
+	const { state } = getState() as RootState;
+	let gameInfo = state.gamesInfo.games.find(g => g.id === state.gamesInfo.selectedGame);
+	//Always open dialog if it's installed locally
+	if (!gameInfo || gameInfo.type === 'fs') {
+		const openResult = await dispatch(openDirectory('readwrite'));
+		gameInfo = (openResult.payload as { game: GameInfo })?.game;
+		if (!gameInfo) {
+			throw new Error('No game selected');
+		}
+	}
+	return await game.installModLoader(gameInfo);
 });
 
 const memoizedSelectInstalledMods = createSelector(
