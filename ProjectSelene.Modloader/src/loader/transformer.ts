@@ -333,10 +333,12 @@ export function transform(content: string, prefix: string) {
 			],
 		},
 		compilerOptions: {
-			target: ts.ScriptTarget.ES2022,
+			target: ts.ScriptTarget.ESNext,
 			inlineSourceMap: true,
 			removeComments: true,
 			inlineSources: true,
+			isolatedDeclarations: true,
+			isolatedModules: true,
 		},
 	}).outputText;
 }
