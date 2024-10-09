@@ -232,6 +232,21 @@ const slice = createSlice({
 				loader.injectDevMod();
 			}
 		},
+		checkLocalFSAccess: (state) => {
+			if ('process' in globalThis && 'cwd' in window.globalThis) {
+				// eslint-disable-next-line @typescript-eslint/no-var-requires
+				const fs = require('fs');
+				for (let i = 0; i < state.gamesInfo.games.length; i++) {
+					const game = state.gamesInfo.games[i];
+					if (game.type === 'fs') {
+						if (!fs.existsSync(game.path)) {
+							state.gamesInfo.games.splice(i, 1);
+							i--;
+						}
+					}
+				}
+			}
+		},
 	},
 	extraReducers(builder) {
 		builder.addCase(loadGames.pending, (state) => {

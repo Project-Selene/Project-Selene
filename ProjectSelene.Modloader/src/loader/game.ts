@@ -31,7 +31,7 @@ export class Game {
 		if ('require' in globalThis) {
 			const path: typeof import('path') = globalThis['require']('path');
 			const gamePath = path.dirname(process.execPath);
-			const localGame = games.games.find(g => g.type === 'fs' && g.path === gamePath);
+			const localGame = games.games.find(g => g.type === 'fs' && path.relative(g.path, gamePath) === '');
 			if (!localGame) {
 				games.games.push({
 					id: games.games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1,
