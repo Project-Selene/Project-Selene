@@ -2,8 +2,9 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from '@playwright/test';
 import { LoginType } from '../src/moddb/generated';
-import type { RootState } from '../src/ui/state/state.reducer';
-import * as actions from '../src/ui/state/state.reducer';
+import { Mod } from '../src/state/models/mod';
+import type { RootState } from '../src/state/state.reducer';
+import * as actions from '../src/state/state.reducer';
 import { setupTests } from './lib/setup';
 
 
@@ -44,6 +45,7 @@ const filled: actions.RootState['state'] = {
 			loading: false,
 		},
 	},
+	devMod: {},
 	mods: {
 		data: {
 			mods: [{
@@ -61,22 +63,42 @@ const filled: actions.RootState['state'] = {
 				currentInfo: {
 					id: '4',
 					name: 'Test Mod 4',
-					description: 'Test Description 4',
+					description: 'Description 4',
 					version: '1.3.0',
 					versions: ['1.3.0'],
 				},
 				enabled: true,
 				filename: 'mod3.mod.zip',
 				internalName: '2',
+			}, {
+				currentInfo: {
+					id: '5',
+					name: 'X Test Mod 5',
+					description: 'Y Description 5',
+					version: '1.3.0',
+					versions: ['1.3.0'],
+				},
+				enabled: true,
+				filename: 'mod3.mod.zip',
+				internalName: '3',
 			}],
 		},
 		loading: false,
 	},
+	options: {
+		mods: {},
+	},
 	ui: {
 		mods: {
 			open: false,
+			search: '',
 			availableOpen: true,
 			installedOpen: true,
+		},
+		options: {
+			open: false,
+			seleneOptionsExpanded: false,
+			modsExpanded: {},
 		},
 		openOpen: false,
 		playing: false,
@@ -87,6 +109,19 @@ const filled: actions.RootState['state'] = {
 		loginType: LoginType.GITHUB,
 		name: 'Test User',
 	},
+};
+
+const devMod: Mod = {
+	currentInfo: {
+		description: 'Dev Mod Description',
+		id: 'dev',
+		name: 'Dev Mod',
+		version: '1.0.0',
+		versions: ['1.0.0'],
+	},
+	internalName: '',
+	filename: '',
+	enabled: true,
 };
 
 const all: Action[] = [{
@@ -136,6 +171,114 @@ const all: Action[] = [{
 		actions.setModsOpen(true),
 		actions.toggleModsInstalled(),
 	],
+}, {
+	action: actions.setOptionsOpen(true),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.toggleSeleneOptionsExpanded(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+	],
+}, {
+	action: actions.toggleSeleneOptionsExpanded(),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleSeleneOptionsExpanded(),
+	],
+}, {
+	action: actions.openDirectory.pending(''),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleSeleneOptionsExpanded(),
+	],
+}, {
+	action: actions.toggleModOptionsExpanded('3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+	],
+}, {
+	action: actions.toggleModOptionsExpanded('3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleModOptionsExpanded('3'),
+	],
+}, {
+	action: actions.setModEnabled({ id: '3', enabled: false }),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+		actions.setOptionsOpen(true),
+		actions.toggleModOptionsExpanded('3'),
+	],
+}, {
+	action: actions.searchForMod('mo'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('mod test'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('de esc cript'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('2'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('2 3'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('DESCRIPTION'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('x test'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.searchForMod('y desc'),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
+}, {
+	action: actions.foundDevMod(devMod),
+}, {
+	action: actions.foundDevMod(devMod),
+	prepare: [
+		actions.loadState(filled),
+		actions.setModsOpen(true),
+	],
 }];
 
 interface Action {
@@ -169,6 +312,9 @@ function checkScreenshot(state: RootState['state'], name: string) {
 		await page.waitForLoadState('domcontentloaded');
 		const locators = await page.locator('//img').all();
 		await Promise.all(locators.map(l => l.evaluate((e: HTMLImageElement) => e.complete || new Promise(resolve => e.onload = resolve))));
+
+		await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+
 		await new Promise(resolve => setTimeout(resolve, 100));
 		await expect(page).toHaveScreenshot(name + '.png');
 	});

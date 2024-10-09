@@ -27,6 +27,14 @@ export const theme = createTheme({
 				},
 			},
 		},
+		MuiSnackbarContent: {
+			styleOverrides: {
+				root: {
+					backgroundColor: 'hsl(0 0% 16%)', //Material design 24dp
+					color: 'white',
+				},
+			},
+		},
 	},
 });
 

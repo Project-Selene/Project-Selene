@@ -1,4 +1,4 @@
-import type { RootState, SliceType, store as storeType } from '../../src/ui/state/state.reducer';
+import type { RootState, SliceType, store as storeType } from '../../src/state/state.reducer';
 
 declare const store: typeof storeType;
 declare const slice: SliceType;

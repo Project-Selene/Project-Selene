@@ -4,6 +4,5 @@
 /* eslint-disable */
 export type VersionUpload = {
     version: string;
-    storedObject: string;
 };
 

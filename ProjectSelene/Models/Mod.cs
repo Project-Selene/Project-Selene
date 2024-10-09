@@ -1,11 +1,8 @@
-﻿using System.Text.Json.Serialization;
-
-namespace ProjectSelene.Models;
+﻿namespace ProjectSelene.Models;
 
 public class Mod
 {
     [Key]
-    [JsonIgnore]
     public int Id { get; init; }
     public Guid Guid { get; init; } = Guid.NewGuid();
 
@@ -18,4 +15,6 @@ public class Mod
 
     [Required]
     public List<ModVersion> Versions { get; set; } = [];
+    [Required]
+    public List<ModVersionDraft> VersionDrafts { get; set; } = [];
 }

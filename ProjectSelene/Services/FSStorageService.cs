@@ -14,14 +14,14 @@ public class FSStorageService : IStorageProviderService
         string id = Guid.NewGuid().ToString();
         Directory.GetParent(this.folder)?.Create();
         using var fs = File.OpenWrite(Path.Combine(this.folder, id));
-        await content.CopyToAsync(fs).WaitAsync(cancellationToken);
+        await content.CopyToAsync(fs, cancellationToken);
         return id;
     }
 
     public async Task Download(string id, Stream target, CancellationToken cancellationToken)
     {
         using var fs = File.OpenRead(Path.Combine(this.folder, id));
-        await fs.CopyToAsync(target).WaitAsync(cancellationToken);
+        await fs.CopyToAsync(target, cancellationToken);
     }
 
     public Task Delete(string id, CancellationToken cancellationToken)

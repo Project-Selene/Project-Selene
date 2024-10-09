@@ -1,7 +1,7 @@
 import { Box, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectOpenDialogOpen } from '../../state/state.reducer';
+import { selectOpenDialogOpen } from '../../../state/state.reducer';
 import { InfoIcon } from './InfoIcon';
 import { InfoPointer } from './InfoPointer';
 import classes from './OpenDialog.module.scss';

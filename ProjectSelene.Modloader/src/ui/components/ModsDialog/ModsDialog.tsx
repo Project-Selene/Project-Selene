@@ -1,20 +1,20 @@
 import { OpenInNew, Refresh } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, Dialog, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loadModList, loadMods, login, logout, openDirectory, selectAvailableModIds, selectInstalledModIds, selectIsLoggedIn, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectUserAvatarUrl, setModsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../state/state.reducer';
-import { ModsEntry } from './ModsEntry/ModsEntry';
+import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../../state/search.selector';
+import { loadModList, loadMods, openDirectory, searchForMod, selectModsAvailableExpanded, selectModsDialogOpen, selectModsInitialized, selectModsInstalledExpanded, selectSearchString, setModsOpen, setOptionsOpen, store, toggleModsAvailable, toggleModsInstalled } from '../../../state/state.reducer';
+import { ModsEntry } from './ModsEntry';
 
 export function ModsDialog() {
 	const open = useSelector(selectModsDialogOpen);
 	const modsInitialized = useSelector(selectModsInitialized);
 	const installedExpanded = useSelector(selectModsInstalledExpanded);
 	const availableExpanded = useSelector(selectModsAvailableExpanded);
-	const installedModIds = useSelector(selectInstalledModIds);
-	const availableModIds = useSelector(selectAvailableModIds);
-	const isLoggedIn = useSelector(selectIsLoggedIn);
-	const userAvatarUrl = useSelector(selectUserAvatarUrl);
+	const installedModIds = useSelector(selectFilteredInstalledModIds);
+	const availableModIds = useSelector(selectFilteredAvailableModIds);
+	const searchString = useSelector(selectSearchString);
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
@@ -23,16 +23,10 @@ export function ModsDialog() {
 			<Stack direction="row" justifyContent="space-between">
 				<span>Mods</span>
 				<Stack direction="row" spacing={0.5}>
-					<TextField id="outlined-basic" label="Search..." variant="outlined" />
-					{
-						isLoggedIn
-							? <Button variant="outlined" onClick={() => dispatch(logout())}>
-								<Avatar alt="User" src={userAvatarUrl ?? ''} />
-							</Button>
-							: <Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(login())}>
-								Login
-							</Button>
-					}
+					<TextField id="outlined-basic" label="Search..." variant="outlined" value={searchString} onChange={(e) => dispatch(searchForMod(e.target.value))} />
+					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} onClick={() => dispatch(setOptionsOpen(true))}>
+						Options
+					</Button>
 					<Button variant="outlined" style={{ backgroundColor: '#66F3' }} endIcon={<Close />} onClick={() => dispatch(setModsOpen(false))}>
 						Close
 					</Button>
@@ -57,9 +51,9 @@ export function ModsDialog() {
 						</Stack>
 					</AccordionSummary>
 					<AccordionDetails>
-						<Stack direction="row" spacing={1}>
+						<Stack direction="row" spacing={1} justifyContent={installedModIds.length === 0 ? 'center' : 'start'}>
 							{
-								installedModIds.map(id => (<ModsEntry key={'i' + id} id={id} />))
+								installedModIds.length === 0 ? <Typography variant="body2">No mods installed.</Typography> : installedModIds.map(id => (<ModsEntry key={'i' + id} id={id} />))
 							}
 						</Stack>
 					</AccordionDetails>

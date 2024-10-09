@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ProjectSelene;
@@ -57,7 +56,8 @@ builder.Services.AddSingleton<IStorageProviderService, FSStorageService>();
 //builder.Services.AddSingleton<IStorageProviderService, AWSStorageService>();
 //#endif
 
-builder.Services.AddSingleton((_) => {
+builder.Services.AddSingleton((_) =>
+{
     var client = new HttpClient();
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     client.DefaultRequestHeaders.UserAgent.Clear();
@@ -106,6 +106,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors(localCorsPolicyName);
+
+app.Use((context, next) =>
+{
+    context.Request.EnableBuffering();
+    return next();
+});
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

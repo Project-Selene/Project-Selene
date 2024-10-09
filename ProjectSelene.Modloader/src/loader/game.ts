@@ -1,6 +1,6 @@
 import { Handles } from '../handles/handles';
-import { Mod } from '../ui/state/models/mod';
-import { GameInfo, GamesInfo, Mods } from '../ui/state/state.models';
+import { Mod } from '../state/models/mod';
+import { GameInfo, GamesInfo, Mods } from '../state/state.models';
 import { Filesystem } from './filesystem';
 
 export class Game {
@@ -222,5 +222,35 @@ export class Game {
 		await this.filesystem.writeFile('/fs/internal/game/' + game.id + '/mods/' + name, content);
 
 		return this.getModsInternal(game.id);
+	}
+
+	public async installModLoader(game: GameInfo) {
+		if (!await this.mountGame(game, 'readwrite')) {
+			throw new Error('Game must be opened before installing a mod loader');
+		}
+
+		//Download
+		await this.filesystem.mountHttp('/fs/internal/project-selene/', '//' + location.host + '/');
+		const stream = await this.filesystem.openFile('/fs/internal/project-selene/project-selene.zip');
+		await this.filesystem.writeFile('/fs/internal/game/' + game.id + '/project-selene.zip', stream);
+
+		//Extract
+		await this.filesystem.mountZip('/fs/internal/game/' + game.id + '/project-selene/', '/fs/internal/game/' + game.id + '/project-selene.zip');
+		await this.copyFolder('/fs/internal/game/' + game.id + '/project-selene/', '/fs/internal/game/' + game.id + '/');
+
+		//Cleanup
+		await this.filesystem.delete('/fs/internal/game/' + game.id + '/project-selene.zip');
+	}
+
+	private async copyFolder(from: string, to: string) {
+		const files = await this.filesystem.readDir(from);
+		for (const file of files) {
+			if (file.isDir) {
+				await this.copyFolder(from + file.name + '/', to + file.name + '/');
+			} else {
+				const content = await this.filesystem.openFile(from + file.name);
+				await this.filesystem.writeFile(to + file.name, content);
+			}
+		}
 	}
 }

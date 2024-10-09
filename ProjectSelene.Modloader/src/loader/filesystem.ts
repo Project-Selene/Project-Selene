@@ -24,6 +24,19 @@ export class Filesystem {
 			});
 	}
 
+	public async openFile(path: string): Promise<ReadableStream<Uint8Array>> {
+		return fetch(path)
+			.then(resp => {
+				if (!resp.ok) {
+					throw new Error('Failed to read file' + resp.status.toString());
+				}
+				if (resp.body === null) {
+					throw new Error('Failed to read file: body is null');
+				}
+				return resp.body;
+			});
+	}
+
 	public async writeFile(path: string, content: BodyInit): Promise<boolean> {
 		return (await (await fetch(path, {
 			method: 'POST',

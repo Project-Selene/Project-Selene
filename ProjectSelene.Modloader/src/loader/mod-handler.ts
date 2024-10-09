@@ -1,4 +1,4 @@
-import { Mod } from '../ui/state/models/mod';
+import { Mod } from '../state/models/mod';
 
 export class ModInfo {
 	private registryCtor = new Map<unknown, { injected: unknown, lowest: unknown }[]>();

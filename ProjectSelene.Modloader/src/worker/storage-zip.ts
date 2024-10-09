@@ -50,13 +50,29 @@ export class StorageZip extends Storage {
 			(async (zip: JSZip, response: WritableStream<Uint8Array>) => {
 				const result: { name: string, isDir: boolean }[] = [];
 				zip.forEach((name, file) => {
-					result.push({
-						name,
-						isDir: file.dir,
-					});
+					if (file.dir) {
+						// Directories always end with a slash and may not have another slash in the name
+						if (name.indexOf('/') !== name.length - 1) {
+							return;
+						}
+						result.push({
+							name: name.slice(0, -1),
+							isDir: true,
+						});
+					} else {
+						// Files may not have a slash
+						if (name.includes('/')) {
+							return;
+						}
+						result.push({
+							name,
+							isDir: false,
+						});
+					}
+
 				});
 				await new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response);
-			})(zip, response);
+			})(folder, response);
 			return true;
 		} catch (e) {
 			console.error(e);

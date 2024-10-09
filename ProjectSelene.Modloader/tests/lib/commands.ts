@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { RootState } from '../../src/ui/state/state.reducer';
+import { RootState } from '../../src/state/state.reducer';
 
 export async function sendTestCommand(page: Page, command: 'setup'): Promise<void>;
 export async function sendTestCommand(page: Page, command: 'createFile', path: string, content: string): Promise<void>;

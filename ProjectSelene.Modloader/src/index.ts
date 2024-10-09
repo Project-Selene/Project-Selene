@@ -1,5 +1,6 @@
+import { pollForDevMod } from './loader/dev-poll';
 import { Filesystem } from './loader/filesystem';
-import { loadState, selectStoreWithoutUI, store } from './ui/state/state.reducer';
+import { loadState, selectStoreWithoutUI, store } from './state/state.reducer';
 import { startUI } from './ui/ui';
 
 if (document.visibilityState as string !== 'prerender') {
@@ -26,6 +27,10 @@ if (process.env.NODE_ENV === 'development') {
 		sessionStorage.setItem('store', JSON.stringify(store.getState().state));
 		return location.reload();
 	});
+}
+
+if (!window.TEST && document.visibilityState as string !== 'prerender') {
+	pollForDevMod();
 }
 
 new Filesystem().setup().then(() => startUI());

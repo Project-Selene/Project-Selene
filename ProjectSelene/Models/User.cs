@@ -17,5 +17,6 @@ public class User
 
     public List<Mod> Mods { get; set; } = new List<Mod> { };
 
-    public ICollection<StoredObject> StoredObjects { get; init; } = new List<StoredObject>();
+    public ICollection<Artifact> Artifacts { get; init; } = new List<Artifact>();
+    public ICollection<ModVersionDraft> ModVersionDrafts { get; init; } = new List<ModVersionDraft>();
 }

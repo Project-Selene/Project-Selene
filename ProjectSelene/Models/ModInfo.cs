@@ -3,7 +3,7 @@
 public class ModInfo
 {
     [Key]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     [Required]
     [MinLength(1)]

@@ -7,8 +7,9 @@ public class SeleneDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Mod> Mods => Set<Mod>();
-    public DbSet<ModVersion> ModVersion => Set<ModVersion>();
-    public DbSet<StoredObject> StoredObjects => Set<StoredObject>();
+    public DbSet<ModVersion> ModVersions => Set<ModVersion>();
+    public DbSet<ModVersionDraft> ModVersionDrafts => Set<ModVersionDraft>();
+    public DbSet<Artifact> Artifacts => Set<Artifact>();
 
     public SeleneDbContext(DbContextOptions options) : base(options) { }
 
@@ -21,7 +22,7 @@ public class SeleneDbContext : DbContext
 
         modelBuilder.Entity<Mod>()
             .HasMany(m => m.Versions)
-            .WithOne(v => v.OwnedBy)
+            .WithOne(v => v.Mod)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Mod>()
@@ -33,8 +34,8 @@ public class SeleneDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Artifact>()
-            .HasOne(a => a.StoredObject)
-            .WithMany(o => o.Artifacts)
+            .HasMany(a => a.ModVersionDrafts)
+            .WithOne(m => m.Download)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

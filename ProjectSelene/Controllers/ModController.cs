@@ -10,124 +10,29 @@ namespace ProjectSelene.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService, IConfiguration configuration) : ControllerBase
+public class ModController(IMapper mapper, SeleneDbContext context, LoginService loginService) : ControllerBase
 {
-    private readonly string cdn = configuration["Domains:CDN"] ?? "http://localhost";
+    private const int DRAFT_LIMIT = 5;
 
     [HttpGet("list")]
     public async Task<ModList> GetModList()
     {
+        User? user = null;
         if (loginService.IsLoggedIn(this.HttpContext))
         {
-            var user = await loginService.GetUser(this.HttpContext);
-            return new ModList()
-            {
-                Entries = await context.Mods
-                    .Where(entry => entry.Author == user || entry.Versions.Any(v => v.VerifiedBy != null || (user != null && v.SubmittedBy == user)))
-                    .ProjectTo<ModList.Entry>(mapper.ConfigurationProvider, new { user })
-                    .ToListAsync()
-            };
+            user = await loginService.GetUser(this.HttpContext);
         }
-        else
+
+        return new ModList()
         {
-            return new ModList()
-            {
-                Entries = await context.Mods
-                    .ProjectTo<ModList.Entry>(mapper.ConfigurationProvider, new { user = (User?)null })
-                    .Where(entry => entry.Versions.Any())
-                    .ToListAsync()
-            };
-        }
+            Entries = await context.Mods
+                .Where(entry => entry.Author == user || entry.Versions.Count != 0 || entry.VersionDrafts.Any(d => d.CreatedBy == user))
+                .ProjectTo<ModList.Entry>(mapper.ConfigurationProvider, new { user })
+                .ToListAsync()
+        };
     }
 
-    [HttpGet("download/{id}/{version}")]
-    [Produces("application/octet-stream")]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
-    public async Task<IActionResult> Download([FromRoute] Guid id, [FromRoute] string version)
-    {
-        var isAdmin = loginService.IsLoggedIn(HttpContext) && (await loginService.GetUser(this.HttpContext))?.IsAdmin == true;
-
-        var url = await context.ModVersion
-            .Where(v => v.Version == version && (isAdmin || v.VerifiedBy != null) && v.OwnedBy.Guid == id)
-            .Select(v => v.Download.Url)
-            .SingleOrDefaultAsync();
-
-        if (url == null)
-        {
-            return this.NotFound(new VersionResult(id, version));
-        }
-
-        return this.Redirect(url);
-    }
-
-    [HttpPost("create/version/{id}")]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(int))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(VersionResult))]
-    public async Task<ActionResult<VersionResult>> UploadVersion([FromBody]VersionUpload versionUpload, [FromRoute]Guid id)
-    {
-        if (!loginService.IsLoggedIn(this.HttpContext))
-        {
-            return this.StatusCode(403);
-        }
-
-        if (!this.ModelState.IsValid)
-        {
-            return this.BadRequest();
-        }
-
-        try
-        {
-            var user = await loginService.GetUser(this.HttpContext);
-
-            using var transaction = context.Database.BeginTransaction();
-
-            var mod = await context.Mods
-                    .Include(m => m.Versions)
-                    .FirstOrDefaultAsync(m => m.Guid == id);
-            if (mod == null)
-            {
-                return this.NotFound(id);
-            }
-
-            if (mod.Versions.Any(v => v.Version == versionUpload.Version))
-            {
-                return this.Conflict(new {id, version = versionUpload.Version});
-            }
-
-            var storedObject = user.StoredObjects.Where(so => versionUpload.StoredObject == so.Id).FirstOrDefault();
-            if (storedObject == null)
-            {
-                return this.NotFound(versionUpload.StoredObject);
-            }
-
-            mod.Versions.Add(new ModVersion()
-            {
-                Version = versionUpload.Version,
-                SubmittedOn = DateTime.Now,
-                SubmittedBy = user,
-                Download =  new()
-                {
-                    Url = this.cdn + "/storage/download/" + storedObject.Id,
-                    StoredObject = storedObject,
-                },
-            });
-
-            await context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            return this.BadRequest();
-        }
-
-        return new VersionResult(id, versionUpload.Version);
-    }
-
-    [HttpPost("create/new")]
+    [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(string))]
@@ -151,30 +56,20 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
 
             if (await context.Mods.AnyAsync(m => m.Guid == data.Id))
             {
-                return this.Conflict(data.Name);
+                return this.Conflict(data.Id);
             }
             if (await context.Mods.AnyAsync(m => m.Info.Name == data.Name))
             {
                 return this.Conflict(data.Name);
             }
 
-            var added = new Mod()
-            {
-                Guid = data.Id,
-                Info = new ModInfo()
-                {
-                    Name = data.Name,
-                    Description = data.Description,
-                },
-                Versions = [],
-                Author = user,
-            };
-
+            var added = mapper.Map<Mod>(data);
+            added.Author = user;
             user.Mods.Add(added);
 
-            await transaction.CommitAsync();
-
             await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
 
             return new IdResult(added.Guid);
         }
@@ -184,11 +79,11 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
         }
     }
 
-    [HttpPost("delete/{id}")]
+    [HttpPost("{id}/delete")]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(IdResult))]
-    public async Task<ActionResult<IdResult>> DeleteMod([FromRoute]Guid id)
+    public async Task<ActionResult<IdResult>> DeleteMod([FromRoute] Guid id)
     {
         if (!loginService.IsLoggedIn(this.HttpContext))
         {
@@ -204,7 +99,9 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
             }
 
             var mod = !user.IsAdmin
-                ? user.Mods.FirstOrDefault(m => m.Guid == id)
+                ? await context.Mods
+                    .Include(m => m.Versions)
+                    .FirstOrDefaultAsync(m => m.Guid == id && m.Author == user)
                 : await context.Mods
                     .Include(m => m.Versions)
                     .FirstOrDefaultAsync(m => m.Guid == id);
@@ -240,7 +137,7 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
         }
     }
 
-    [HttpPost("delete/{id}/{version}")]
+    [HttpPost("{id}/{version}/delete")]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
@@ -259,48 +156,32 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
                 return this.StatusCode(403);
             }
 
-            var mod = !user.IsAdmin
-                ? user.Mods.FirstOrDefault(m => m.Guid == id)
-                : await context.Mods
-                    .Include(m => m.Versions)
-                    .ThenInclude(v => v.VerifiedBy)
-                    .FirstOrDefaultAsync(m => m.Guid == id);
-
-            if (mod == null)
-            {
-                return this.NotFound(new VersionResult(id, version));
-            }
-
-            var v = mod.Versions.FirstOrDefault(v => v.Version == version);
+            var v = !user.IsAdmin
+                ? await context.ModVersions
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.Versions)
+                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version && v.SubmittedBy == user)
+                : await context.ModVersions
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.Versions)
+                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version);
             if (v == null)
             {
                 return this.NotFound(new VersionResult(id, version));
             }
 
-            if (!user.IsAdmin && v.SubmittedBy != user)
+            if (v.Mod.Versions.Count == 1)
             {
-                if (v.VerifiedBy == null)
-                {
-                    return this.NotFound(new VersionResult(id, version)); //Pretend it doesn't exist
-                }
-                else
-                {
-                    return this.StatusCode(403);
-                }
-            }
-
-            if (mod.Versions.Count == 1)
-            {
-                context.Mods.Remove(mod);
+                context.Mods.Remove(v.Mod);
                 await context.SaveChangesAsync();
                 return this.Ok(new { id });
             }
             else
             {
-                mod.Versions.Remove(v);
+                v.Mod.Versions.Remove(v);
             }
 
-            context.ModVersion.Remove(v);
+            context.ModVersions.Remove(v);
             await context.SaveChangesAsync();
             return new VersionResult(id, version);
         }
@@ -310,7 +191,164 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
         }
     }
 
-    [HttpPost("verify/{id}/{version}")]
+    [HttpPost("draft/{id}/create")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(int))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(VersionResult))]
+    public async Task<ActionResult<VersionResult>> UploadVersion([FromBody] VersionUpload versionUpload, [FromRoute] Guid id)
+    {
+        if (!loginService.IsLoggedIn(this.HttpContext))
+        {
+            return this.StatusCode(403);
+        }
+
+        if (!this.ModelState.IsValid)
+        {
+            return this.BadRequest();
+        }
+
+        try
+        {
+            var user = await loginService.GetUser(this.HttpContext);
+
+            using var transaction = context.Database.BeginTransaction();
+
+            var draftCount = await context.ModVersionDrafts
+                .Where(v => v.CreatedBy == user)
+                .CountAsync();
+
+            if (draftCount >= DRAFT_LIMIT)
+            {
+                return this.BadRequest(new { error = "Too many draft versions." });
+            }
+
+            var mod = await context.Mods
+                    .Include(m => m.VersionDrafts)
+                    .FirstOrDefaultAsync(m => m.Guid == id);
+            if (mod == null)
+            {
+                return this.NotFound(id);
+            }
+
+            if (mod.Versions.Any(v => v.Version == versionUpload.Version))
+            {
+                return this.Conflict(new { id, version = versionUpload.Version });
+            }
+
+            if (mod.VersionDrafts.Any(v => v.Version == versionUpload.Version))
+            {
+                return this.Conflict(new { id, version = versionUpload.Version });
+            }
+
+            mod.VersionDrafts.Add(new()
+            {
+                Version = versionUpload.Version,
+                CreatedBy = user,
+                CreatedOn = DateTime.Now,
+                Mod = mod,
+            });
+
+            await context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            return this.BadRequest();
+        }
+
+        return new VersionResult(id, versionUpload.Version);
+    }
+
+    [HttpPost("draft/{id}/{version}/delete")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(VersionResult))]
+    public async Task<ActionResult<VersionResult>> DeleteVersionDraft([FromRoute] Guid id, [FromRoute] string version)
+    {
+        if (!loginService.IsLoggedIn(this.HttpContext))
+        {
+            return this.StatusCode(403);
+        }
+
+        try
+        {
+            var user = await loginService.GetUser(this.HttpContext);
+            if (user == null)
+            {
+                return this.StatusCode(403);
+            }
+
+            var v = !user.IsAdmin
+                ? await context.ModVersionDrafts
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.Versions)
+                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version && v.CreatedBy == user)
+                : await context.ModVersionDrafts
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.Versions)
+                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version);
+            if (v == null)
+            {
+                return this.NotFound(new VersionResult(id, version));
+            }
+
+            v.Mod.VersionDrafts.Remove(v);
+            context.ModVersionDrafts.Remove(v);
+            await context.SaveChangesAsync();
+            return new VersionResult(id, version);
+        }
+        catch
+        {
+            return this.BadRequest();
+        }
+    }
+
+    [HttpPost("draft/{id}/{version}/submit")]
+    public async Task<IActionResult> Submit([FromRoute] Guid id, [FromRoute] string version)
+    {
+        if (!loginService.IsLoggedIn(this.HttpContext))
+        {
+            return this.StatusCode(403);
+        }
+
+        try
+        {
+            var user = await loginService.GetUser(this.HttpContext);
+            if (user == null)
+            {
+                return this.StatusCode(403);
+            }
+
+            var v = await context.ModVersionDrafts
+                .Include(m => m.Download)
+                .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version && v.CreatedBy == user);
+            if (v == null)
+            {
+                return this.NotFound(new VersionResult(id, version));
+            }
+
+            if (v.Download == null)
+            {
+                return this.ValidationProblem("Cannot submit version without download artifact");
+            }
+
+            v.SubmittedOn = DateTime.Now;
+
+            //TODO: Send notification to admins
+
+            await context.SaveChangesAsync();
+            return this.Ok(new { id, version });
+        }
+        catch
+        {
+            return this.BadRequest();
+        }
+    }
+
+    [HttpPost("draft/{id}/{version}/verify")]
     public async Task<IActionResult> Verify([FromRoute] Guid id, [FromRoute] string version)
     {
         if (!loginService.IsLoggedIn(this.HttpContext))
@@ -326,27 +364,26 @@ public class ModController(IMapper mapper, SeleneDbContext context, LoginService
                 return this.StatusCode(403);
             }
 
-            var mod = await context.Mods
-                    .Include(m => m.Versions)
-                    .ThenInclude(v => v.VerifiedBy)
-                    .FirstOrDefaultAsync(m => m.Guid == id);
-            if (mod == null)
-            {
-                return this.NotFound(new { id, version });
-            }
-
-            var v = mod.Versions.FirstOrDefault(v => v.Version == version);
+            var v = await context.ModVersionDrafts
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.Versions)
+                    .Include(m => m.Mod)
+                    .ThenInclude(v => v.VersionDrafts)
+                    .Include(m => m.Download)
+                    .Include(m => m.CreatedBy)
+                    .FirstOrDefaultAsync(v => v.Mod.Guid == id && v.Version == version);
             if (v == null)
             {
-                return this.NotFound(new { id, version });
+                return this.NotFound(new VersionResult(id, version));
             }
 
-            if (v.VerifiedBy != null)
-            {
-                return this.Conflict(new { id, version }); 
-            }
+            var newVersion = mapper.Map<ModVersion>(v);
+            newVersion.VerifiedBy = user;
 
-            v.VerifiedBy = user;
+            v.Mod.Versions.Add(newVersion);
+            v.Mod.VersionDrafts.Remove(v);
+            context.ModVersionDrafts.Remove(v);
+
             await context.SaveChangesAsync();
             return this.Ok(new { id, version });
         }

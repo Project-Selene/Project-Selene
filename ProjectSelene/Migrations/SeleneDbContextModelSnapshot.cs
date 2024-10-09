@@ -19,22 +19,20 @@ namespace ProjectSelene.Migrations
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("StoredObjectId")
+                    b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Url")
-                        .IsRequired()
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UploadedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StoredObjectId");
+                    b.HasIndex("OwnerId");
 
-                    b.ToTable("Artifact");
+                    b.ToTable("Artifacts");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.Mod", b =>
@@ -89,10 +87,11 @@ namespace ProjectSelene.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("DownloadId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("DownloadId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("OwnedById")
+                    b.Property<int>("ModId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("SubmittedById")
@@ -101,8 +100,11 @@ namespace ProjectSelene.Migrations
                     b.Property<DateTime>("SubmittedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("VerifiedById")
+                    b.Property<int>("VerifiedById")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("VerifiedOn")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Version")
                         .IsRequired()
@@ -112,31 +114,49 @@ namespace ProjectSelene.Migrations
 
                     b.HasIndex("DownloadId");
 
-                    b.HasIndex("OwnedById");
+                    b.HasIndex("ModId");
 
                     b.HasIndex("SubmittedById");
 
                     b.HasIndex("VerifiedById");
 
-                    b.ToTable("ModVersion");
+                    b.ToTable("ModVersions");
                 });
 
-            modelBuilder.Entity("ProjectSelene.Models.StoredObject", b =>
+            modelBuilder.Entity("ProjectSelene.Models.ModVersionDraft", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("OwnerId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("UploadedAt")
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DownloadId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ModId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("SubmittedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
-                    b.ToTable("StoredObjects");
+                    b.HasIndex("DownloadId");
+
+                    b.HasIndex("ModId");
+
+                    b.ToTable("ModVersionDrafts");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.User", b =>
@@ -172,12 +192,13 @@ namespace ProjectSelene.Migrations
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
-                    b.HasOne("ProjectSelene.Models.StoredObject", "StoredObject")
+                    b.HasOne("ProjectSelene.Models.User", "Owner")
                         .WithMany("Artifacts")
-                        .HasForeignKey("StoredObjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("StoredObject");
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.Mod", b =>
@@ -207,9 +228,9 @@ namespace ProjectSelene.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectSelene.Models.Mod", "OwnedBy")
+                    b.HasOne("ProjectSelene.Models.Mod", "Mod")
                         .WithMany("Versions")
-                        .HasForeignKey("OwnedById")
+                        .HasForeignKey("ModId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -221,48 +242,66 @@ namespace ProjectSelene.Migrations
 
                     b.HasOne("ProjectSelene.Models.User", "VerifiedBy")
                         .WithMany()
-                        .HasForeignKey("VerifiedById");
+                        .HasForeignKey("VerifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Download");
 
-                    b.Navigation("OwnedBy");
+                    b.Navigation("Mod");
 
                     b.Navigation("SubmittedBy");
 
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("ProjectSelene.Models.StoredObject", b =>
+            modelBuilder.Entity("ProjectSelene.Models.ModVersionDraft", b =>
                 {
-                    b.HasOne("ProjectSelene.Models.User", "Owner")
-                        .WithMany("StoredObjects")
-                        .HasForeignKey("OwnerId")
+                    b.HasOne("ProjectSelene.Models.User", "CreatedBy")
+                        .WithMany("ModVersionDrafts")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.HasOne("ProjectSelene.Models.Artifact", "Download")
+                        .WithMany("ModVersionDrafts")
+                        .HasForeignKey("DownloadId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ProjectSelene.Models.Mod", "Mod")
+                        .WithMany("VersionDrafts")
+                        .HasForeignKey("ModId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Download");
+
+                    b.Navigation("Mod");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.Artifact", b =>
                 {
+                    b.Navigation("ModVersionDrafts");
+
                     b.Navigation("ModVersions");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.Mod", b =>
                 {
-                    b.Navigation("Versions");
-                });
+                    b.Navigation("VersionDrafts");
 
-            modelBuilder.Entity("ProjectSelene.Models.StoredObject", b =>
-                {
-                    b.Navigation("Artifacts");
+                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("ProjectSelene.Models.User", b =>
                 {
-                    b.Navigation("Mods");
+                    b.Navigation("Artifacts");
 
-                    b.Navigation("StoredObjects");
+                    b.Navigation("ModVersionDrafts");
+
+                    b.Navigation("Mods");
                 });
 #pragma warning restore 612, 618
         }

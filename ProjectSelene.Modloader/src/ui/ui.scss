@@ -1,16 +1,3 @@
-// @use "@material/theme" with (
-//   $primary: #90caf9,
-//   $secondary: #9fa8da,
-//   $background: #333,
-// );
-
-@use "~bootstrap/scss/bootstrap-utilities.scss";
-
-// @use "~material-icons/iconfont/outlined.scss";
-
-// @import "~@fontsource/roboto/latin.css";
-
-
 html {
   color: var(--mdc-theme-text-primary-on-dark, #FFF);
   background-color: var(--mdc-theme-background, #333);

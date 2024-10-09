@@ -3,9 +3,9 @@
 public record CreateMod(
     [Required]
     Guid Id,
-    [Required] 
+    [Required]
     string Name,
-    [Required] 
+    [Required]
     string Description,
     [Required]
     [RegularExpression(@"^\d+\.\d+\.\d+$")]

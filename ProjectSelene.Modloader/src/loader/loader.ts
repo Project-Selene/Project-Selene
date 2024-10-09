@@ -1,5 +1,6 @@
-import { Mod, ModPatch } from '../ui/state/models/mod';
-import { GameInfo, Mods } from '../ui/state/state.models';
+import { Mod, ModPatch } from '../state/models/mod';
+import { GameInfo, Mods } from '../state/state.models';
+import { stopPollForDevMod } from './dev-poll';
 import { Filesystem } from './filesystem';
 import { Game } from './game';
 import { ModInfo as ModHandler } from './mod-handler';
@@ -8,7 +9,7 @@ import { prepareWindow } from './window';
 
 export class Loader {
 	private devModIteration = 0;
-	private dev = false;
+	private hasDevMod = false;
 
 	constructor(
 		private readonly filesystem: Filesystem,
@@ -16,8 +17,8 @@ export class Loader {
 	) {
 	}
 
-	public async play(game: GameInfo, dev: boolean) {
-		this.dev = dev;
+	public async play(game: GameInfo, hasDevMod: boolean) {
+		this.hasDevMod = hasDevMod;
 
 		const id = game.id;
 		if (!await this.game.mountGame(game)) {
@@ -31,9 +32,7 @@ export class Loader {
 		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
 		await this.filesystem.mountLink('/fs/game/terra/dist/bundle.js', injected);
 
-		if (dev) {
-			await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
-		}
+		await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
 
 		const mods = await this.game.getMods(game);
 		for (const mod of mods.mods) {
@@ -52,6 +51,14 @@ export class Loader {
 		document.open();
 		document.write(doc.documentElement.innerHTML);
 		document.close();
+	}
+
+	public injectDevMod() {
+		if (!this.hasDevMod) {
+			stopPollForDevMod();
+			this.hasDevMod = true;
+			this.loadDevMod();
+		}
 	}
 
 	private async transformCached(id: number) {
@@ -96,7 +103,8 @@ export class Loader {
 			}
 		}
 
-		if (this.dev) {
+		if (this.hasDevMod) {
+			stopPollForDevMod();
 			await this.loadDevMod();
 		}
 	}
@@ -119,7 +127,7 @@ export class Loader {
 			let found = false;
 			while (!found) {
 				try {
-					await fetch('http://localhost:8182/manifest.json'); //Check if mod exists
+					await fetch('http://localhost:8182/health'); //Check if mod exists
 					found = true;
 				} catch {
 					await new Promise(resolve => setTimeout(resolve, 5000));

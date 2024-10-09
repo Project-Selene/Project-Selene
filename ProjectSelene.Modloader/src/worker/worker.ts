@@ -1,6 +1,7 @@
 /// <reference lib="WebWorker" />
 
 import * as idb from 'idb-keyval';
+import mime from 'mime/lite';
 import { BroadcastCommunication } from '../communication/broadcast';
 import { SingleCommunication } from '../communication/single';
 import { Patcher } from './patcher';
@@ -128,6 +129,12 @@ async function readFile(pathname: string) {
 	}
 }
 
+function getMimeType(pathname: string, command?: string): string {
+	if (!command || command === 'readFile') {
+		return mime.getType(pathname) ?? 'application/octet-stream';
+	}
+	return 'application/json';
+}
 
 self.addEventListener('connect', event => {
 	const port = event.ports[0];
@@ -155,7 +162,8 @@ self.addEventListener('connect', event => {
 		if (target) {
 			const path = pathname.slice(target.target.length);
 			let result: boolean;
-			switch (request.headers['x-sw-command']) {
+			const command = request.headers['x-sw-command'];
+			switch (command) {
 				case 'writeFile':
 					result = await target.writeFile(path, request.body, response);
 					break;
@@ -181,11 +189,13 @@ self.addEventListener('connect', event => {
 				return {
 					status: 200,
 					headers: {
-						'content-type': 'text/javascript',
+						'content-type': getMimeType(path, command),
 					},
 				};
 			} else {
-				new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				if (!response.locked) {
+					new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				}
 				return {
 					status: 404,
 				};
@@ -196,7 +206,7 @@ self.addEventListener('connect', event => {
 				return {
 					status: 200,
 					headers: {
-						'content-type': 'text/javascript',
+						'content-type': getMimeType(pathname),
 					},
 				};
 			}

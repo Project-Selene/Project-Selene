@@ -1,4 +1,4 @@
-import { ModInfo } from '../ui/state/models/mod';
+import { ModInfo } from '../state/models/mod';
 import { ModService, OpenAPI } from './generated';
 
 declare global {
@@ -8,6 +8,8 @@ declare global {
 		TEST?: boolean;
 	}
 }
+
+const CDN_BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://cdn.projectselene.org';
 
 export class ModDB {
 	constructor() {
@@ -23,6 +25,6 @@ export class ModDB {
 	}
 
 	public async download(id: string, version: string) {
-		return (await fetch(OpenAPI.BASE + '/api/mod/download/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
+		return (await fetch(CDN_BASE + '/api/Artifact/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
 	}
 }

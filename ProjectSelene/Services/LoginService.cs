@@ -32,18 +32,12 @@ public class LoginService
         var idClaim = userClaims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (idClaim == null)
         {
-            throw new UnauthorizedAccessException(); 
+            throw new UnauthorizedAccessException();
         }
 
         var id = int.Parse(idClaim.Value);
 
         var result = await this.context.Users
-            .Include(u => u.Mods)
-            .ThenInclude(m => m.Versions)
-            .ThenInclude(v => v.Download)
-            .Include(u => u.StoredObjects)
-            .ThenInclude(o => o.Artifacts)
-            .ThenInclude(a => a.ModVersions)
             .FirstOrDefaultAsync(c => c.Id == id);
         if (result != null)
         {
