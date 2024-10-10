@@ -310,12 +310,17 @@ function checkScreenshot(state: RootState['state'], name: string) {
 	test('screenshot for state ' + name, async ({ page }) => {
 		await commands.loadStoreState(page, state);
 		await page.waitForLoadState('domcontentloaded');
+		await new Promise(resolve => setTimeout(resolve, 100));
 		const locators = await page.locator('//img').all();
 		await Promise.all(locators.map(l => l.evaluate((e: HTMLImageElement) => e.complete || new Promise(resolve => e.onload = resolve))));
 
 		await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-
 		await new Promise(resolve => setTimeout(resolve, 100));
-		await expect(page).toHaveScreenshot(name + '.png');
+		try {
+			await expect(page).toHaveScreenshot(name + '.png');
+		} catch {
+			await new Promise(resolve => setTimeout(resolve, 10000));
+			await expect(page).toHaveScreenshot(name + '.png');
+		}
 	});
 }

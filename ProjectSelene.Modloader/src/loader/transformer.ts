@@ -5,7 +5,7 @@ if (globalThis.process) {
 		browser: true,
 	});
 }
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const ts: typeof tsType = require('typescript');
 
 export function transform(content: string, prefix: string) {
