@@ -42,7 +42,7 @@ async function poll() {
 		});
 	} catch (e) {
 		if (e instanceof TypeError) {
-			// e is "TypeError: Failed to fetch" / "net::ERR_CONNECTION_REFUSED" 
+			// e is "TypeError: Failed to fetch" / "net::ERR_CONNECTION_REFUSED"
 			const elapsed = Date.now() - start;
 
 			// Reduce the timeout so we don't fill the console with errors.
@@ -60,16 +60,18 @@ async function poll() {
 
 async function fetchDevMod() {
 	//The timeout prevents errors from filling the console.
-	await fetch('http://localhost:8182/health', { signal: AbortSignal.timeout(timeout) });
+	await fetch('http://localhost:8182/health', {
+		signal: AbortSignal.timeout(timeout),
+	});
 
 	const result = await fetch('http://localhost:8182/manifest.json');
 	const manifest = await result.json();
-	const mod: Mod = ({
+	const mod: Mod = {
 		currentInfo: manifest,
 		enabled: true,
 		internalName: 'dev',
 		filename: '',
-	});
+	};
 	store.dispatch(foundDevMod(mod));
 	clearInterval(intervalId);
 }

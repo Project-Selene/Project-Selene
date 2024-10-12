@@ -3,66 +3,72 @@ import { LoadingState } from './models/loading-state';
 import { Mod, ModInfo } from './models/mod';
 
 export interface State {
-    gamesInfo: GamesInfo;
+	gamesInfo: GamesInfo;
 
-    modDb: ModDb;
-    mods: LoadingState<Mods>;
-    devMod: LoadingState<Mod>;
+	modDb: ModDb;
+	mods: LoadingState<Mods>;
+	devMod: LoadingState<Mod>;
 
-    options: Options;
-    ui: UIState;
+	options: Options;
+	ui: UIState;
 
-    user?: UserInfo;
+	user?: UserInfo;
 }
 
 export interface Options {
-    mods: Record<string, {
-        enabled: boolean;
-    }>;
+	mods: Record<
+		string,
+		{
+			enabled: boolean;
+		}
+	>;
 }
 
 export interface UIState {
-    mods: {
-        open: boolean,
-        search: string,
-        installedOpen: boolean,
-        availableOpen: boolean,
-    };
-    options: {
-        open: boolean,
-        seleneOptionsExpanded: boolean,
-        modsExpanded: Record<string, boolean>
-    }
-    infoOpen: boolean;
-    openOpen: boolean;
-    playing: boolean;
-    status?: string;
+	mods: {
+		open: boolean;
+		search: string;
+		installedOpen: boolean;
+		availableOpen: boolean;
+	};
+	options: {
+		open: boolean;
+		seleneOptionsExpanded: boolean;
+		modsExpanded: Record<string, boolean>;
+	};
+	infoOpen: boolean;
+	openOpen: boolean;
+	playing: boolean;
+	status?: string;
 }
 
 export interface GamesInfo {
-    games: GameInfo[];
-    selectedGame: number;
+	games: GameInfo[];
+	selectedGame: number;
 }
 
-export type GameInfo = {
-    id: number;
-    type: 'handle';
-    loaded: boolean;
-} | {
-    id: number;
-    type: 'fs';
-    path: string;
-    loaded: boolean;
-} | {
-    id: number;
-    type: 'filelist';
-    loaded: boolean;
-};
+export type GameInfo =
+	| {
+			id: number;
+			type: 'handle';
+			loaded: boolean;
+	  }
+	| {
+			id: number;
+			type: 'fs';
+			path: string;
+			loaded: boolean;
+	  }
+	| {
+			id: number;
+			type: 'filelist';
+			loaded: boolean;
+	  };
 
 export interface Mods {
-    mods: Mod[];
+	mods: Mod[];
 }
 
 export interface ModDb {
-    mods: LoadingState<ModInfo[]>;
+	mods: LoadingState<ModInfo[]>;
 }

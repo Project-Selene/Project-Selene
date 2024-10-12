@@ -1,16 +1,17 @@
-
 import React from 'react';
 
-export function FilterHighlight(props: { text: string, filter: string } | { children: string, filter: string }) {
+export function FilterHighlight(props: { text: string; filter: string } | { children: string; filter: string }) {
 	const text = 'text' in props ? props.text : props.children;
 	const filter = props.filter.toLowerCase();
 	if (!filter) {
 		return <>{text}</>;
 	}
 
-
 	const lowerText = text.toLowerCase();
-	const filterParts = filter.toLowerCase().split(/\s+/).filter(x => x);
+	const filterParts = filter
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(x => x);
 	const parts: React.ReactNode[] = [];
 	let index = 0;
 	let minIndex = 0; // For overlapping matches
@@ -41,7 +42,11 @@ export function FilterHighlight(props: { text: string, filter: string } | { chil
 		if (start > minIndex) {
 			parts.push(<React.Fragment key={minIndex}>{text.slice(minIndex, start)}</React.Fragment>);
 		}
-		parts.push(<React.Fragment key={Math.max(start, minIndex)}><span style={{ color: '#69bdfc' }}>{text.slice(Math.max(start, minIndex), start + length)}</span></React.Fragment>);
+		parts.push(
+			<React.Fragment key={Math.max(start, minIndex)}>
+				<span style={{ color: '#69bdfc' }}>{text.slice(Math.max(start, minIndex), start + length)}</span>
+			</React.Fragment>,
+		);
 		index = start + 1;
 		minIndex = start + length;
 	}

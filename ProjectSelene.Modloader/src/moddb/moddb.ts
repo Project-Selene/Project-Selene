@@ -17,7 +17,7 @@ export class ModDB {
 	}
 
 	public async modList(): Promise<ModInfo[]> {
-		if (document.visibilityState as string === 'prerender') {
+		if ((document.visibilityState as string) === 'prerender') {
 			return [];
 		}
 

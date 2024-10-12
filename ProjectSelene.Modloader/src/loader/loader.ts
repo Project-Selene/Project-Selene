@@ -14,14 +14,13 @@ export class Loader {
 	constructor(
 		private readonly filesystem: Filesystem,
 		private readonly game: Game,
-	) {
-	}
+	) {}
 
 	public async play(game: GameInfo, hasDevMod: boolean) {
 		this.hasDevMod = hasDevMod;
 
 		const id = game.id;
-		if (!await this.game.mountGame(game)) {
+		if (!(await this.game.mountGame(game))) {
 			throw new Error('Could not mount game');
 		}
 		const injected = await this.transformCached(id);
@@ -36,7 +35,10 @@ export class Loader {
 
 		const mods = await this.game.getMods(game);
 		for (const mod of mods.mods) {
-			await this.filesystem.mountLink('/fs/mods/' + mod.internalName + '/', '/fs/internal/mods/' + game.id + '/' + mod.internalName + '/');
+			await this.filesystem.mountLink(
+				'/fs/mods/' + mod.internalName + '/',
+				'/fs/internal/mods/' + game.id + '/' + mod.internalName + '/',
+			);
 		}
 
 		const entryPointResponse = await fetch('/fs/game/terra/index-release.html');
@@ -62,8 +64,13 @@ export class Loader {
 	}
 
 	private async transformCached(id: number) {
-		const hash = await crypto.subtle.digest('SHA-256', await (await fetch('/fs/internal/game/' + id + '/terra/dist/bundle.js')).arrayBuffer());
-		const hashString = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+		const hash = await crypto.subtle.digest(
+			'SHA-256',
+			await (await fetch('/fs/internal/game/' + id + '/terra/dist/bundle.js')).arrayBuffer(),
+		);
+		const hashString = Array.from(new Uint8Array(hash))
+			.map(b => b.toString(16).padStart(2, '0'))
+			.join('');
 
 		await this.filesystem.mountInMemory('/cache', 'cache');
 		const files = await this.filesystem.readDir('/cache/');
@@ -85,7 +92,6 @@ export class Loader {
 		await this.filesystem.writeFile('/cache/game-' + hashString + '.js', result);
 		return '/cache/game-' + hashString + '.js';
 	}
-
 
 	async hookGameStart(mods: Mods, ...args: unknown[]) {
 		console.log('ready', ...args);
@@ -134,7 +140,7 @@ export class Loader {
 				}
 			}
 
-			const devModPath = '/fs/dev-mod/' + (this.devModIteration++) + '/';
+			const devModPath = '/fs/dev-mod/' + this.devModIteration++ + '/';
 
 			await this.filesystem.mountLink(devModPath, '/fs/internal/dev-mod/');
 
@@ -151,14 +157,15 @@ export class Loader {
 			const src = devModPath + 'main.js';
 
 			__projectSelene.devMod ??= {
-				async hotreload() { return; },
-				registerPatches: (patches) => {
+				async hotreload() {
+					return;
+				},
+				registerPatches: patches => {
 					return this.registerPatches(devModPath, patches, true);
 				},
-				unregisterPatches: (patches) => {
+				unregisterPatches: patches => {
 					return this.registerPatches(devModPath, patches, false);
 				},
-
 			};
 			__projectSelene.devMod.hotreload = async () => {
 				console.log('Reloading development mod');
@@ -187,10 +194,16 @@ export class Loader {
 	private async registerPatches(base: string, patches: ModPatch[], register: boolean) {
 		const rawPatches = patches
 			.filter(p => p.type === 'raw')
-			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) }));
+			.map(p => ({
+				target: '/fs/game/' + p.target,
+				source: base + 'assets/' + p.target.substring('terra/'.length),
+			}));
 		const jsonPatches = patches
 			.filter(p => p.type === 'json')
-			.map(p => ({ target: '/fs/game/' + p.target, source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch' }));
+			.map(p => ({
+				target: '/fs/game/' + p.target,
+				source: base + 'assets/' + p.target.substring('terra/'.length) + '-patch',
+			}));
 
 		if (register) {
 			await Filesystem.worker.registerRawPatches(rawPatches);

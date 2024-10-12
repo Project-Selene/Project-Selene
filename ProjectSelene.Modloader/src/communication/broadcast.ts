@@ -1,18 +1,31 @@
 import { WORKER_COUNT } from './worker';
 
 export class BroadcastCommunication {
-	private readonly messageQueue = new Map<number, {count: number, results: unknown[], success: boolean, resolve: (arg: unknown[]) => void, reject:  (arg: unknown[]) => void}>();
+	private readonly messageQueue = new Map<
+		number,
+		{
+			count: number;
+			results: unknown[];
+			success: boolean;
+			resolve: (arg: unknown[]) => void;
+			reject: (arg: unknown[]) => void;
+		}
+	>();
 	private readonly channel: BroadcastChannel;
 
 	constructor(name: string) {
 		this.channel = new BroadcastChannel(name);
 		this.channel.onmessage = () => void 0; //Does nothing but is required for it to work
-		this.channel.addEventListener('message', (event) => {
+		this.channel.addEventListener('message', event => {
 			if (event.origin !== location.origin) {
 				return;
 			}
-			
-			const data = event.data as { id: number; success: boolean; data: unknown; };
+
+			const data = event.data as {
+				id: number;
+				success: boolean;
+				data: unknown;
+			};
 
 			const queue = this.messageQueue.get(data.id);
 			if (queue && data.success !== undefined) {
@@ -44,13 +57,11 @@ export class BroadcastCommunication {
 				reject,
 			});
 
-			this.channel.postMessage(
-				{
-					id,
-					data: message,
-					type,
-				},
-			);
+			this.channel.postMessage({
+				id,
+				data: message,
+				type,
+			});
 		});
 	}
 
@@ -59,13 +70,25 @@ export class BroadcastCommunication {
 			if (event.origin !== location.origin) {
 				return;
 			}
-			
-			const data = event.data as { id: number; type: string; data: unknown; };
+
+			const data = event.data as { id: number; type: string; data: unknown };
 			if (data.type === type) {
 				Promise.resolve()
 					.then(() => handle(data.data as T))
-					.then(result => this.channel.postMessage({id: data.id, success: true, data: result}))
-					.catch(result => this.channel.postMessage({id: data.id, success: false, data: result}));
+					.then(result =>
+						this.channel.postMessage({
+							id: data.id,
+							success: true,
+							data: result,
+						}),
+					)
+					.catch(result =>
+						this.channel.postMessage({
+							id: data.id,
+							success: false,
+							data: result,
+						}),
+					);
 			}
 		});
 	}

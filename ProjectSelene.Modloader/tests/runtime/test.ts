@@ -12,7 +12,10 @@ async function exeuteTestCommand(command: 'setup'): Promise<void>;
 async function exeuteTestCommand(command: 'createFile', path: string, content: string): Promise<void>;
 async function exeuteTestCommand(command: 'nextShowDirectoryPicker', folder?: string): Promise<void>;
 async function exeuteTestCommand(command: 'loadStoreState', state: RootState['state']): Promise<void>;
-async function exeuteTestCommand(command: 'setup' | 'createFile' | 'nextShowDirectoryPicker' | 'loadStoreState', ...args: unknown[]): Promise<void> {
+async function exeuteTestCommand(
+	command: 'setup' | 'createFile' | 'nextShowDirectoryPicker' | 'loadStoreState',
+	...args: unknown[]
+): Promise<void> {
 	switch (command) {
 		case 'setup':
 			return setupTest();
@@ -28,7 +31,7 @@ async function exeuteTestCommand(command: 'setup' | 'createFile' | 'nextShowDire
 }
 
 Object.assign(globalThis, {
-	sendTestCommand: (args) => {
+	sendTestCommand: args => {
 		return exeuteTestCommand(args.command, ...args.args);
 	},
 });

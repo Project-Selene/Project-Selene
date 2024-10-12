@@ -17,7 +17,11 @@ export class StorageLink extends Storage {
 	public writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		return this.sourceStorage.writeGranted(response);
 	}
-	public writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
+	public writeFile(
+		path: string,
+		content: ReadableStream<Uint8Array>,
+		response: WritableStream<Uint8Array>,
+	): Promise<boolean> {
 		return this.sourceStorage.writeFile(this.sourcePath + path, content, response);
 	}
 	public stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {

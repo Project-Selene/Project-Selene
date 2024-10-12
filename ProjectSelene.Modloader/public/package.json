@@ -1,16 +1,18 @@
 {
-  "name": "Alabaster Dawn",
-  "version": "0.0.0.0.0.1",
-  "main": "selene/index.html",
-  "node-remote": [ "<all_urls>" ],
-  "chromium-args": "--ignore-gpu-blacklist --force_high_performance_gpu --disable-direct-composition --disable-background-networking --enable-experimental-web-platform-features",
-  "window": {
-    "icon": "terra/page/img/favicon.png",
-    "id": "terraGame",
-    "width": 1280,
-    "height": 720
-  },
-  "icons": {
-    "256": "terra/page/img/favicon.png"
-  }
+	"name": "Alabaster Dawn",
+	"version": "0.0.0.0.0.1",
+	"main": "selene/index.html",
+	"node-remote": [
+		"<all_urls>"
+	],
+	"chromium-args": "--ignore-gpu-blacklist --force_high_performance_gpu --disable-direct-composition --disable-background-networking --enable-experimental-web-platform-features",
+	"window": {
+		"icon": "terra/page/img/favicon.png",
+		"id": "terraGame",
+		"width": 1280,
+		"height": 720
+	},
+	"icons": {
+		"256": "terra/page/img/favicon.png"
+	}
 }

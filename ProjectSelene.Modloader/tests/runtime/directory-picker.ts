@@ -11,7 +11,11 @@ export async function setupDirectoryPicker(): Promise<FileApi> {
 
 	const newOpenDir: ([FileSystemDirectoryHandle, () => void] | undefined)[] = [];
 
-	async function resolveFile(path: string, dirCreate: FileSystemGetDirectoryOptions = {}, fileCreate: FileSystemGetFileOptions = {}): Promise<FileSystemFileHandle> {
+	async function resolveFile(
+		path: string,
+		dirCreate: FileSystemGetDirectoryOptions = {},
+		fileCreate: FileSystemGetFileOptions = {},
+	): Promise<FileSystemFileHandle> {
 		const parts = path.slice(1).split('/');
 		let result: FileSystemDirectoryHandle = root;
 		for (const part of parts.slice(0, parts.length - 1)) {
@@ -19,7 +23,10 @@ export async function setupDirectoryPicker(): Promise<FileApi> {
 		}
 		return await result.getFileHandle(parts[parts.length - 1], fileCreate);
 	}
-	async function resolveFolder(path: string, dirCreate: FileSystemGetDirectoryOptions = {}): Promise<FileSystemDirectoryHandle> {
+	async function resolveFolder(
+		path: string,
+		dirCreate: FileSystemGetDirectoryOptions = {},
+	): Promise<FileSystemDirectoryHandle> {
 		const parts = path.slice(1).split('/');
 		let result: FileSystemDirectoryHandle = root;
 		for (const part of parts) {
@@ -50,7 +57,7 @@ export async function setupDirectoryPicker(): Promise<FileApi> {
 				newOpenDir.push(undefined);
 			} else {
 				const entry = await resolveFolder(folder);
-				return new Promise<void>((resolve) => {
+				return new Promise<void>(resolve => {
 					newOpenDir.push([entry, resolve]);
 				});
 			}

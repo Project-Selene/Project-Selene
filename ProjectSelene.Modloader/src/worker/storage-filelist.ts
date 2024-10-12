@@ -9,18 +9,26 @@ export class StorageFileList extends Storage {
 		super();
 	}
 	public async readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		return await this.fileListChannel.send<boolean>('readFile', {
-			target: this.target,
-			path,
+		return await this.fileListChannel.send<boolean>(
+			'readFile',
+			{
+				target: this.target,
+				path,
+				response,
+			},
 			response,
-		}, response);
+		);
 	}
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		return await this.fileListChannel.send<boolean>('readDir', {
-			target: this.target,
-			path,
+		return await this.fileListChannel.send<boolean>(
+			'readDir',
+			{
+				target: this.target,
+				path,
+				response,
+			},
 			response,
-		}, response);
+		);
 	}
 	public async writeGranted(): Promise<boolean> {
 		return false;
@@ -30,11 +38,15 @@ export class StorageFileList extends Storage {
 	}
 
 	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
-		return await this.fileListChannel.send<boolean>('stat', {
-			target: this.target,
-			path,
+		return await this.fileListChannel.send<boolean>(
+			'stat',
+			{
+				target: this.target,
+				path,
+				response,
+			},
 			response,
-		}, response);
+		);
 	}
 
 	public async delete(): Promise<boolean> {

@@ -15,73 +15,85 @@ export class Filesystem {
 	}
 
 	public async readFile(path: string): Promise<string> {
-		return fetch(path)
-			.then(resp => {
-				if (!resp.ok) {
-					throw new Error('Failed to read file' + resp.status.toString());
-				}
-				return resp.text();
-			});
+		return fetch(path).then(resp => {
+			if (!resp.ok) {
+				throw new Error('Failed to read file' + resp.status.toString());
+			}
+			return resp.text();
+		});
 	}
 
 	public async openFile(path: string): Promise<ReadableStream<Uint8Array>> {
-		return fetch(path)
-			.then(resp => {
-				if (!resp.ok) {
-					throw new Error('Failed to read file' + resp.status.toString());
-				}
-				if (resp.body === null) {
-					throw new Error('Failed to read file: body is null');
-				}
-				return resp.body;
-			});
+		return fetch(path).then(resp => {
+			if (!resp.ok) {
+				throw new Error('Failed to read file' + resp.status.toString());
+			}
+			if (resp.body === null) {
+				throw new Error('Failed to read file: body is null');
+			}
+			return resp.body;
+		});
 	}
 
 	public async writeFile(path: string, content: BodyInit): Promise<boolean> {
-		return (await (await fetch(path, {
-			method: 'POST',
-			body: content,
-			headers: {
-				'X-SW-Command': 'writeFile',
-			},
-			duplex: 'half',
-		})).json())?.success;
+		return (
+			await (
+				await fetch(path, {
+					method: 'POST',
+					body: content,
+					headers: {
+						'X-SW-Command': 'writeFile',
+					},
+					duplex: 'half',
+				})
+			).json()
+		)?.success;
 	}
 
-	public async readDir(path: string): Promise<{ name: string, isDir: boolean }[]> {
-		return await (await fetch(path, {
-			method: 'GET',
-			headers: {
-				'X-SW-Command': 'readDir',
-			},
-		})).json();
+	public async readDir(path: string): Promise<{ name: string; isDir: boolean }[]> {
+		return await (
+			await fetch(path, {
+				method: 'GET',
+				headers: {
+					'X-SW-Command': 'readDir',
+				},
+			})
+		).json();
 	}
 
 	public async isWritable(path: string): Promise<boolean> {
-		return await (await fetch(path, {
-			method: 'GET',
-			headers: {
-				'X-SW-Command': 'isWritable',
-			},
-		})).json();
+		return await (
+			await fetch(path, {
+				method: 'GET',
+				headers: {
+					'X-SW-Command': 'isWritable',
+				},
+			})
+		).json();
 	}
 
 	public async stat(path: string): Promise<{ ctimeMs: number }> {
-		return await (await fetch(path, {
-			method: 'GET',
-			headers: {
-				'X-SW-Command': 'stat',
-			},
-		})).json();
+		return await (
+			await fetch(path, {
+				method: 'GET',
+				headers: {
+					'X-SW-Command': 'stat',
+				},
+			})
+		).json();
 	}
 
 	public async delete(path: string): Promise<boolean> {
-		return (await (await fetch(path, {
-			method: 'DELETE',
-			headers: {
-				'X-SW-Command': 'delete',
-			},
-		})).json())?.success;
+		return (
+			await (
+				await fetch(path, {
+					method: 'DELETE',
+					headers: {
+						'X-SW-Command': 'delete',
+					},
+				})
+			).json()
+		)?.success;
 	}
 
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {

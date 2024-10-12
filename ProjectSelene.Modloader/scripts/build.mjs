@@ -8,8 +8,7 @@ const html = await prerender();
 
 await fs.promises.rm('./build/', { recursive: true, force: true });
 
-const context = await esbuild.context(options)
-	.catch(() => process.exit(1));
+const context = await esbuild.context(options).catch(() => process.exit(1));
 
 await context.rebuild();
 await context.dispose();
@@ -46,14 +45,14 @@ await fs.promises.writeFile('build/project-selene.zip', buffer);
 await fs.promises.copyFile('public/package.json', 'build/package.json');
 await fs.promises.rename('build/index.html', 'build/4242241770799142.html'); //TODO: remove for public release
 
-
 async function prerender() {
 	await fs.promises.rm('./build/', { recursive: true, force: true });
 
-	const context = await esbuild.context({
-		...options,
-		format: 'iife',
-	})
+	const context = await esbuild
+		.context({
+			...options,
+			format: 'iife',
+		})
 		.catch(() => process.exit(1));
 
 	await context.rebuild();
@@ -67,8 +66,8 @@ async function prerender() {
 	});
 
 	jsdom.window.BroadcastChannel = class {
-		postMessage() { }
-		addEventListener() { }
+		postMessage() {}
+		addEventListener() {}
 	};
 	jsdom.window.indexedDB = {
 		open() {
@@ -100,7 +99,7 @@ async function prerender() {
 			.filter(s => !s.disabled && s.href == null && !s.ownerNode?.innerText)
 			.map(s => {
 				try {
-					return [...s.cssRules].map((rule) => rule.cssText).join(' ');
+					return [...s.cssRules].map(rule => rule.cssText).join(' ');
 				} catch {
 					//Ignore
 				}

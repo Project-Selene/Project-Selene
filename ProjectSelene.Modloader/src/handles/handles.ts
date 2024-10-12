@@ -11,7 +11,7 @@ export class Handles {
 
 	private async getHandles() {
 		if (!this.info) {
-			this.info = await idb.get('handles', gameStore) ?? { handles: {} };
+			this.info = (await idb.get('handles', gameStore)) ?? { handles: {} };
 		}
 
 		return this.info.handles;
@@ -34,7 +34,11 @@ export class Handles {
 		await this.save();
 	}
 
-	public async queryPermission(id: number, descriptor: FileSystemHandlePermissionDescriptor, hasAtLeast: PermissionState) {
+	public async queryPermission(
+		id: number,
+		descriptor: FileSystemHandlePermissionDescriptor,
+		hasAtLeast: PermissionState,
+	) {
 		const handle = await this.get(id);
 		if (!handle) {
 			return false;
@@ -64,7 +68,7 @@ export class Handles {
 			case 'granted':
 				return handle;
 			case 'prompt':
-				if (await handle.requestPermission(descriptor) !== 'granted') {
+				if ((await handle.requestPermission(descriptor)) !== 'granted') {
 					throw new Error('Permission denied');
 				}
 				return handle;
@@ -86,7 +90,7 @@ export class Handles {
 			case 'granted':
 				return true;
 			case 'prompt':
-				return await handle.requestPermission(descriptor) === 'granted';
+				return (await handle.requestPermission(descriptor)) === 'granted';
 			case 'denied':
 				return false;
 			default:

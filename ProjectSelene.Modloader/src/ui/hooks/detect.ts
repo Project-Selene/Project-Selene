@@ -1,5 +1,5 @@
 export function useJSAvailable() {
-	return document.visibilityState as string !== 'prerender';
+	return (document.visibilityState as string) !== 'prerender';
 }
 
 export function useIsLocal() {

@@ -9,9 +9,7 @@ export class Game {
 	private readonly mountedGames = new Set<number>();
 	private readonly mountedMods = new Map<number, Set<string>>();
 
-	constructor(
-		private readonly filesystem: Filesystem,
-	) { }
+	constructor(private readonly filesystem: Filesystem) {}
 
 	public async loadGames(games: GamesInfo): Promise<GamesInfo> {
 		await this.gameHandles.load();
@@ -64,7 +62,7 @@ export class Game {
 				}
 			}
 
-			if (!await this.gameHandles.requestPermission(game.id, { mode })) {
+			if (!(await this.gameHandles.requestPermission(game.id, { mode }))) {
 				return false;
 			}
 
@@ -131,7 +129,7 @@ export class Game {
 						reject(new Error('No files selected'));
 					}
 				});
-				folderPicker.addEventListener('error', (e) => {
+				folderPicker.addEventListener('error', e => {
 					reject(e);
 				});
 				folderPicker.click();
@@ -148,11 +146,11 @@ export class Game {
 	}
 
 	public async tryGetMods(game: GameInfo): Promise<Mods | undefined> {
-		if (game.type === 'handle' && !await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted')) {
+		if (game.type === 'handle' && !(await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted'))) {
 			return undefined;
 		}
 
-		if (!await this.mountGame(game)) {
+		if (!(await this.mountGame(game))) {
 			return undefined;
 		}
 
@@ -177,12 +175,17 @@ export class Game {
 					modId++;
 
 					if (!mountedMods.has('/fs/internal/mods/' + gameId + '/' + internalName + '/')) {
-						await this.filesystem.mountZip('/fs/internal/mods/' + gameId + '/' + internalName + '/', '/fs/internal/game/' + gameId + '/mods/' + mod.name);
+						await this.filesystem.mountZip(
+							'/fs/internal/mods/' + gameId + '/' + internalName + '/',
+							'/fs/internal/game/' + gameId + '/mods/' + mod.name,
+						);
 						mountedMods.add('/fs/internal/mods/' + gameId + '/' + internalName + '/');
 					}
 
 					try {
-						const manifestText = await this.filesystem.readFile('/fs/internal/mods/' + gameId + '/' + internalName + '/manifest.json');
+						const manifestText = await this.filesystem.readFile(
+							'/fs/internal/mods/' + gameId + '/' + internalName + '/manifest.json',
+						);
 						const manifest = JSON.parse(manifestText);
 						mods.push({
 							currentInfo: manifest,
@@ -205,7 +208,7 @@ export class Game {
 	}
 
 	public async deleteMod(game: GameInfo, filename: string) {
-		if (!await this.mountGame(game, 'readwrite')) {
+		if (!(await this.mountGame(game, 'readwrite'))) {
 			throw new Error('Game must be opened before deleting a mod');
 		}
 
@@ -215,7 +218,7 @@ export class Game {
 	}
 
 	public async installMod(game: GameInfo, name: string, content: ReadableStream<Uint8Array>) {
-		if (!await this.mountGame(game, 'readwrite')) {
+		if (!(await this.mountGame(game, 'readwrite'))) {
 			throw new Error('Game must be opened before installing a mod');
 		}
 
@@ -225,7 +228,7 @@ export class Game {
 	}
 
 	public async installModLoader(game: GameInfo) {
-		if (!await this.mountGame(game, 'readwrite')) {
+		if (!(await this.mountGame(game, 'readwrite'))) {
 			throw new Error('Game must be opened before installing a mod loader');
 		}
 
@@ -235,7 +238,10 @@ export class Game {
 		await this.filesystem.writeFile('/fs/internal/game/' + game.id + '/project-selene.zip', stream);
 
 		//Extract
-		await this.filesystem.mountZip('/fs/internal/game/' + game.id + '/project-selene/', '/fs/internal/game/' + game.id + '/project-selene.zip');
+		await this.filesystem.mountZip(
+			'/fs/internal/game/' + game.id + '/project-selene/',
+			'/fs/internal/game/' + game.id + '/project-selene.zip',
+		);
 		await this.copyFolder('/fs/internal/game/' + game.id + '/project-selene/', '/fs/internal/game/' + game.id + '/');
 
 		//Cleanup

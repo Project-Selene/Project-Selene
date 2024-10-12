@@ -18,13 +18,12 @@ export class StorageHandles extends Storage {
 			console.error(e);
 			return false;
 		}
-
 	}
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
 			const parts = path.split('/');
 			const dirHandle = await this.resolveFolder(parts, 'read', false);
-			const result: { name: string, isDir: boolean }[] = [];
+			const result: { name: string; isDir: boolean }[] = [];
 			for await (const [name, entry] of dirHandle.entries()) {
 				result.push({
 					name,
@@ -38,19 +37,28 @@ export class StorageHandles extends Storage {
 		}
 	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
-		new Blob(['{"state":"' + await this.dir.queryPermission({ mode: 'readwrite' }) + '"}'], { type: 'application/json' }).stream().pipeTo(response);
+		new Blob(['{"state":"' + (await this.dir.queryPermission({ mode: 'readwrite' })) + '"}'], {
+			type: 'application/json',
+		})
+			.stream()
+			.pipeTo(response);
 		return true;
 	}
 
-	public async writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
+	public async writeFile(
+		path: string,
+		content: ReadableStream<Uint8Array>,
+		response: WritableStream<Uint8Array>,
+	): Promise<boolean> {
 		try {
 			const parts = path.split('/');
 			const fileHandle = await this.resolveFile(parts, 'readwrite', true);
 			const file = await fileHandle.createWritable();
-			content.pipeTo(file)
+			content
+				.pipeTo(file)
 				.then(() => file.close())
 				.then(() => new Blob(['{"success":true}'], { type: 'application/json' }).stream().pipeTo(response))
-				.catch(() => new Blob(['{"success":false}'], { type: 'application/json' }).stream().pipeTo(response));  //Do not wait here
+				.catch(() => new Blob(['{"success":false}'], { type: 'application/json' }).stream().pipeTo(response)); //Do not wait here
 			return true;
 		} catch {
 			return false;
@@ -62,7 +70,11 @@ export class StorageHandles extends Storage {
 			const parts = path.split('/');
 			const fileHandle = await this.resolveFile(parts, 'read', false);
 			const file = await fileHandle.getFile();
-			new Blob([JSON.stringify({ ctimeMs: file.lastModified })], { type: 'application/json' }).stream().pipeTo(response);
+			new Blob([JSON.stringify({ ctimeMs: file.lastModified })], {
+				type: 'application/json',
+			})
+				.stream()
+				.pipeTo(response);
 			return true;
 		} catch {
 			return false;
@@ -96,7 +108,10 @@ export class StorageHandles extends Storage {
 		return await this.ensurePermissions(file, mode);
 	}
 
-	private async ensurePermissions<T extends FileSystemDirectoryHandle | FileSystemFileHandle>(dir: T, mode: FileSystemPermissionMode) {
+	private async ensurePermissions<T extends FileSystemDirectoryHandle | FileSystemFileHandle>(
+		dir: T,
+		mode: FileSystemPermissionMode,
+	) {
 		const state = await dir.queryPermission({ mode });
 		if (state !== 'granted') {
 			const result = await dir.requestPermission({ mode });

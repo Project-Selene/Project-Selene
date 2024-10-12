@@ -4,13 +4,12 @@ import { Patcher } from './patcher';
 export class PatcherJSON extends Patcher {
 	private readonly textEncoder = new TextEncoder();
 	private readonly textDecoder = new TextDecoder();
-	private readonly decode = 'Buffer' in globalThis 
-		? (buffer: Uint8Array) => JSON.parse(Buffer.from(buffer) as unknown as string)
-		: (buffer: Uint8Array) => JSON.parse(this.textDecoder.decode(buffer));
+	private readonly decode =
+		'Buffer' in globalThis
+			? (buffer: Uint8Array) => JSON.parse(Buffer.from(buffer) as unknown as string)
+			: (buffer: Uint8Array) => JSON.parse(this.textDecoder.decode(buffer));
 
-	constructor(
-		readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>,
-	) { 
+	constructor(readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>) {
 		super(readFile);
 	}
 

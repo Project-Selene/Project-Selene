@@ -1,0 +1,12 @@
+{
+  "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+  "tasks": [
+    {
+      "name": "format-modloader",
+      "command": "npx",
+      "args": ["lint-staged"],
+      "pathMode": "absolute",
+      "cwd": "./ProjectSelene.Modloader/"
+    }
+  ]
+}

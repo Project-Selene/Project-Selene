@@ -1,39 +1,39 @@
 .background-body {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
 
-    z-index: -100;
-    overflow: hidden;
+	z-index: -100;
+	overflow: hidden;
 
-    .full-moon {
-        position: absolute;
-        bottom: -60vw;
-        left: -10vw;
-        width: 120vw;
-        height: 120vw;
-    }
+	.full-moon {
+		position: absolute;
+		bottom: -60vw;
+		left: -10vw;
+		width: 120vw;
+		height: 120vw;
+	}
 
-    .background-stars {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
+	.background-stars {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
 
-        z-index: -200;
-    }
+		z-index: -200;
+	}
 }
 
-@media (min-width:900px) {
-    .background-body {
-        .full-moon {
-            bottom: -40vw;
-            left: 28vw;
-            width: 65vw;
-            height: 65vw;
-        }
-    }
+@media (min-width: 900px) {
+	.background-body {
+		.full-moon {
+			bottom: -40vw;
+			left: 28vw;
+			width: 65vw;
+			height: 65vw;
+		}
+	}
 }

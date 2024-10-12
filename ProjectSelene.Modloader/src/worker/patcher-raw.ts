@@ -1,9 +1,7 @@
 import { Patcher } from './patcher';
 
 export class PatcherRaw extends Patcher {
-	constructor(
-		readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>,
-	) { 
+	constructor(readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>) {
 		super(readFile);
 	}
 

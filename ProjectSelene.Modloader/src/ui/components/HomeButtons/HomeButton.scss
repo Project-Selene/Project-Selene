@@ -1,14 +1,14 @@
 .home-button-group {
-    width: 100%;
+	width: 100%;
 }
-@media (min-width:900px) {
-    .home-button-group {
-        width: 20em;
-    }
+@media (min-width: 900px) {
+	.home-button-group {
+		width: 20em;
+	}
 }
 .home-button {
-    background-color: #66F;
+	background-color: #66f;
 }
 .home-button:hover {
-    background-color: #99F;
+	background-color: #99f;
 }

@@ -7,9 +7,11 @@ import { TitleScreen } from './components/TitleScreen';
 import { theme } from './theme';
 
 export default function App() {
-	return <Provider store={store}>
-		<ThemeProvider theme={theme}>
-			<TitleScreen />
-		</ThemeProvider>
-	</Provider>;
+	return (
+		<Provider store={store}>
+			<ThemeProvider theme={theme}>
+				<TitleScreen />
+			</ThemeProvider>
+		</Provider>
+	);
 }

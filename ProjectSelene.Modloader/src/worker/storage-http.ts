@@ -17,7 +17,6 @@ export class StorageHttp extends Storage {
 			console.error(e);
 			return false;
 		}
-
 	}
 	public async readDir(): Promise<boolean> {
 		return false; //If this is ever needed we can implement it for dev mods

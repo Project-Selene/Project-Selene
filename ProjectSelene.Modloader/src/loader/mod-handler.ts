@@ -1,17 +1,13 @@
 import { Mod } from '../state/models/mod';
 
 export class ModInfo {
-	private registryCtor = new Map<unknown, { injected: unknown, lowest: unknown }[]>();
-	private registryProto = new Map<unknown, { injected: unknown, lowest: unknown }[]>();
-	constructor(
-		private readonly mod: Mod,
-	) {
+	private registryCtor = new Map<unknown, { injected: unknown; lowest: unknown }[]>();
+	private registryProto = new Map<unknown, { injected: unknown; lowest: unknown }[]>();
+	constructor(private readonly mod: Mod) {}
 
-	}
-
-	public inject(clazz: { new(...args: unknown[]): unknown }) {
+	public inject(clazz: { new (...args: unknown[]): unknown }) {
 		//Basically just does a linked list insert
-		//Example: 
+		//Example:
 		// From: mod -> injectable -> hook -> original
 		// To: hook -> mod -> original
 		//
@@ -20,7 +16,9 @@ export class ModInfo {
 		// To: hook -> modB -> mod -> original
 
 		if (!(__projectSelene.symbol in Object.getPrototypeOf(clazz))) {
-			throw new Error('Can only hook classes that have an Injectable(...) super class. Directly injecting the result of Injectable(...) does not make sense.');
+			throw new Error(
+				'Can only hook classes that have an Injectable(...) super class. Directly injecting the result of Injectable(...) does not make sense.',
+			);
 		}
 
 		let ctor = clazz;

@@ -7,8 +7,7 @@ export async function serve() {
 	options.entryPoints!['test-runtime'] = 'tests/runtime/test.ts';
 	options.minify = false;
 	options.define!['window.TEST'] = 'true';
-	context = await esbuild.context(options)
-		.catch(() => process.exit(1));
+	context = await esbuild.context(options).catch(() => process.exit(1));
 
 	await context.watch();
 	await context.serve({

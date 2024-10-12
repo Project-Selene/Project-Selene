@@ -1,9 +1,7 @@
 export abstract class Patcher {
 	protected readonly patches = new Map<string, string[]>();
 
-	constructor(
-        protected readonly readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>,
-	) { }
+	constructor(protected readonly readFile: (path: string) => Promise<ReadableStream<Uint8Array> | undefined>) {}
 
 	protected async streamToUint8Array(readableStream: ReadableStream<Uint8Array>) {
 		const reader = readableStream.getReader();
@@ -11,29 +9,25 @@ export abstract class Patcher {
 		try {
 			while (true) {
 				const { done, value } = await reader.read();
-          
+
 				if (done) {
 					break;
 				}
-          
+
 				chunks.push(value);
 			}
 		} finally {
 			reader.releaseLock();
 		}
-      
-      
-      
-		const concatenatedChunks = new Uint8Array(
-			chunks.reduce((acc, chunk) => acc + chunk.length, 0),
-		);
-      
+
+		const concatenatedChunks = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+
 		let offset = 0;
 		for (const chunk of chunks) {
 			concatenatedChunks.set(chunk, offset);
 			offset += chunk.length;
 		}
-      
+
 		return concatenatedChunks;
 	}
 
@@ -46,10 +40,12 @@ export abstract class Patcher {
 		return this.streamToUint8Array(readableStream);
 	}
 
-	registerPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+	registerPatches(
+		patches: {
+			target: string;
+			source: string;
+		}[],
+	) {
 		for (const { target, source } of patches) {
 			const existing = this.patches.get(target);
 			if (existing) {
@@ -63,10 +59,12 @@ export abstract class Patcher {
 		}
 	}
 
-	unregisterPatches(patches: {
-        target: string,
-        source: string,
-    }[]) {
+	unregisterPatches(
+		patches: {
+			target: string;
+			source: string;
+		}[],
+	) {
 		for (const { target, source } of patches) {
 			const existing = this.patches.get(target);
 			if (existing) {
@@ -83,5 +81,5 @@ export abstract class Patcher {
 		return !!patches && patches.length > 0;
 	}
 
-    abstract patchFile(file: string, input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array>;
+	abstract patchFile(file: string, input: ReadableStream<Uint8Array>): ReadableStream<Uint8Array>;
 }

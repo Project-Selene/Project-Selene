@@ -1,7 +1,6 @@
 import fs from 'fs';
 import { transform } from './transformer';
 
-
 describe('Transformer', () => {
 	test('it should handle empty', async () => {
 		expect(transform('', '')).toMatchSnapshot();

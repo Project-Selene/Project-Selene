@@ -22,7 +22,10 @@ export const login = createAsyncThunk('login', async (_, { getState }) => {
 });
 
 export const completeLogin = createAsyncThunk('completeLogin', async (code: string, { dispatch }) => {
-	const token = await LoginService.postApiLoginComplete({ type: LoginType.GITHUB, token: code });
+	const token = await LoginService.postApiLoginComplete({
+		type: LoginType.GITHUB,
+		token: code,
+	});
 	localStorage.setItem('token', token);
 	OpenAPI.TOKEN = token;
 
@@ -55,26 +58,29 @@ export const loadModList = createAsyncThunk('loadModList', async () => {
 	return await moddb.modList();
 });
 
-export const openDirectory = createAsyncThunk('openDirectory', async (mode: FileSystemPermissionMode | void, { getState }) => {
-	const { state } = getState() as RootState;
+export const openDirectory = createAsyncThunk(
+	'openDirectory',
+	async (mode: FileSystemPermissionMode | void, { getState }) => {
+		const { state } = getState() as RootState;
 
-	const unloaded = state.gamesInfo.games.find(g => !g.loaded);
-	if (unloaded) {
-		const mounted = await game.mountGame(unloaded, mode ?? 'read');
-		if (!mounted) {
-			throw new Error('Could not mount game');
+		const unloaded = state.gamesInfo.games.find(g => !g.loaded);
+		if (unloaded) {
+			const mounted = await game.mountGame(unloaded, mode ?? 'read');
+			if (!mounted) {
+				throw new Error('Could not mount game');
+			}
+			return { game: unloaded, mods: await game.getMods(unloaded) };
 		}
-		return { game: unloaded, mods: await game.getMods(unloaded) };
-	}
 
-	const nextId = state.gamesInfo.games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1;
-	const gameInfo = await game.openGame(nextId, mode ?? 'read');
-	if (!gameInfo) {
-		throw new Error('No game selected');
-	}
+		const nextId = state.gamesInfo.games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1;
+		const gameInfo = await game.openGame(nextId, mode ?? 'read');
+		if (!gameInfo) {
+			throw new Error('No game selected');
+		}
 
-	return { game: gameInfo, mods: await game.getMods(gameInfo) };
-});
+		return { game: gameInfo, mods: await game.getMods(gameInfo) };
+	},
+);
 
 export const deleteMod = createAsyncThunk('deleteMod', async (name: string, { getState }) => {
 	const { state } = getState() as RootState;
@@ -85,19 +91,22 @@ export const deleteMod = createAsyncThunk('deleteMod', async (name: string, { ge
 	return await game.deleteMod(gameInfo, name);
 });
 
-export const installMod = createAsyncThunk('installMod', async (mod: { filename: string, id: string, version: string }, { getState }) => {
-	const { state } = getState() as RootState;
-	const gameInfo = state.gamesInfo.games.find(g => g.id === state.gamesInfo.selectedGame);
-	if (!gameInfo) {
-		throw new Error('No game selected');
-	}
+export const installMod = createAsyncThunk(
+	'installMod',
+	async (mod: { filename: string; id: string; version: string }, { getState }) => {
+		const { state } = getState() as RootState;
+		const gameInfo = state.gamesInfo.games.find(g => g.id === state.gamesInfo.selectedGame);
+		if (!gameInfo) {
+			throw new Error('No game selected');
+		}
 
-	const content = await moddb.download(mod.id, mod.version);
-	if (!content) {
-		return game.getMods(gameInfo);
-	}
-	return await game.installMod(gameInfo, mod.filename, content);
-});
+		const content = await moddb.download(mod.id, mod.version);
+		if (!content) {
+			return game.getMods(gameInfo);
+		}
+		return await game.installMod(gameInfo, mod.filename, content);
+	},
+);
 
 export const play = createAsyncThunk('play', async (_, { dispatch, getState }) => {
 	const { state } = getState() as RootState;
@@ -129,13 +138,14 @@ export const installModLoader = createAsyncThunk('installModLoader', async (_, {
 
 const memoizedSelectInstalledMods = createSelector(
 	(state: State) => state.mods.data?.mods,
-	mods => mods?.map(m => m)
-		.sort((a, b) => a.currentInfo.name.localeCompare(b.currentInfo.name))
-		.map(m => m.currentInfo.id) ?? []);
+	mods =>
+		mods
+			?.map(m => m)
+			.sort((a, b) => a.currentInfo.name.localeCompare(b.currentInfo.name))
+			.map(m => m.currentInfo.id) ?? [],
+);
 
-const memoizedSelectInstalledModsSet = createSelector(
-	memoizedSelectInstalledMods,
-	mods => new Set(mods));
+const memoizedSelectInstalledModsSet = createSelector(memoizedSelectInstalledMods, mods => new Set(mods));
 
 const initialState: State = {
 	gamesInfo: {
@@ -195,23 +205,23 @@ const slice = createSlice({
 		setOptionsOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.ui.options.open = payload;
 		},
-		toggleSeleneOptionsExpanded: (state) => {
+		toggleSeleneOptionsExpanded: state => {
 			state.ui.options.seleneOptionsExpanded = !state.ui.options.seleneOptionsExpanded;
 		},
-		setModEnabled: (state, { payload }: PayloadAction<{ id: string, enabled: boolean }>) => {
+		setModEnabled: (state, { payload }: PayloadAction<{ id: string; enabled: boolean }>) => {
 			state.options.mods[payload.id] ??= { enabled: payload.enabled };
 			state.options.mods[payload.id].enabled = payload.enabled;
 		},
 		toggleModOptionsExpanded: (state, { payload }: PayloadAction<string>) => {
 			state.ui.options.modsExpanded[payload] = !state.ui.options.modsExpanded[payload];
 		},
-		toggleModsInstalled: (state) => {
+		toggleModsInstalled: state => {
 			state.ui.mods.installedOpen = !state.ui.mods.installedOpen;
 		},
-		toggleModsAvailable: (state) => {
+		toggleModsAvailable: state => {
 			state.ui.mods.availableOpen = !state.ui.mods.availableOpen;
 		},
-		logout: (state) => {
+		logout: state => {
 			state.user = undefined;
 			localStorage.removeItem('token');
 			OpenAPI.TOKEN = undefined;
@@ -219,7 +229,7 @@ const slice = createSlice({
 		searchForMod: (state, { payload }: PayloadAction<string>) => {
 			state.ui.mods.search = payload;
 		},
-		startPollingDevMod: (state) => {
+		startPollingDevMod: state => {
 			state.devMod = { loading: true };
 		},
 		stopPollingDevMod: (state, { payload }: PayloadAction<string>) => {
@@ -234,14 +244,17 @@ const slice = createSlice({
 		},
 	},
 	extraReducers(builder) {
-		builder.addCase(loadGames.pending, (state) => {
-			state.gamesInfo.games = state.gamesInfo.games.map(g => ({ ...g, loaded: false }));
+		builder.addCase(loadGames.pending, state => {
+			state.gamesInfo.games = state.gamesInfo.games.map(g => ({
+				...g,
+				loaded: false,
+			}));
 		});
 		builder.addCase(loadGames.fulfilled, (state, { payload }) => {
 			state.gamesInfo = payload;
 		});
 
-		builder.addCase(loadMods.pending, (state) => {
+		builder.addCase(loadMods.pending, state => {
 			state.mods = { loading: true };
 		});
 		builder.addCase(loadMods.fulfilled, (state, { payload }) => {
@@ -255,7 +268,7 @@ const slice = createSlice({
 			state.mods = { failed: true, error };
 		});
 
-		builder.addCase(loadModList.pending, (state) => {
+		builder.addCase(loadModList.pending, state => {
 			state.modDb.mods = { loading: true };
 		});
 		builder.addCase(loadModList.fulfilled, (state, { payload }) => {
@@ -265,7 +278,7 @@ const slice = createSlice({
 			state.modDb.mods = { failed: true, error };
 		});
 
-		builder.addCase(openDirectory.pending, (state) => {
+		builder.addCase(openDirectory.pending, state => {
 			state.mods = { loading: true };
 			state.ui.openOpen = true;
 
@@ -292,7 +305,7 @@ const slice = createSlice({
 			state.ui.status = undefined;
 		});
 
-		builder.addCase(deleteMod.pending, (state) => {
+		builder.addCase(deleteMod.pending, state => {
 			state.ui.status = 'Deleting mod...';
 		});
 		builder.addCase(deleteMod.fulfilled, (state, { payload }) => {
@@ -300,10 +313,10 @@ const slice = createSlice({
 
 			state.ui.status = undefined;
 		});
-		builder.addCase(deleteMod.rejected, (state) => {
+		builder.addCase(deleteMod.rejected, state => {
 			state.ui.status = undefined;
 		});
-		builder.addCase(installMod.pending, (state) => {
+		builder.addCase(installMod.pending, state => {
 			state.ui.status = 'Installing mod...';
 		});
 		builder.addCase(installMod.fulfilled, (state, { payload }) => {
@@ -311,10 +324,10 @@ const slice = createSlice({
 
 			state.ui.status = undefined;
 		});
-		builder.addCase(installMod.rejected, (state) => {
+		builder.addCase(installMod.rejected, state => {
 			state.ui.status = undefined;
 		});
-		builder.addCase(play.pending, (state) => {
+		builder.addCase(play.pending, state => {
 			state.ui.playing = true;
 
 			state.ui.status = 'Preparing game...';
@@ -328,48 +341,46 @@ const slice = createSlice({
 		builder.addCase(getUser.fulfilled, (state, { payload }) => {
 			state.user = payload;
 		});
-		builder.addCase(getUser.rejected, (state) => {
+		builder.addCase(getUser.rejected, state => {
 			state.user = undefined;
 		});
 	},
 	selectors: {
-		selectInfoDialogOpen: (state) => state.ui.infoOpen,
-		selectModsDialogOpen: (state) => state.ui.mods.open,
-		selectOpenDialogOpen: (state) => state.ui.openOpen,
-		selectPlaying: (state) => state.ui.playing,
-		selectModsLoaded: (state) => !state.mods.loading && !state.mods.failed,
-		selectModsInitialized: (state) => state.mods.loading !== undefined,
-		selectModsInstalledExpanded: (state) => state.mods.loading !== undefined && state.ui.mods.installedOpen,
-		selectModsAvailableExpanded: (state) => state.ui.mods.availableOpen,
-		selectSearchString: (state) => state.ui.mods.search,
-		selectOptionsOpen: (state) => state.ui.options.open,
-		selectSeleneOptionsExpanded: (state) => state.ui.options.seleneOptionsExpanded,
+		selectInfoDialogOpen: state => state.ui.infoOpen,
+		selectModsDialogOpen: state => state.ui.mods.open,
+		selectOpenDialogOpen: state => state.ui.openOpen,
+		selectPlaying: state => state.ui.playing,
+		selectModsLoaded: state => !state.mods.loading && !state.mods.failed,
+		selectModsInitialized: state => state.mods.loading !== undefined,
+		selectModsInstalledExpanded: state => state.mods.loading !== undefined && state.ui.mods.installedOpen,
+		selectModsAvailableExpanded: state => state.ui.mods.availableOpen,
+		selectSearchString: state => state.ui.mods.search,
+		selectOptionsOpen: state => state.ui.options.open,
+		selectSeleneOptionsExpanded: state => state.ui.options.seleneOptionsExpanded,
 		selectModEnabled: (state, id: string) => state.options.mods[id]?.enabled ?? true,
 		selectModExpanded: (state, id: string) => state.ui.options.modsExpanded[id] ?? false,
 		selectInstalledModIds: memoizedSelectInstalledMods,
 		selectAvailableModIds: createSelector(
-			[
-				(state: State) => state.modDb.mods.data,
-				(state: State) => memoizedSelectInstalledModsSet(state),
-			],
-			(moddb, installed) => moddb
-				?.filter(m => !installed.has(m.id))
-				.sort((a, b) => a.name.localeCompare(b.name))
-				.map(m => m.id) ?? []),
+			[(state: State) => state.modDb.mods.data, (state: State) => memoizedSelectInstalledModsSet(state)],
+			(moddb, installed) =>
+				moddb
+					?.filter(m => !installed.has(m.id))
+					.sort((a, b) => a.name.localeCompare(b.name))
+					.map(m => m.id) ?? [],
+		),
 
-		selectInstalledMod: createSelector(
-			[(state: State) => state.mods.data?.mods, (_, id: string) => id],
-			(mods, id) => mods?.find(m => m.currentInfo.id === id),
+		selectInstalledMod: createSelector([(state: State) => state.mods.data?.mods, (_, id: string) => id], (mods, id) =>
+			mods?.find(m => m.currentInfo.id === id),
 		),
-		selectAvailableMod: createSelector(
-			[(state: State) => state.modDb.mods.data, (_, id: string) => id],
-			(mods, id) => mods?.find(m => m.id === id),
+		selectAvailableMod: createSelector([(state: State) => state.modDb.mods.data, (_, id: string) => id], (mods, id) =>
+			mods?.find(m => m.id === id),
 		),
-		selectIsLoggedIn: (state) => !!state.user,
-		selectUserAvatarUrl: (state) => state.user?.avatarUrl,
-		selectStoreWithoutUI: (state) => {
+		selectIsLoggedIn: state => !!state.user,
+		selectUserAvatarUrl: state => state.user?.avatarUrl,
+		selectStoreWithoutUI: state => {
 			return {
-				...state, ui: {
+				...state,
+				ui: {
 					mods: {
 						open: false,
 						search: '',
@@ -388,8 +399,8 @@ const slice = createSlice({
 				devMod: {},
 			} satisfies State;
 		},
-		selectCurrentDevMod: (state) => state.devMod.data,
-		selectStatus: (state) => state.ui.status,
+		selectCurrentDevMod: state => state.devMod.data,
+		selectStatus: state => state.ui.status,
 	},
 });
 

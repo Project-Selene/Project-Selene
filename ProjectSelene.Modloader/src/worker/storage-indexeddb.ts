@@ -29,7 +29,7 @@ export class StorageIndexedDB extends Storage {
 		return true;
 	}
 	private async readDirAsync(path: string, response: WritableStream<Uint8Array>): Promise<void> {
-		const result: { name: string, isDir: boolean }[] = [];
+		const result: { name: string; isDir: boolean }[] = [];
 		try {
 			const keys = await idb.keys(this.store);
 			for (const key of keys) {
@@ -57,11 +57,19 @@ export class StorageIndexedDB extends Storage {
 		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
-	public async writeFile(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<boolean> {
+	public async writeFile(
+		path: string,
+		content: ReadableStream<Uint8Array>,
+		response: WritableStream<Uint8Array>,
+	): Promise<boolean> {
 		this.writeFileAsync(path, content, response);
 		return true;
 	}
-	private async writeFileAsync(path: string, content: ReadableStream<Uint8Array>, response: WritableStream<Uint8Array>): Promise<void> {
+	private async writeFileAsync(
+		path: string,
+		content: ReadableStream<Uint8Array>,
+		response: WritableStream<Uint8Array>,
+	): Promise<void> {
 		try {
 			const contentText = await new Response(content).arrayBuffer();
 			const time = new Date().getTime();

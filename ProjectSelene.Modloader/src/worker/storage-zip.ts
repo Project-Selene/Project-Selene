@@ -16,7 +16,7 @@ export class StorageZip extends Storage {
 				return false;
 			}
 
-			const zip = await JSZip.loadAsync(await (new Response(stream)).arrayBuffer());
+			const zip = await JSZip.loadAsync(await new Response(stream).arrayBuffer());
 			const file = zip.file(path);
 			if (!file) {
 				return false;
@@ -32,7 +32,6 @@ export class StorageZip extends Storage {
 			console.error(e);
 			return false;
 		}
-
 	}
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
@@ -41,14 +40,14 @@ export class StorageZip extends Storage {
 				return false;
 			}
 
-			const zip = await JSZip.loadAsync(await (new Response(stream)).arrayBuffer());
+			const zip = await JSZip.loadAsync(await new Response(stream).arrayBuffer());
 			const folder = zip.folder(path);
 			if (!folder) {
 				return false;
 			}
 
 			(async (zip: JSZip, response: WritableStream<Uint8Array>) => {
-				const result: { name: string, isDir: boolean }[] = [];
+				const result: { name: string; isDir: boolean }[] = [];
 				zip.forEach((name, file) => {
 					if (file.dir) {
 						// Directories always end with a slash and may not have another slash in the name
@@ -69,7 +68,6 @@ export class StorageZip extends Storage {
 							isDir: false,
 						});
 					}
-
 				});
 				await new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response);
 			})(folder, response);
@@ -87,13 +85,17 @@ export class StorageZip extends Storage {
 				return false;
 			}
 
-			const zip = await JSZip.loadAsync(await (new Response(stream)).arrayBuffer());
+			const zip = await JSZip.loadAsync(await new Response(stream).arrayBuffer());
 			const file = zip.file(path);
 			if (!file) {
 				return false;
 			}
 
-			new Blob([JSON.stringify({ ctimeMs: file.date.getTime() })], { type: 'application/json' }).stream().pipeTo(response);
+			new Blob([JSON.stringify({ ctimeMs: file.date.getTime() })], {
+				type: 'application/json',
+			})
+				.stream()
+				.pipeTo(response);
 			return true;
 		} catch {
 			return false;

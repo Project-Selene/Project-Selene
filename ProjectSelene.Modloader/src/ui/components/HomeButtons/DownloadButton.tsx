@@ -7,8 +7,10 @@ import { HomeButton } from './HomeButton';
 export function DownloadButton() {
 	const dispatch = useDispatch<typeof store.dispatch>();
 
-	return <ButtonGroup className="home-button-group">
-		<HomeButton title="Download" href="project-selene.zip" />
-		<HomeButton title="Install" onClick={() => dispatch(installModLoader())} />
-	</ButtonGroup>;
+	return (
+		<ButtonGroup className="home-button-group">
+			<HomeButton title="Download" href="project-selene.zip" />
+			<HomeButton title="Install" onClick={() => dispatch(installModLoader())} />
+		</ButtonGroup>
+	);
 }

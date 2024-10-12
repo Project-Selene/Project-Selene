@@ -14,17 +14,27 @@ import { Title } from './Title';
 import React from 'react';
 
 export function TitleScreen() {
-	return <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh' }}>
-		<Title />
-		<HomeButtons />
-		<Character />
-		<Background />
-		<ModsDialog />
-		<OptionsDialog />
-		<OpenDialog />
-		<InfoDialog />
-		<InfoButton />
-		<DevModHint />
-		<StatusNotification />
-	</Box>;
+	return (
+		<Box
+			sx={{
+				position: 'absolute',
+				top: 0,
+				left: 0,
+				width: '100vw',
+				height: '100vh',
+			}}
+		>
+			<Title />
+			<HomeButtons />
+			<Character />
+			<Background />
+			<ModsDialog />
+			<OptionsDialog />
+			<OpenDialog />
+			<InfoDialog />
+			<InfoButton />
+			<DevModHint />
+			<StatusNotification />
+		</Box>
+	);
 }

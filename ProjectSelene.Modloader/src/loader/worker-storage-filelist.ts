@@ -1,6 +1,6 @@
 export class StorageFileList {
 	private readonly fileMap = new Map<string, File>();
-	private readonly dirMap = new Map<string, { isDir: boolean, name: string }[]>();
+	private readonly dirMap = new Map<string, { isDir: boolean; name: string }[]>();
 
 	public registerFile(path: string, file: File) {
 		this.fileMap.set(path, file);
@@ -42,7 +42,11 @@ export class StorageFileList {
 			return false;
 		}
 
-		new Blob([JSON.stringify({ ctimeMs: file.lastModified })], { type: 'application/json' }).stream().pipeTo(response);
+		new Blob([JSON.stringify({ ctimeMs: file.lastModified })], {
+			type: 'application/json',
+		})
+			.stream()
+			.pipeTo(response);
 		return true;
 	}
 }

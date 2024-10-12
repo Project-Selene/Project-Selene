@@ -3,7 +3,7 @@ import { Filesystem } from './loader/filesystem';
 import { loadState, selectStoreWithoutUI, store } from './state/state.reducer';
 import { startUI } from './ui/ui';
 
-if (document.visibilityState as string !== 'prerender') {
+if ((document.visibilityState as string) !== 'prerender') {
 	const localStored = localStorage.getItem('store');
 	if (localStored) {
 		store.dispatch(loadState(JSON.parse(localStored)));
@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 	});
 }
 
-if (!window.TEST && document.visibilityState as string !== 'prerender') {
+if (!window.TEST && (document.visibilityState as string) !== 'prerender') {
 	pollForDevMod();
 }
 

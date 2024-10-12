@@ -23,7 +23,7 @@ export function startUI() {
 	// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 	reportWebVitals();
 
-	if (window.TEST || document.visibilityState as string === 'prerender') {
+	if (window.TEST || (document.visibilityState as string) === 'prerender') {
 		return;
 	}
 

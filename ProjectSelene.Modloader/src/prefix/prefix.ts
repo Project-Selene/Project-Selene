@@ -1,6 +1,6 @@
 function __injectClass<T extends Record<string, unknown>>(name: string, clazz: new (...args: unknown[]) => T) {
 	//set class instance name (makes things a lot easier to debug)
-	const result = {[name]: class extends clazz { } }[name];
+	const result = { [name]: class extends clazz {} }[name];
 	//static members
 	for (const [name, desc] of Object.entries(Object.getOwnPropertyDescriptors(clazz))) {
 		if (!['name', 'length', 'prototype'].includes(name)) {
@@ -8,9 +8,9 @@ function __injectClass<T extends Record<string, unknown>>(name: string, clazz: n
 		}
 	}
 	//constructor name
-	Object.defineProperty(result, 'name', {configurable: true, value: name});
+	Object.defineProperty(result, 'name', { configurable: true, value: name });
 	clazz = result;
-    
+
 	__projectSelene.classes[name] = clazz;
 	return clazz;
 }
@@ -40,7 +40,7 @@ function __injectLet(name: string, getter: () => unknown, setter: (value: unknow
 	if (name in __projectSelene.lets) {
 		console.warn('duplicate let', name);
 	}
-	__projectSelene.lets[name] = {getter, setter};
+	__projectSelene.lets[name] = { getter, setter };
 }
 
 function __injectEnum(name: string, enumValue: Record<string, number>) {
@@ -53,7 +53,12 @@ function __injectEnum(name: string, enumValue: Record<string, number>) {
 	__projectSelene.enums[name] = enumValue;
 }
 
-Object.assign(window, { __injectClass, __injectFunction, __injectConst, __injectLet, __injectEnum });
+Object.assign(window, {
+	__injectClass,
+	__injectFunction,
+	__injectConst,
+	__injectLet,
+	__injectEnum,
+});
 
-export { };
-
+export {};
