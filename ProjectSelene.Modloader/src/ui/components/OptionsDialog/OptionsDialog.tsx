@@ -79,7 +79,10 @@ export function OptionsDialog() {
 												variant="outlined"
 												style={{ backgroundColor: '#66F3' }}
 												endIcon={<OpenInNew />}
-												onClick={() => dispatch(openDirectory())}
+												onClick={e => {
+													e.stopPropagation();
+													dispatch(openDirectory());
+												}}
 											>
 												Open
 											</Button>
@@ -99,13 +102,40 @@ export function OptionsDialog() {
 													variant="outlined"
 													style={{ backgroundColor: '#66F3' }}
 													endIcon={<OpenInNew />}
-													onClick={() => dispatch(login())}
+													onClick={e => {
+														e.stopPropagation();
+														dispatch(login());
+													}}
 												>
 													Login
 												</Button>
 											)}
 										</Box>
 									</Box>
+									{/* <Box sx={{ display: 'table-row' }}>
+										<Box sx={{ display: 'table-cell' }}>
+											<Typography variant="body2">Create a mod</Typography>
+										</Box>
+										<Box sx={{ display: 'table-cell' }}>
+											{isLoggedIn ? (
+												<Button variant="outlined" onClick={() => dispatch(logout())}>
+													<Avatar alt="User" src={userAvatarUrl ?? ''} />
+												</Button>
+											) : (
+												<Button
+													variant="outlined"
+													style={{ backgroundColor: '#66F3' }}
+													endIcon={<Add />}
+													onClick={e => {
+														e.stopPropagation();
+														dispatch(setCreateModOpen(true));
+													}}
+												>
+													Create
+												</Button>
+											)}
+										</Box>
+									</Box> */}
 								</Box>
 							</AccordionDetails>
 						</Accordion>

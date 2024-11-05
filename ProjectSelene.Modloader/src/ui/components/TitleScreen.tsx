@@ -12,6 +12,7 @@ import { StatusNotification } from './StatusNotification';
 import { Title } from './Title';
 
 import React from 'react';
+import { CreateModDialog } from './CreateModDialog';
 
 export function TitleScreen() {
 	return (
@@ -30,6 +31,7 @@ export function TitleScreen() {
 			<Background />
 			<ModsDialog />
 			<OptionsDialog />
+			<CreateModDialog />
 			<OpenDialog />
 			<InfoDialog />
 			<InfoButton />

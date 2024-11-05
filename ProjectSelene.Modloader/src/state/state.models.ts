@@ -36,6 +36,13 @@ export interface UIState {
 		seleneOptionsExpanded: boolean;
 		modsExpanded: Record<string, boolean>;
 	};
+	createMod: {
+		open: boolean;
+		name: string;
+		description: string;
+		folderSelected: boolean;
+		createSubfolder: boolean;
+	};
 	infoOpen: boolean;
 	openOpen: boolean;
 	playing: boolean;

@@ -5,7 +5,7 @@ import { Loader } from '../loader/loader';
 import { LoginService, LoginType, OpenAPI } from '../moddb/generated';
 import { ModDB } from '../moddb/moddb';
 import { Mod } from './models/mod';
-import { GameInfo, GamesInfo, State } from './state.models';
+import { GameInfo, GamesInfo, State, UIState } from './state.models';
 
 const fs = new Filesystem();
 const game = new Game(fs);
@@ -172,6 +172,13 @@ const initialState: State = {
 			seleneOptionsExpanded: false,
 			modsExpanded: {},
 		},
+		createMod: {
+			open: false,
+			name: '',
+			description: '',
+			folderSelected: false,
+			createSubfolder: false,
+		},
 		infoOpen: false,
 		openOpen: false,
 		playing: false,
@@ -204,6 +211,12 @@ const slice = createSlice({
 		},
 		setOptionsOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.ui.options.open = payload;
+		},
+		setCreateModOpen: (state, { payload }: PayloadAction<boolean>) => {
+			state.ui.createMod.open = payload;
+		},
+		updateCreateModForm: (state, { payload }: PayloadAction<Partial<UIState['createMod']>>) => {
+			Object.assign(state.ui.createMod, payload);
 		},
 		toggleSeleneOptionsExpanded: state => {
 			state.ui.options.seleneOptionsExpanded = !state.ui.options.seleneOptionsExpanded;
@@ -241,6 +254,19 @@ const slice = createSlice({
 			if (state.ui.playing) {
 				loader.injectDevMod();
 			}
+		},
+		setCreateModForm: (
+			state,
+			{
+				payload,
+			}: PayloadAction<{
+				name?: string;
+				description?: string;
+				folderSelected?: boolean;
+				createSubfolder?: boolean;
+			}>,
+		) => {
+			Object.assign(state.ui.createMod, payload);
 		},
 	},
 	extraReducers(builder) {
@@ -349,6 +375,8 @@ const slice = createSlice({
 		selectInfoDialogOpen: state => state.ui.infoOpen,
 		selectModsDialogOpen: state => state.ui.mods.open,
 		selectOpenDialogOpen: state => state.ui.openOpen,
+		selectCreateModOpen: state => state.ui.createMod.open,
+		selectCreateModForm: state => state.ui.createMod,
 		selectPlaying: state => state.ui.playing,
 		selectModsLoaded: state => !state.mods.loading && !state.mods.failed,
 		selectModsInitialized: state => state.mods.loading !== undefined,
@@ -392,6 +420,13 @@ const slice = createSlice({
 						seleneOptionsExpanded: false,
 						modsExpanded: {},
 					},
+					createMod: {
+						open: false,
+						name: '',
+						description: '',
+						folderSelected: false,
+						createSubfolder: false,
+					},
 					infoOpen: false,
 					openOpen: false,
 					playing: false,
@@ -408,6 +443,7 @@ export const {
 	loadState,
 	setInfoOpen,
 	setModsOpen,
+	setCreateModOpen,
 	searchForMod,
 	setOptionsOpen,
 	setModEnabled,
@@ -419,11 +455,14 @@ export const {
 	startPollingDevMod,
 	stopPollingDevMod,
 	foundDevMod,
+	setCreateModForm,
 } = slice.actions;
 export const {
 	selectInfoDialogOpen,
 	selectModsDialogOpen,
 	selectOpenDialogOpen,
+	selectCreateModOpen,
+	selectCreateModForm,
 	selectPlaying,
 	selectSearchString,
 	selectModsLoaded,
