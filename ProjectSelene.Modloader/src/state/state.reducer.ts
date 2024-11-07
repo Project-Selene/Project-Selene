@@ -6,11 +6,13 @@ import { LoginService, LoginType, OpenAPI } from '../moddb/generated';
 import { ModDB } from '../moddb/moddb';
 import { Mod } from './models/mod';
 import { GameInfo, GamesInfo, State, UIState } from './state.models';
+import { Template } from '../loader/template';
 
 const fs = new Filesystem();
 const game = new Game(fs);
 const moddb = new ModDB();
 const loader = new Loader(fs, game);
+const template = new Template(fs);
 
 export const login = createAsyncThunk('login', async (_, { getState }) => {
 	const url = new URL((await LoginService.getApiLogin()).githubUrl);
@@ -136,6 +138,10 @@ export const installModLoader = createAsyncThunk('installModLoader', async (_, {
 	return await game.installModLoader(gameInfo);
 });
 
+export const createModOpenTargetFolder = createAsyncThunk('createModOpenTargetFolder', async () => {
+	await template.openModFolder();
+})
+
 const memoizedSelectInstalledMods = createSelector(
 	(state: State) => state.mods.data?.mods,
 	mods =>
@@ -214,6 +220,15 @@ const slice = createSlice({
 		},
 		setCreateModOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.ui.createMod.open = payload;
+			if (!payload) {
+				state.ui.createMod = {
+					open: false,
+					name: '',
+					description: '',
+					createSubfolder: false,
+					folderSelected: false,
+				}
+			}
 		},
 		updateCreateModForm: (state, { payload }: PayloadAction<Partial<UIState['createMod']>>) => {
 			Object.assign(state.ui.createMod, payload);
@@ -369,6 +384,9 @@ const slice = createSlice({
 		});
 		builder.addCase(getUser.rejected, state => {
 			state.user = undefined;
+		});
+		builder.addCase(createModOpenTargetFolder.fulfilled, state => {
+			state.ui.createMod.folderSelected = true;
 		});
 	},
 	selectors: {

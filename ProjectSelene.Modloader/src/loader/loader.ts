@@ -41,7 +41,7 @@ export class Loader {
 			);
 		}
 
-		const entryPointResponse = await fetch('/fs/game/terra/index-release.html');
+		const entryPointResponse = await fetch('/fs/game/terra/index.html');
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(await entryPointResponse.text(), 'text/html');
 		const base = doc.createElement('base');
