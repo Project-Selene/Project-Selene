@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace ProjectSelene.Models;
+﻿namespace ProjectSelene.Models;
 
 [Index(nameof(GithubId))]
 [Index(nameof(DiscordId))]

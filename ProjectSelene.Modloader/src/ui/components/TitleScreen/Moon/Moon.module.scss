@@ -1,0 +1,19 @@
+.moon {
+	position: absolute;
+	bottom: -60vw;
+	left: -10vw;
+	width: 120vw;
+	height: 120vw;
+
+	z-index: -100;
+}
+
+
+@media (min-width: 900px) {
+	.moon {
+		bottom: -40vw;
+		left: 28vw;
+		width: 65vw;
+		height: 65vw;
+	}
+}

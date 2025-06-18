@@ -14,7 +14,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CE832CEB-D656-42B9-A00F-DEA8276AF36B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Domain", "ProjectSelene.Domain\ProjectSelene.Domain.csproj", "{2B113F3A-9C62-4357-A0A0-5453366E8EB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Application", "ProjectSelene.Application\ProjectSelene.Application.csproj", "{A993B75F-5315-48C8-BBCC-97E8C05F8609}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Infrastructure", "ProjectSelene.Infrastructure\ProjectSelene.Infrastructure.csproj", "{C4433B8D-8348-44FD-81F4-16C0AB45FBB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Web", "ProjectSelene.Web\ProjectSelene.Web.csproj", "{4DF43988-0F01-48CD-B8D4-D499218444C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +55,22 @@ Global
 		{9EE62BB2-6B46-415F-91EC-662E60190CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EE62BB2-6B46-415F-91EC-662E60190CED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9EE62BB2-6B46-415F-91EC-662E60190CED}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2B113F3A-9C62-4357-A0A0-5453366E8EB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B113F3A-9C62-4357-A0A0-5453366E8EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B113F3A-9C62-4357-A0A0-5453366E8EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B113F3A-9C62-4357-A0A0-5453366E8EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A993B75F-5315-48C8-BBCC-97E8C05F8609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A993B75F-5315-48C8-BBCC-97E8C05F8609}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A993B75F-5315-48C8-BBCC-97E8C05F8609}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A993B75F-5315-48C8-BBCC-97E8C05F8609}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4433B8D-8348-44FD-81F4-16C0AB45FBB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4433B8D-8348-44FD-81F4-16C0AB45FBB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4433B8D-8348-44FD-81F4-16C0AB45FBB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4433B8D-8348-44FD-81F4-16C0AB45FBB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

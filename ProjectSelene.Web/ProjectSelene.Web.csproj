@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <RootNamespace>ProjectSelene.Web</RootNamespace>
+        <AssemblyName>ProjectSelene.Web</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ProjectSelene.Application\ProjectSelene.Application.csproj" />
+        <ProjectReference Include="..\ProjectSelene.Infrastructure\ProjectSelene.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
+        <PackageReference Include="Azure.Identity" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NSwag.AspNetCore" />
+        <PackageReference Include="NSwag.MSBuild">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="FluentValidation.AspNetCore" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Testdata\StorageObjects\" />
+        <Folder Include="wwwroot\api\" />
+    </ItemGroup>
+
+
+    <!-- Auto-generated Open API specification and Angular TypeScript clients  -->
+    <PropertyGroup>
+        <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+        <UserSecretsId>4384a713-8c38-43f5-a216-5309d1b667a0</UserSecretsId>
+    </PropertyGroup>
+
+    <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' And '$(SkipNSwag)' != 'True' ">
+        <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=NSwag" Command="$(NSwagExe_Net90) run config.nswag /variables:Configuration=$(Configuration)">
+            <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode" />
+            <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput" />
+        </Exec>
+
+        <Message Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' == '0'" Importance="low" />
+        <Error Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' != '0'" />
+    </Target>
+
+</Project>

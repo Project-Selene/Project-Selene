@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSelene.Services;
 
 namespace ProjectSelene.Controllers;
@@ -30,7 +27,7 @@ public class DiscordController(ILogger<DiscordController> logger, IMapper mapper
 
             var timeStamp = Encoding.ASCII.GetBytes(HttpContext.Request.Headers["X-Signature-Timestamp"].ToString().Trim());
             var signature = Convert.FromHexString(HttpContext.Request.Headers["X-Signature-Ed25519"].ToString().Trim());
-            
+
             using var ms = new MemoryStream();
             HttpContext.Request.Body.Position = 0;
             await HttpContext.Request.Body.CopyToAsync(ms);

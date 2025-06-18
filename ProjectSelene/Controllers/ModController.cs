@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSelene.DTOs;
 using ProjectSelene.Models;
 using ProjectSelene.Services;

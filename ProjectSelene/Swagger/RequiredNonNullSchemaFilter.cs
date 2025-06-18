@@ -1,6 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace ProjectSelene.Swagger;
 

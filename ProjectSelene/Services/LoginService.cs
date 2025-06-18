@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using ProjectSelene.Models;
-using System.IdentityModel.Tokens.Jwt;
+﻿using ProjectSelene.Models;
 
 namespace ProjectSelene.Services;
 

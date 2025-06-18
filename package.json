@@ -1,0 +1,6 @@
+{
+    "workspaces": [
+        "ProjectSelene.Modloader",
+        "ProjectSelene.Modloader.API"
+    ]
+}

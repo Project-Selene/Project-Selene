@@ -29,3 +29,8 @@ body,
 ::-webkit-scrollbar-thumb:hover {
 	background: #555;
 }
+
+:root {
+	--panSpeed: .5s;
+	--panType: ease-in-out;
+}

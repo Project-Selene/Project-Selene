@@ -1,51 +1,71 @@
 import { OpenInNew, Refresh } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
 import {
-	Accordion,
-	AccordionDetails,
-	AccordionSummary,
+	Box,
 	Button,
+	Card,
+	CardContent,
+	CircularProgress,
 	Dialog,
 	DialogContent,
 	DialogTitle,
+	Slide,
 	Stack,
 	TextField,
 	Typography,
 } from '@mui/material';
+import { TransitionProps } from '@mui/material/transitions';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectFilteredAvailableModIds, selectFilteredInstalledModIds } from '../../../state/search.selector';
+import { openDirectory, selectGameState } from '../../../state/game.store';
 import {
-	loadModList,
-	loadMods,
-	openDirectory,
+	loadModsFromDb,
 	searchForMod,
-	selectModsAvailableExpanded,
+	selectAvailableModsLoading,
+	selectMods,
 	selectModsDialogOpen,
-	selectModsInitialized,
-	selectModsInstalledExpanded,
-	selectSearchString,
+	selectModsSearch,
 	setModsOpen,
-	setOptionsOpen,
-	store,
-	toggleModsAvailable,
-	toggleModsInstalled,
-} from '../../../state/state.reducer';
+} from '../../../state/mod.store';
+import { GameState } from '../../../state/models/game';
+import { store } from '../../../state/state.reducer';
 import { ModsEntry } from './ModsEntry';
 
+const Transition = React.forwardRef(function Transition(
+	props: TransitionProps & {
+		children: React.ReactElement;
+	},
+	ref: React.Ref<unknown>,
+) {
+	return <Slide direction="up" ref={ref} {...props} />;
+});
+
 export function ModsDialog() {
+	const gameState = useSelector(selectGameState);
+
 	const open = useSelector(selectModsDialogOpen);
-	const modsInitialized = useSelector(selectModsInitialized);
-	const installedExpanded = useSelector(selectModsInstalledExpanded);
-	const availableExpanded = useSelector(selectModsAvailableExpanded);
-	const installedModIds = useSelector(selectFilteredInstalledModIds);
-	const availableModIds = useSelector(selectFilteredAvailableModIds);
-	const searchString = useSelector(selectSearchString);
+	const mods = useSelector(selectMods);
+	const searchString = useSelector(selectModsSearch);
+	const availableModsLoading = useSelector(selectAvailableModsLoading);
+
+	const installedMods = mods.filter(m => m.isInstalled);
+	const availableMods = mods.filter(m => !m.isInstalled);
 
 	const dispatch = useDispatch<typeof store.dispatch>();
 
 	return (
-		<Dialog open={open} maxWidth={false} fullWidth={true} onClose={() => dispatch(setModsOpen(false))}>
+		<Dialog
+			open={open}
+			maxWidth={false}
+			fullWidth={true}
+			onClose={() => dispatch(setModsOpen(false))}
+			hideBackdrop={true}
+			TransitionComponent={Transition}
+			transitionDuration={{ enter: 200, exit: 200 }}
+			TransitionProps={{
+				easing: 'ease-in-out',
+			}}
+		>
 			<DialogTitle>
 				<Stack direction="row" justifyContent="space-between">
 					<span>Mods</span>
@@ -60,9 +80,15 @@ export function ModsDialog() {
 						<Button
 							variant="outlined"
 							style={{ backgroundColor: '#66F3' }}
-							onClick={() => dispatch(setOptionsOpen(true))}
+							endIcon={<Refresh />}
+							onClick={e => {
+								// dispatch(loadMods());
+								// dispatch(loadModList());
+								dispatch(loadModsFromDb());
+								e.stopPropagation();
+							}}
 						>
-							Options
+							Refresh
 						</Button>
 						<Button
 							variant="outlined"
@@ -76,83 +102,56 @@ export function ModsDialog() {
 				</Stack>
 			</DialogTitle>
 			<DialogContent sx={{ height: '80vh' }}>
-				<Stack direction="column" sx={{ height: '100%' }}>
-					<Accordion
-						expanded={installedExpanded}
-						onChange={() => {
-							dispatch(toggleModsInstalled());
-						}}
-					>
-						<AccordionSummary>
-							<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
-								<Typography variant="body2">Installed mods</Typography>
-								{modsInitialized ? (
-									<Button
-										variant="outlined"
-										style={{ backgroundColor: '#66F3' }}
-										endIcon={<Refresh />}
-										onClick={e => {
-											dispatch(loadMods());
-											dispatch(loadModList());
-											e.stopPropagation();
-										}}
-									>
-										Refresh
-									</Button>
-								) : (
-									<Button
-										variant="outlined"
-										style={{ backgroundColor: '#66F3' }}
-										endIcon={<OpenInNew />}
-										onClick={() => dispatch(openDirectory())}
-									>
-										Open mods folder
-									</Button>
-								)}
-							</Stack>
-						</AccordionSummary>
-						<AccordionDetails>
-							<Stack direction="row" spacing={1} justifyContent={installedModIds.length === 0 ? 'center' : 'start'}>
-								{installedModIds.length === 0 ? (
-									<Typography variant="body2">No mods installed.</Typography>
-								) : (
-									installedModIds.map(id => <ModsEntry key={'i' + id} id={id} />)
-								)}
-							</Stack>
-						</AccordionDetails>
-					</Accordion>
-					<Accordion
-						expanded={availableExpanded}
-						onChange={() => {
-							dispatch(toggleModsAvailable());
-						}}
-					>
-						<AccordionSummary>
-							<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
-								<Typography variant="body2">Available mods</Typography>
-								<Button
-									variant="outlined"
-									style={{ backgroundColor: '#66F3' }}
-									endIcon={<Refresh />}
-									onClick={e => {
-										dispatch(loadMods());
-										dispatch(loadModList());
-										e.stopPropagation();
-									}}
-								>
-									Refresh
-								</Button>
-							</Stack>
-						</AccordionSummary>
-						<AccordionDetails>
-							<Stack direction="row" spacing={1}>
-								{availableModIds.map(id => (
-									<ModsEntry key={'a' + id} id={id} />
-								))}
-							</Stack>
-						</AccordionDetails>
-					</Accordion>
-				</Stack>
+				<Card sx={{ height: '100%', backgroundColor: 'hsl(0 0% 14%)' }}>
+					<CardContent sx={{ height: '100%', padding: 0 }}>
+						<Stack
+							direction="column"
+							sx={{ overflowY: 'auto', height: '100%', padding: 2, boxSizing: 'border-box' }}
+						>
+							<Box sx={{ maxHeight: 0 }}>
+								<Stack direction="row" gap={2} sx={{ flexWrap: 'wrap', paddingBottom: 2 }}>
+									{gameState !== GameState.READY ? (
+										<Stack direction="row" sx={{ width: '100%', justifyContent: 'center' }}>
+											<Button
+												variant="outlined"
+												style={{ backgroundColor: '#66F3' }}
+												endIcon={<OpenInNew />}
+												onClick={() => dispatch(openDirectory())}
+												disabled={gameState !== GameState.PROMPT}
+											>
+												Open mods folder
+											</Button>
+										</Stack>
+									) : (
+										<></>
+									)}
+
+									{installedMods.length > 0 ? (
+										<Box sx={{ width: '100%' }}>
+											<Typography variant="body2">Installed mods</Typography>
+										</Box>
+									) : (
+										<></>
+									)}
+
+									{installedMods.map(mod => (
+										<ModsEntry key={'i' + mod.id} mod={mod} />
+									))}
+
+									<Stack direction="row" sx={{ width: '100%', justifyContent: 'center' }}>
+										<Typography variant="body2">Available mods</Typography>
+									</Stack>
+
+									{availableModsLoading ? (
+										<CircularProgress />
+									) : (
+										availableMods.map(mod => <ModsEntry key={'i' + mod.id} mod={mod} />)
+									)}
+								</Stack>
+							</Box>
+						</Stack>
+					</CardContent>
+				</Card>
 			</DialogContent>
 		</Dialog>
 	);

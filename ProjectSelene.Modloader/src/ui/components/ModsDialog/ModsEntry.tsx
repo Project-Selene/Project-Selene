@@ -1,72 +1,43 @@
 import { Delete, Download } from '@mui/icons-material';
 import { Avatar, Card, CardContent, CardHeader, IconButton, Stack, Typography } from '@mui/material';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-	RootState,
-	deleteMod,
-	installMod,
-	selectAvailableMod,
-	selectInstalledMod,
-	selectSearchString,
-	store,
-} from '../../../state/state.reducer';
+import { useSelector } from 'react-redux';
+import { selectModsSearch } from '../../../state/mod.store';
+import { Mod } from '../../../state/models/mod';
 import { FilterHighlight } from '../FilterHighlight';
 
-export function ModsEntry(props: { id: string }) {
-	const searchString = useSelector(selectSearchString);
-	const moddb = useSelector((state: RootState) => selectAvailableMod(state, props.id));
+export function ModsEntry(props: { mod: Mod }) {
+	const searchString = useSelector(selectModsSearch);
+	const mod = props.mod;
 
-	const rawmod = useSelector((state: RootState) => selectInstalledMod(state, props.id));
-	const mod = rawmod ?? {
-		enabled: false,
-		internalName: -(moddb?.id ?? Number.MAX_VALUE) + '',
-		currentInfo: moddb ?? {
-			description: '',
-			id: -Number.MAX_VALUE,
-			name: 'None',
-			version: '0.0.0',
-		},
-		filename: moddb?.name + '.mod.zip',
-	};
-
-	const versionId = {
-		filename: mod.filename,
-		id: moddb?.id ?? '',
-		version: moddb?.version ?? '',
-	};
-
-	const isInstalled = !!rawmod;
-	const hasUpdate = !!moddb && moddb.version !== mod.currentInfo.version;
-
-	const dispatch = useDispatch<typeof store.dispatch>();
+	// const dispatch = useDispatch<typeof store.dispatch>();
 
 	return (
-		<Card key={props.id}>
+		<Card key={mod.id} sx={{ border: '1px solid hsl(0 0% 14%)' }}>
 			<CardHeader
-				avatar={<Avatar>{mod?.currentInfo.name[0] || 'M'}</Avatar>}
-				title={<FilterHighlight filter={searchString}>{mod.currentInfo.name}</FilterHighlight>}
+				avatar={<Avatar>{mod.name?.[0] || 'M'}</Avatar>}
+				title={<FilterHighlight filter={searchString}>{mod.name}</FilterHighlight>}
 				subheader={
-					'author' in mod.currentInfo ? (
+					'author' in mod && typeof mod.author === 'string' ? (
 						<>
-							{mod.currentInfo.version} by{' '}
+							{mod.version} by{' '}
 							<i>
-								<>{mod.currentInfo.author}</>
+								<>{mod.author}</>
 							</i>
 						</>
 					) : (
-						<>{mod.currentInfo.version}</>
+						<>{mod.version}</>
 					)
 				}
 				action={
 					<>
-						{(hasUpdate || !isInstalled) && (
-							<IconButton onClick={() => dispatch(installMod(versionId))}>
+						{(mod.hasUpdate || !mod.isInstalled) && (
+							<IconButton onClick={() => null /*dispatch(installMod(versionId))*/}>
 								<Download />
 							</IconButton>
 						)}
-						{isInstalled && (
-							<IconButton onClick={() => dispatch(deleteMod(mod.filename))}>
+						{mod.isInstalled && (
+							<IconButton onClick={() => null /*dispatch(deleteMod(mod.filename))*/}>
 								<Delete />
 							</IconButton>
 						)}
@@ -76,7 +47,7 @@ export function ModsEntry(props: { id: string }) {
 			<CardContent sx={{ minWidth: 200 }}>
 				<Stack direction="row">
 					<Typography variant="body2" color="text.secondary" sx={{ width: 0, flexGrow: 1 }}>
-						<FilterHighlight filter={searchString}>{mod.currentInfo.description}</FilterHighlight>
+						<FilterHighlight filter={searchString}>{mod.description}</FilterHighlight>
 					</Typography>
 				</Stack>
 			</CardContent>

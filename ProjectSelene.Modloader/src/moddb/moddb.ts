@@ -1,5 +1,4 @@
-import { ModInfo } from '../state/models/mod';
-import { ModService, OpenAPI } from './generated';
+import { ModDto, ModsClient, StorageClient } from './generated/selene-api';
 
 declare global {
 	interface Window {
@@ -9,22 +8,21 @@ declare global {
 	}
 }
 
-const CDN_BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://cdn.projectselene.org';
-
 export class ModDB {
-	constructor() {
-		OpenAPI.BASE = globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
-	}
+	private readonly baseUrl =
+		globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
+	private readonly mods = new ModsClient(this.baseUrl);
+	private readonly storage = new StorageClient(this.baseUrl);
 
-	public async modList(): Promise<ModInfo[]> {
+	public async modList(): Promise<ModDto[]> {
 		if ((document.visibilityState as string) === 'prerender') {
 			return [];
 		}
 
-		return (await ModService.getApiModList()).entries;
+		return (await this.mods.getMods()).mods;
 	}
 
 	public async download(id: string, version: string) {
-		return (await fetch(CDN_BASE + '/api/Artifact/' + encodeURIComponent(id) + '/' + encodeURIComponent(version))).body;
+		return (await this.storage.downloadArtifact(id, version)).data.stream();
 	}
 }

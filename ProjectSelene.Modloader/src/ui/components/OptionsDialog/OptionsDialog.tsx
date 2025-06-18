@@ -4,7 +4,6 @@ import {
 	Accordion,
 	AccordionDetails,
 	AccordionSummary,
-	Avatar,
 	Box,
 	Button,
 	Dialog,
@@ -14,36 +13,25 @@ import {
 	Typography,
 } from '@mui/material';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-	login,
-	logout,
-	openDirectory,
-	selectInstalledModIds,
-	selectIsLoggedIn,
-	selectModsInitialized,
-	selectOptionsOpen,
-	selectSeleneOptionsExpanded,
-	selectUserAvatarUrl,
-	setOptionsOpen,
-	store,
-	toggleSeleneOptionsExpanded,
-} from '../../../state/state.reducer';
+import { useSelector } from 'react-redux';
+import { selectGameState } from '../../../state/game.store';
+import { selectMods } from '../../../state/mod.store';
+import { GameState } from '../../../state/models/game';
 import { theme } from '../../theme';
 import { ModOptionsEntry } from './ModOptionsEntry';
 
 export function OptionsDialog() {
-	const open = useSelector(selectOptionsOpen);
-	const isLoggedIn = useSelector(selectIsLoggedIn);
-	const userAvatarUrl = useSelector(selectUserAvatarUrl);
-	const seleneOptionsExpanded = useSelector(selectSeleneOptionsExpanded);
-	const modsInitialized = useSelector(selectModsInitialized);
-	const installedModIds = useSelector(selectInstalledModIds);
+	const gameState = useSelector(selectGameState);
 
-	const dispatch = useDispatch<typeof store.dispatch>();
+	const modsInitialized = gameState !== GameState.PROMPT;
+	const open = false; //useSelector(selectOptionsOpen);
+	const seleneOptionsExpanded = false; //useSelector(selectSeleneOptionsExpanded);
+	const mods = useSelector(selectMods);
+
+	// const dispatch = useDispatch<typeof store.dispatch>();
 
 	return (
-		<Dialog open={open} maxWidth={false} fullWidth={true} onClose={() => dispatch(setOptionsOpen(false))}>
+		<Dialog open={open} maxWidth={false} fullWidth={true} onClose={() => null /*dispatch(setOptionsOpen(false))*/}>
 			<DialogTitle>
 				<Stack direction="row" justifyContent="space-between">
 					<span>Options</span>
@@ -52,7 +40,7 @@ export function OptionsDialog() {
 							variant="outlined"
 							style={{ backgroundColor: '#66F3' }}
 							endIcon={<Close />}
-							onClick={() => dispatch(setOptionsOpen(false))}
+							onClick={() => null /*dispatch(setOptionsOpen(false))*/}
 						>
 							Close
 						</Button>
@@ -62,9 +50,17 @@ export function OptionsDialog() {
 			<DialogContent sx={{ height: '70vh' }}>
 				<Stack direction="column" sx={{ height: '100%' }} gap={1}>
 					<Stack direction="column">
-						<Accordion expanded={seleneOptionsExpanded} onClick={() => dispatch(toggleSeleneOptionsExpanded())}>
+						<Accordion
+							expanded={seleneOptionsExpanded}
+							onClick={() => null /*dispatch(toggleSeleneOptionsExpanded())*/}
+						>
 							<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
-								<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
+								<Stack
+									direction="row"
+									alignItems="baseline"
+									justifyContent="space-between"
+									width="100%"
+								>
 									<Typography variant="subtitle1">Project Selene</Typography>
 								</Stack>
 							</AccordionSummary>
@@ -81,35 +77,11 @@ export function OptionsDialog() {
 												endIcon={<OpenInNew />}
 												onClick={e => {
 													e.stopPropagation();
-													dispatch(openDirectory());
+													// dispatch(openDirectory());
 												}}
 											>
 												Open
 											</Button>
-										</Box>
-									</Box>
-									<Box sx={{ display: 'table-row' }}>
-										<Box sx={{ display: 'table-cell' }}>
-											<Typography variant="body2">Account</Typography>
-										</Box>
-										<Box sx={{ display: 'table-cell' }}>
-											{isLoggedIn ? (
-												<Button variant="outlined" onClick={() => dispatch(logout())}>
-													<Avatar alt="User" src={userAvatarUrl ?? ''} />
-												</Button>
-											) : (
-												<Button
-													variant="outlined"
-													style={{ backgroundColor: '#66F3' }}
-													endIcon={<OpenInNew />}
-													onClick={e => {
-														e.stopPropagation();
-														dispatch(login());
-													}}
-												>
-													Login
-												</Button>
-											)}
 										</Box>
 									</Box>
 									{/* <Box sx={{ display: 'table-row' }}>
@@ -139,8 +111,8 @@ export function OptionsDialog() {
 								</Box>
 							</AccordionDetails>
 						</Accordion>
-						{installedModIds.map(id => (
-							<ModOptionsEntry id={id} key={id}></ModOptionsEntry>
+						{mods.map(mod => (
+							<ModOptionsEntry mod={mod} key={mod.id}></ModOptionsEntry>
 						))}
 					</Stack>
 					{modsInitialized ? (
@@ -150,7 +122,7 @@ export function OptionsDialog() {
 							variant="outlined"
 							style={{ backgroundColor: '#66F3' }}
 							endIcon={<OpenInNew />}
-							onClick={() => dispatch(openDirectory())}
+							onClick={() => null /*dispatch(openDirectory())*/}
 						>
 							Open mods folder to show mod options
 						</Button>

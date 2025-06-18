@@ -1,6 +1,6 @@
 import { Handles } from '../handles/handles';
-import { Mod } from '../state/models/mod';
-import { GameInfo, GamesInfo, Mods } from '../state/state.models';
+import { GameInfo } from '../state/models/game';
+import { Mod, ModManifest } from '../state/models/mod';
 import { Filesystem } from './filesystem';
 
 export class Game {
@@ -11,12 +11,12 @@ export class Game {
 
 	constructor(private readonly filesystem: Filesystem) {}
 
-	public async loadGames(games: GamesInfo): Promise<GamesInfo> {
+	public async loadGames(games: GameInfo[]): Promise<GameInfo[]> {
 		await this.gameHandles.load();
 
 		games = JSON.parse(JSON.stringify(games));
 
-		for (const game of games.games) {
+		for (const game of games) {
 			if (game.type === 'handle') {
 				game.loaded = await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted');
 			} else if (game.type === 'fs') {
@@ -29,10 +29,10 @@ export class Game {
 		if ('require' in globalThis) {
 			const path: typeof import('path') = globalThis['require']('path');
 			const gamePath = path.dirname(process.execPath);
-			const localGame = games.games.find(g => g.type === 'fs' && g.path === gamePath);
+			const localGame = games.find(g => g.type === 'fs' && g.path === gamePath);
 			if (!localGame) {
-				games.games.push({
-					id: games.games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1,
+				games.push({
+					id: games.map(g => g.id).reduce((a, b) => Math.max(a, b), 0) + 1,
 					type: 'fs',
 					path: gamePath,
 					loaded: true,
@@ -41,12 +41,7 @@ export class Game {
 		}
 
 		//Completely remove filelist games that are not loaded because once they are gone we have no way to load them again
-		games.games = games.games.filter(g => g.type !== 'filelist' || g.loaded);
-
-		const selectedGame = games.games.find(g => g.id === games.selectedGame);
-		if (!selectedGame) {
-			games.selectedGame = games.games.find(g => g.loaded)?.id ?? -1;
-		}
+		games = games.filter(g => !(g.type === 'filelist' && !g.loaded));
 
 		return games;
 	}
@@ -145,7 +140,7 @@ export class Game {
 		}
 	}
 
-	public async tryGetMods(game: GameInfo): Promise<Mods | undefined> {
+	public async tryGetMods(game: GameInfo): Promise<ModManifest[] | undefined> {
 		if (game.type === 'handle' && !(await this.gameHandles.queryPermission(game.id, { mode: 'read' }, 'granted'))) {
 			return undefined;
 		}
@@ -157,12 +152,12 @@ export class Game {
 		return this.getModsInternal(game.id);
 	}
 
-	public async getMods(game: GameInfo): Promise<Mods> {
+	public async getMods(game: GameInfo): Promise<ModManifest[]> {
 		await this.mountGame(game);
 		return this.getModsInternal(game.id);
 	}
 
-	private async getModsInternal(gameId: number): Promise<Mods> {
+	private async getModsInternal(gameId: number): Promise<ModManifest[]> {
 		let modId = 0;
 		const mods: Mod[] = [];
 		const mountedMods = this.mountedMods.get(gameId) ?? new Set<string>();
@@ -187,12 +182,7 @@ export class Game {
 							'/fs/internal/mods/' + gameId + '/' + internalName + '/manifest.json',
 						);
 						const manifest = JSON.parse(manifestText);
-						mods.push({
-							currentInfo: manifest,
-							enabled: true,
-							internalName: internalName + '',
-							filename: mod.name,
-						});
+						mods.push(manifest);
 					} catch (e) {
 						console.error('Invalid mod: ' + mod.name, e);
 					}
@@ -202,9 +192,7 @@ export class Game {
 			//This happens mostly if the mod directory doesn't exist. Ignore.
 		}
 
-		return {
-			mods,
-		};
+		return mods;
 	}
 
 	public async deleteMod(game: GameInfo, filename: string) {
@@ -242,7 +230,10 @@ export class Game {
 			'/fs/internal/game/' + game.id + '/project-selene/',
 			'/fs/internal/game/' + game.id + '/project-selene.zip',
 		);
-		await this.copyFolder('/fs/internal/game/' + game.id + '/project-selene/', '/fs/internal/game/' + game.id + '/');
+		await this.copyFolder(
+			'/fs/internal/game/' + game.id + '/project-selene/',
+			'/fs/internal/game/' + game.id + '/',
+		);
 
 		//Cleanup
 		await this.filesystem.delete('/fs/internal/game/' + game.id + '/project-selene.zip');

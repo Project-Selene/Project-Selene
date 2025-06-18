@@ -1,17 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ProjectSelene.Models;
+﻿using ProjectSelene.Models;
 
 namespace ProjectSelene;
 
-public class SeleneDbContext : DbContext
+public class SeleneDbContext(DbContextOptions options) : DbContext(options), DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Mod> Mods => Set<Mod>();
     public DbSet<ModVersion> ModVersions => Set<ModVersion>();
     public DbSet<ModVersionDraft> ModVersionDrafts => Set<ModVersionDraft>();
     public DbSet<Artifact> Artifacts => Set<Artifact>();
-
-    public SeleneDbContext(DbContextOptions options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

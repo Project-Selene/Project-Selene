@@ -1,12 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSelene.DTOs;
 using ProjectSelene.Models;
 using ProjectSelene.Services;
+using System.Text.Json;
 
 namespace ProjectSelene.Controllers;
 

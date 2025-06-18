@@ -1,6 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using ProjectSelene;
+﻿using ProjectSelene;
 using ProjectSelene.DTOs.AutoMapper;
 using ProjectSelene.Services;
 using ProjectSelene.Swagger;

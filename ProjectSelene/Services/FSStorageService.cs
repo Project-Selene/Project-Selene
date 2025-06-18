@@ -1,13 +1,8 @@
 ﻿namespace ProjectSelene.Services;
 
-public class FSStorageService : IStorageProviderService
+public class FSStorageService(IConfiguration configuration) : IStorageProviderService
 {
-    private readonly string folder;
-
-    public FSStorageService(IConfiguration configuration)
-    {
-        this.folder = configuration["fs_directory"] ?? throw new ArgumentNullException("fs_directory", "fs_directory is required for FSStorageService");
-    }
+    private readonly string folder = configuration["fs_directory"] ?? throw new ArgumentNullException("fs_directory", "fs_directory is required for FSStorageService");
 
     public async Task<string> Upload(Stream content, CancellationToken cancellationToken)
     {

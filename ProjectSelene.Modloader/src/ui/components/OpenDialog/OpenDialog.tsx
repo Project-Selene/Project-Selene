@@ -1,13 +1,16 @@
 import { Box, Dialog, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectOpenDialogOpen } from '../../../state/state.reducer';
+import { selectGameState } from '../../../state/game.store';
+import { GameState } from '../../../state/models/game';
 import { InfoIcon } from './InfoIcon';
 import { InfoPointer } from './InfoPointer';
 import classes from './OpenDialog.module.scss';
 
 export function OpenDialog() {
-	const open = useSelector(selectOpenDialogOpen);
+	const gameState = useSelector(selectGameState);
+
+	const open = gameState === GameState.OPENING;
 
 	return (
 		<Dialog open={open} maxWidth={false} fullWidth={false}>
@@ -73,7 +76,10 @@ export function OpenDialog() {
 										<InfoPointer x={5} y={4} rotate={0} text="2" />
 										<InfoPointer x={90} y={53} rotate={90} text="3" />
 									</Typography>
-									<img src="static/images/open_guide_steam_properties.png" className={classes.property}></img>
+									<img
+										src="static/images/open_guide_steam_properties.png"
+										className={classes.property}
+									></img>
 								</Box>
 							</Box>
 						</Box>
@@ -111,7 +117,10 @@ export function OpenDialog() {
 										<InfoPointer x={2} y={20} rotate={0} text="4" />
 										<InfoPointer x={90} y={10} rotate={90} text="5" />
 									</Typography>
-									<img src="static/images/open_guide_steam_search.png" className={classes.search}></img>
+									<img
+										src="static/images/open_guide_steam_search.png"
+										className={classes.search}
+									></img>
 								</Box>
 							</Box>
 						</Box>

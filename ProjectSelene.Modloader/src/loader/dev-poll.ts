@@ -1,21 +1,18 @@
-import { Mod } from '../state/models/mod';
-import { foundDevMod, startPollingDevMod, stopPollingDevMod, store } from '../state/state.reducer';
-
 const minimumTime = 100;
 let timeout = 2000;
 let intervalId: NodeJS.Timeout | number = 0;
 
 export function pollForDevMod() {
-	if (intervalId) {
-		clearInterval(intervalId);
-	}
-	store.dispatch(startPollingDevMod());
-	intervalId = setInterval(poll, 4000);
+	// if (intervalId) {
+	// 	clearInterval(intervalId);
+	// }
+	// // store.dispatch(startPollingDevMod());
+	// intervalId = setInterval(poll, 4000);
 }
 
 export function stopPollForDevMod() {
-	clearInterval(intervalId);
-	intervalId = 0;
+	// clearInterval(intervalId);
+	// intervalId = 0;
 }
 
 async function poll() {
@@ -52,7 +49,7 @@ async function poll() {
 				// The request failed basicly instantly. We can't reliably poll for the dev mod without filling the console with errors.
 				clearInterval(intervalId);
 				intervalId = 0;
-				store.dispatch(stopPollingDevMod('Timeout too low'));
+				// store.dispatch(stopPollingDevMod('Timeout too low'));
 			}
 		}
 	}
@@ -64,14 +61,14 @@ async function fetchDevMod() {
 		signal: AbortSignal.timeout(timeout),
 	});
 
-	const result = await fetch('http://localhost:8182/manifest.json');
-	const manifest = await result.json();
-	const mod: Mod = {
-		currentInfo: manifest,
-		enabled: true,
-		internalName: 'dev',
-		filename: '',
-	};
-	store.dispatch(foundDevMod(mod));
+	// const result = await fetch('http://localhost:8182/manifest.json');
+	// const manifest = await result.json();
+	// const mod: Mod = {
+	// 	currentInfo: manifest,
+	// 	enabled: true,
+	// 	internalName: 'dev',
+	// 	filename: '',
+	// };
+	// store.dispatch(foundDevMod(mod));
 	clearInterval(intervalId);
 }

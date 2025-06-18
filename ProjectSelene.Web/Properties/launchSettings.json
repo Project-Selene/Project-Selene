@@ -1,0 +1,28 @@
+﻿{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+        "applicationUrl": "http://localhost:7086",
+        "sslPort": 7086
+    }
+  },
+  "profiles": {
+    "ProjectSelene.Web": {
+        "commandName": "Project",
+        "launchBrowser": true,
+        "applicationUrl": "https://localhost:7086",
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "launchUrl": "https://localhost:7086/api/index.html?url=/api/specification.json#/"
+    },
+      "IIS Express": {
+        "commandName": "IISExpress",
+        "launchBrowser": true,
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      }
+    }
+}

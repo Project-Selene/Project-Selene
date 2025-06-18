@@ -1,0 +1,44 @@
+{
+  "name": "@project-selene/api",
+  "version": "1.0.0",
+  "description": "The runtime API for Project Selene",
+  "main": "dist/main.js",
+  "type": "module",
+  "author": {
+    "name": ""
+  },
+  "exports": {
+    ".": "./dist/main.js",
+    "./terra": "./dist/terra.js"
+  },
+  "bin": {
+    "project-selene-copy-assets": "./dist/scripts/assets.js",
+    "project-selene-build": "./dist/scripts/build.js",
+    "project-selene-watch": "./dist/scripts/watch.js",
+    "project-selene-publish": "./dist/scripts/publish.js",
+    "project-selene-set-id": "./dist/scripts/set-id.js"
+  },
+  "scripts": {
+    "start": "npm run watch",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "tsc --build --clean",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "esbuild": "~0.20.2",
+    "fast-json-patch": "^3.1.1",
+    "jszip": "^3.10.1"
+  },
+  "optionalDependencies": {
+    "esbuild-sass-plugin": "^3.2.0"
+  }
+}

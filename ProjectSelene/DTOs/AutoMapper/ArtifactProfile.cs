@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using ProjectSelene.Models;
+﻿using ProjectSelene.Models;
 
 namespace ProjectSelene.DTOs.AutoMapper;
 

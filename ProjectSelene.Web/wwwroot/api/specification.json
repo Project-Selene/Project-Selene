@@ -1,0 +1,416 @@
+{
+  "x-generator": "NSwag v14.2.0.0 (NJsonSchema v11.1.0.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ProjectSelene API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/Discord": {
+      "post": {
+        "tags": [
+          "Discord"
+        ],
+        "operationId": "Interactions",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/Mods": {
+      "get": {
+        "tags": [
+          "Mods"
+        ],
+        "operationId": "GetMods",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModListDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Mods/RegisterVersion/{id}": {
+      "post": {
+        "tags": [
+          "Mods"
+        ],
+        "operationId": "RegisterVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterVersionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/Mods/SubmitVersion/{id}": {
+      "post": {
+        "tags": [
+          "Mods"
+        ],
+        "operationId": "SubmitVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitVersionCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/Storage/{id}/{version}": {
+      "put": {
+        "tags": [
+          "Storage"
+        ],
+        "operationId": "UploadArtifact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "operationId": "DownloadArtifact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/Users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetLoginProviders",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LoginProviderDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Users/demoToken": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetApiUsersDemoToken",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ModListDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "mods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModDto"
+            }
+          }
+        }
+      },
+      "ModDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RegisterVersionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "modId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "version": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmitVersionCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "modId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "Result": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LoginProviderDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "Enter you API key",
+        "name": "X-API-Key",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKey": []
+    }
+  ]
+}
