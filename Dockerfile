@@ -51,4 +51,4 @@ RUN dotnet publish "ProjectSelene.Web.csproj" -a $TARGETARCH -c Release -o /app/
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["/app/ProjectSelene"]
+ENTRYPOINT ["/app/ProjectSelene.Web"]
