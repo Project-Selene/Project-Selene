@@ -3,16 +3,16 @@ let timeout = 2000;
 let intervalId: NodeJS.Timeout | number = 0;
 
 export function pollForDevMod() {
-	// if (intervalId) {
-	// 	clearInterval(intervalId);
-	// }
-	// // store.dispatch(startPollingDevMod());
-	// intervalId = setInterval(poll, 4000);
+	if (intervalId) {
+		clearInterval(intervalId);
+	}
+	// store.dispatch(startPollingDevMod());
+	intervalId = setInterval(poll, 4000);
 }
 
 export function stopPollForDevMod() {
-	// clearInterval(intervalId);
-	// intervalId = 0;
+	clearInterval(intervalId);
+	intervalId = 0;
 }
 
 async function poll() {

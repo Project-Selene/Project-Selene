@@ -13,8 +13,10 @@
 		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"noEmit": true,
-		"jsx": "react"
+		"outDir": "./dist/",
+		"rootDir": "./src/",
+		"inlineSourceMap": true,
+		"declaration": true
 	},
 	"include": ["src"]
 }

@@ -6,7 +6,7 @@ export async function createZipBundle() {
 	const jszip = new JSZip();
 
 	await addFolderToZip(jszip, './dist/unpacked/');
-	return await jszip.generateAsync({ type: 'nodebuffer' });
+	return await jszip.generateAsync({ type: 'arraybuffer' });
 }
 
 async function addFolderToZip(zip: JSZip, folderPath: string, prefix = '') {

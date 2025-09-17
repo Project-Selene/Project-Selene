@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProjectSelene.Application\ProjectSelene.Application.csproj" />
+    <ProjectReference Include="..\ProjectSelene.Discord\ProjectSelene.Discord.csproj" />
   </ItemGroup>
 
 </Project>

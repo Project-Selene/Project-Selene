@@ -24,7 +24,7 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: ghcr.io/2767mr/project-selene:latest
+        tags: ghcr.io/project-selene/project-selene:latest
   publish-main:
     needs: build
     runs-on: ubuntu-latest

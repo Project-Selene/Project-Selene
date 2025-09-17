@@ -56,15 +56,15 @@ export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 				const ctx = new original();
 				Object.defineProperty(ctx, 'listener', {
 					value: {
-						positionX: ctx.listener.positionX ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						positionY: ctx.listener.positionY ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						positionZ: ctx.listener.positionZ ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						forwardX: ctx.listener.forwardX ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						forwardY: ctx.listener.forwardY ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						forwardZ: ctx.listener.forwardZ ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						upX: ctx.listener.upX ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						upY: ctx.listener.upY ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
-						upZ: ctx.listener.upZ ?? ({ linearRampToValueAtTime: () => {} } as unknown as AudioParam),
+						positionX: ctx.listener.positionX ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						positionY: ctx.listener.positionY ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						positionZ: ctx.listener.positionZ ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						forwardX: ctx.listener.forwardX ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						forwardY: ctx.listener.forwardY ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						forwardZ: ctx.listener.forwardZ ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						upX: ctx.listener.upX ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						upY: ctx.listener.upY ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
+						upZ: ctx.listener.upZ ?? ({ linearRampToValueAtTime: () => { } } as unknown as AudioParam),
 					},
 					enumerable: true,
 				});
@@ -123,7 +123,12 @@ function require(name: string) {
 }
 
 function pathToUrl(path: string) {
-	return path.replace(/\\/g, '/').replace(/[/]+/g, '/');
+	const result = path.replace(/\\/g, '/').replace(/[/]+/g, '/');
+	if (result.startsWith('/')) {
+		return result;
+	}
+
+	return '../' + result;
 }
 
 function requireFS() {
@@ -142,7 +147,7 @@ function requireFS() {
 						},
 						async readdir(name: string, options: string, callback: (err: unknown, result: unknown) => void) {
 							name = pathToUrl(name);
-							const path = '/fs/game/' + name.replace('data/local/terra/', '');
+							const path = name; //'/fs/game/' + name.replace('data/local/terra/', '');
 							// console.log('readdir', path, options);
 
 							const result: { name: string; isDir: boolean }[] = await (
@@ -184,7 +189,6 @@ function requireFSPromises() {
 		{},
 		{
 			get(_, prop) {
-				// console.log('fs.promises', prop);
 				return (
 					(
 						{
@@ -196,7 +200,6 @@ function requireFSPromises() {
 								).text();
 							},
 							async stat(name: string) {
-								console.log('stat', pathToUrl(name));
 								const result = await (
 									await fetch(pathToUrl(name), {
 										method: 'GET',
@@ -211,7 +214,6 @@ function requireFSPromises() {
 								return result;
 							},
 							async writeFile(name: string, content: string) {
-								console.log('writefile', name, content);
 								const result = await (
 									await fetch(pathToUrl(name), {
 										method: 'POST',
@@ -226,11 +228,25 @@ function requireFSPromises() {
 								}
 							},
 							rename(from: string, to: string) {
-								console.log('rename', from, to);
+								console.log('rename', from, to); //TODO: implement rename
 							},
+							async access(path: string) {
+								const result = await (
+									await fetch(pathToUrl(path), {
+										method: 'GET',
+										headers: {
+											'X-SW-Command': 'stat',
+										},
+									})
+								).json();
+								if (!result) {
+									throw new Error('Failed to access file: ' + name);
+								}
+							}
 						} as Record<string | symbol, unknown>
 					)[prop] ??
 					(() => {
+						console.error('Tried to access unsupported fs promise method ' + (prop as string));
 						throw new Error('Cannot be used in browser');
 					})()
 				);

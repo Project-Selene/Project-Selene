@@ -1,6 +1,7 @@
 {
     "workspaces": [
         "ProjectSelene.Modloader",
-        "ProjectSelene.Modloader.API"
+        "ProjectSelene.Modloader.API",
+        "ProjectSelene.Modloader.UI"
     ]
 }

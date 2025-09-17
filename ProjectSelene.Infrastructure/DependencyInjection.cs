@@ -117,6 +117,8 @@ public static class DependencyInjection
         });
 
         builder.Services.AddAntiforgery();
+
+        builder.AddDiscordAdminNotifier();
     }
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)

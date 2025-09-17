@@ -4,7 +4,16 @@
   "tools": {
     "husky": {
       "version": "0.7.1",
-      "commands": ["husky"],
+      "commands": [
+        "husky"
+      ],
+      "rollForward": false
+    },
+    "microsoft.openapi.kiota": {
+      "version": "1.27.0",
+      "commands": [
+        "kiota"
+      ],
       "rollForward": false
     }
   }

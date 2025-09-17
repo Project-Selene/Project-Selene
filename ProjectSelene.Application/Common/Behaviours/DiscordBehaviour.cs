@@ -8,13 +8,13 @@ using System.Text;
 
 namespace ProjectSelene.Application.Common.Behaviours;
 
-public record DiscordConfig
+public record DiscordInteractionsConfig
 {
     public required string PublicKey { get; set; }
     public required string Algorithm { get; set; }
 }
 
-public class DiscordBehaviour<TRequest, TResponse>(HttpContextAccessor httpContextAccessor, ILogger<DiscordBehaviour<TRequest, TResponse>> logger, IOptions<DiscordConfig> config) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+public class DiscordBehaviour<TRequest, TResponse>(HttpContextAccessor httpContextAccessor, ILogger<DiscordBehaviour<TRequest, TResponse>> logger, IOptions<DiscordInteractionsConfig> config) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {

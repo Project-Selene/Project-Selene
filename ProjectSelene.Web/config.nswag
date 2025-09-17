@@ -118,7 +118,7 @@
             "templateDirectory": null,
             "serviceHost": null,
             "serviceSchemes": null,
-            "output": "../ProjectSelene.Modloader/src/moddb/generated/selene-api.ts",
+            "output": "../ProjectSelene.Modloader.UI/src/moddb/generated/selene-api.ts",
             "newLineBehavior": "Auto"
         }
     }

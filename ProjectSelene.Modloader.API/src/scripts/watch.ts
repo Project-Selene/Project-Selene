@@ -36,7 +36,7 @@ import { diffAsset } from './lib/diff-assets.js';
 	});
 
 	ctx.watch();
-	const { host, port } = await ctx.serve({
+	const { hosts, port } = await ctx.serve({
 		servedir: './dist/unpacked/',
 		port: 8183,
 	});
@@ -97,8 +97,8 @@ import { diffAsset } from './lib/diff-assets.js';
 			return;
 		}
 
-		const options = {
-			hostname: host,
+		const options: http.RequestOptions = {
+			hostname: hosts[0],
 			port: port,
 			path: req.url,
 			method: req.method,

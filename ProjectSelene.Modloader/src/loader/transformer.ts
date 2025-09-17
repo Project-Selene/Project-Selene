@@ -1,12 +1,13 @@
 import type * as tsType from 'typescript';
+import ts from 'typescript';
 
 if (globalThis.process) {
 	Object.assign(globalThis.process, {
 		browser: true,
 	});
 }
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const ts: typeof tsType = require('typescript');
+
+// const ts = await import('typescript');
 
 export function transform(content: string, prefix: string) {
 	const injectedSourceFile = ts.createSourceFile(
@@ -186,7 +187,7 @@ export function transform(content: string, prefix: string) {
 												stmt.expression.left.argumentExpression.left.expression.text !== name ||
 												!ts.isStringLiteral(stmt.expression.left.argumentExpression.left.argumentExpression) ||
 												stmt.expression.left.argumentExpression.left.argumentExpression.text !==
-													stmt.expression.right.text ||
+												stmt.expression.right.text ||
 												!(
 													ts.isNumericLiteral(stmt.expression.left.argumentExpression.right) ||
 													ts.isStringLiteral(stmt.expression.left.argumentExpression.right)
@@ -399,18 +400,18 @@ function hookBlock(block: tsType.Block) {
 					[...stmt.declarationList.declarations].map(dec =>
 						ts.isIdentifier(dec.name)
 							? ts.factory.updateVariableDeclaration(
-									dec,
-									dec.name,
-									dec.exclamationToken,
-									dec.type,
-									ts.factory.createCallExpression(
-										ts.factory.createIdentifier('__injectConst'),
-										undefined,
-										dec.initializer
-											? [ts.factory.createStringLiteral(dec.name.text), dec.initializer]
-											: [ts.factory.createStringLiteral(dec.name.text)],
-									),
-								)
+								dec,
+								dec.name,
+								dec.exclamationToken,
+								dec.type,
+								ts.factory.createCallExpression(
+									ts.factory.createIdentifier('__injectConst'),
+									undefined,
+									dec.initializer
+										? [ts.factory.createStringLiteral(dec.name.text), dec.initializer]
+										: [ts.factory.createStringLiteral(dec.name.text)],
+								),
+							)
 							: dec,
 					),
 				),

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectSelene", "ProjectSelene\ProjectSelene.csproj", "{F052BBBE-4081-4CD3-8A3A-75F623D6EF44}"
-EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjectSelene.Modloader", "ProjectSelene.Modloader\ProjectSelene.Modloader.esproj", "{6943E92B-0514-4BAA-A1F5-E6ABCF74599A}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjectSelene.Modloader.API", "ProjectSelene.Modloader.API\ProjectSelene.Modloader.API.esproj", "{EB934CBA-2972-47D5-A0EF-0A6A1F08AAAC}"
@@ -27,16 +25,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Web", "ProjectSelene.Web\ProjectSelene.Web.csproj", "{4DF43988-0F01-48CD-B8D4-D499218444C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectSelene.Discord", "ProjectSelene.Discord\ProjectSelene.Discord.csproj", "{0B22ED3E-9A04-40A6-845C-99E2D41617DC}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ProjectSelene.Modloader.UI", "ProjectSelene.Modloader.UI\ProjectSelene.Modloader.UI.esproj", "{4C3CA090-F571-FDE7-E48F-D76D056C80CF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6943E92B-0514-4BAA-A1F5-E6ABCF74599A} = {6943E92B-0514-4BAA-A1F5-E6ABCF74599A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F052BBBE-4081-4CD3-8A3A-75F623D6EF44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F052BBBE-4081-4CD3-8A3A-75F623D6EF44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F052BBBE-4081-4CD3-8A3A-75F623D6EF44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F052BBBE-4081-4CD3-8A3A-75F623D6EF44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6943E92B-0514-4BAA-A1F5-E6ABCF74599A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6943E92B-0514-4BAA-A1F5-E6ABCF74599A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6943E92B-0514-4BAA-A1F5-E6ABCF74599A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -71,6 +72,16 @@ Global
 		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DF43988-0F01-48CD-B8D4-D499218444C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B22ED3E-9A04-40A6-845C-99E2D41617DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B22ED3E-9A04-40A6-845C-99E2D41617DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B22ED3E-9A04-40A6-845C-99E2D41617DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B22ED3E-9A04-40A6-845C-99E2D41617DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C3CA090-F571-FDE7-E48F-D76D056C80CF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

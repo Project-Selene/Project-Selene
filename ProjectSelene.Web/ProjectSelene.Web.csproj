@@ -3,6 +3,7 @@
     <PropertyGroup>
         <RootNamespace>ProjectSelene.Web</RootNamespace>
         <AssemblyName>ProjectSelene.Web</AssemblyName>
+        <UserSecretsId>4384a713-8c38-43f5-a216-5309d1b667a0</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,7 +39,6 @@
     <!-- Auto-generated Open API specification and Angular TypeScript clients  -->
     <PropertyGroup>
         <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-        <UserSecretsId>4384a713-8c38-43f5-a216-5309d1b667a0</UserSecretsId>
     </PropertyGroup>
 
     <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' And '$(SkipNSwag)' != 'True' ">

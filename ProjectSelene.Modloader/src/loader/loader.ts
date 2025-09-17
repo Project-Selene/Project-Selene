@@ -1,44 +1,41 @@
-import { Mod, ModPatch } from '../state/models/mod';
-import { GameInfo, Mods } from '../state/state.models';
+import { ModHandler } from '../runtime/mod-handler';
 import { stopPollForDevMod } from './dev-poll';
-import { Filesystem } from './filesystem';
+import { filesystem } from './filesystem';
 import { Game } from './game';
-import { ModInfo as ModHandler } from './mod-handler';
+import { ModManifest, ModPatch, Mods } from './mods';
 import { transform } from './transformer';
 import { prepareWindow } from './window';
 
-export class Loader {
+class Loader {
 	private devModIteration = 0;
 	private hasDevMod = false;
 
-	constructor(
-		private readonly filesystem: Filesystem,
-		private readonly game: Game,
-	) {}
+	public async play(game: Game, loadDevMod: boolean, ...modCollections: Mods[]) {
+		this.hasDevMod = loadDevMod;
 
-	public async play(game: GameInfo, hasDevMod: boolean) {
-		this.hasDevMod = hasDevMod;
-
-		const id = game.id;
-		if (!(await this.game.mountGame(game))) {
-			throw new Error('Could not mount game');
-		}
+		const id = game.getGameId();
 		const injected = await this.transformCached(id);
 
-		await this.filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id + '/');
-		await this.filesystem.mountInMemory('/fs/saves/', 'save-data');
+		await filesystem.mountLink('/fs/game/', '/fs/internal/game/' + id + '/');
+		await filesystem.mountInMemory('/fs/saves/', 'save-data');
 
-		await this.filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
-		await this.filesystem.mountLink('/fs/game/terra/dist/bundle.js', injected);
+		await filesystem.mountInMemory('/fs/game/terra/dist/', 'injected-game');
+		await filesystem.mountLink('/fs/game/terra/dist/bundle.js', injected);
 
-		await this.filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
+		if (this.hasDevMod) {
+			await filesystem.mountHttp('/fs/internal/dev-mod/', 'http://localhost:8182/');
+		}
 
-		const mods = await this.game.getMods(game);
-		for (const mod of mods.mods) {
-			await this.filesystem.mountLink(
-				'/fs/mods/' + mod.internalName + '/',
-				'/fs/internal/mods/' + game.id + '/' + mod.internalName + '/',
-			);
+		const mods: ModManifest[] = [];
+		for (const collection of modCollections) {
+			const modsId = collection.getCollectionId();
+			for (const [id, manifest] of Object.entries(await collection.readManifests())) {
+				await filesystem.mountLink(
+					'/fs/mods/' + manifest.id + '/',
+					'/fs/internal/mods/' + modsId + '/' + id + '/',
+				);
+				mods.push(manifest);
+			}
 		}
 
 		const entryPointResponse = await fetch('/fs/game/terra/index.html');
@@ -72,8 +69,8 @@ export class Loader {
 			.map(b => b.toString(16).padStart(2, '0'))
 			.join('');
 
-		await this.filesystem.mountInMemory('/cache', 'cache');
-		const files = await this.filesystem.readDir('/cache/');
+		await filesystem.mountInMemory('/cache', 'cache');
+		const files = await filesystem.readDir('/cache/');
 		const existing = files.find(f => f.name === 'game-' + hashString + '.js');
 		if (existing) {
 			return '/cache/' + existing.name;
@@ -81,32 +78,58 @@ export class Loader {
 
 		//Limit cache size
 		if (files.length > 3) {
-			const dates = await Promise.all(files.map(async f => (await this.filesystem.stat('/cache/' + f.name)).ctimeMs));
+			const dates = await Promise.all(files.map(async f => (await filesystem.stat('/cache/' + f.name)).ctimeMs));
 			const oldest = files[dates.indexOf(Math.min(...dates))];
-			await this.filesystem.delete('/cache/' + oldest.name);
+			await filesystem.delete('/cache/' + oldest.name);
 		}
 
-		const code = await this.filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
-		const prefix = await this.filesystem.readFile('static/js/prefix.js');
+		const code = await filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
+		const prefix = await filesystem.readFile('static/js/prefix.js');
 		const result = transform(code, prefix);
-		await this.filesystem.writeFile('/cache/game-' + hashString + '.js', result);
+		await filesystem.writeFile('/cache/game-' + hashString + '.js', result);
 		return '/cache/game-' + hashString + '.js';
 	}
 
-	async hookGameStart(mods: Mods, ...args: unknown[]) {
-		console.log('ready', ...args);
-		//Stub out analytics
-		Object.getPrototypeOf(__projectSelene.classes.Analytics).prototype.isTrackingAllowed = () => false;
+	async hookGameStart(mods: ModManifest[], ...args: unknown[]) {
+		this.hookAnalytics();
 		await this.loadMods(mods);
 		return __projectSelene.functions['startGame'](...args);
 	}
 
-	async loadMods(mods: Mods) {
-		for (const mod of mods.mods) {
-			if (mod.enabled) {
-				console.log('loading mod', mod);
-				await this.loadMod(mod);
+	private async hookAnalytics() {
+		const apiRoot = __projectSelene.consts.API_ROOT as string;
+		const prototype = __projectSelene.classes.AjaxUtils as Record<string, (...args: unknown[]) => unknown>;
+
+		const originalPost = prototype.post;
+		prototype.post = function (...args: unknown[]) {
+			if (args.length >= 2
+				&& typeof args[0] === 'string'
+				&& args[0].startsWith(apiRoot)
+				&& typeof args[1] === 'object'
+			) {
+				(args[1] as Record<string, unknown>)['modDisabled'] = true
 			}
+
+			return originalPost.apply(this, args);
+		}
+
+		const originalGetJson = prototype.getJson;
+		prototype.getJson = function (...args: unknown[]) {
+			if (args.length >= 1
+				&& typeof args[0] === 'string'
+				&& args[0].startsWith(apiRoot)
+			) {
+				args[0] += '&modDisabled=true'
+			}
+
+			return originalGetJson.apply(this, args);
+		}
+	}
+
+	async loadMods(mods: ModManifest[]) {
+		for (const mod of mods) {
+			console.log('loading mod', mod);
+			await this.loadMod(mod);
 		}
 
 		if (this.hasDevMod) {
@@ -115,10 +138,10 @@ export class Loader {
 		}
 	}
 
-	async loadMod(mod: Mod) {
+	async loadMod(mod: ModManifest) {
 		try {
-			this.registerPatches(`/fs/mods/${mod.internalName}/`, mod.currentInfo.patches ?? [], true);
-			const src = `/fs/mods/${mod.internalName}/main.js`;
+			this.registerPatches(`/fs/mods/${mod.id}/`, mod.patches ?? [], true);
+			const src = `/fs/mods/${mod.id}/main.js`;
 			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(new ModHandler(mod));
 		} catch (e) {
@@ -142,17 +165,11 @@ export class Loader {
 
 			const devModPath = '/fs/dev-mod/' + this.devModIteration++ + '/';
 
-			await this.filesystem.mountLink(devModPath, '/fs/internal/dev-mod/');
+			await filesystem.mountLink(devModPath, '/fs/internal/dev-mod/');
 
-			const manifestText = await this.filesystem.readFile(devModPath + 'manifest.json');
-			const manifest = JSON.parse(manifestText);
-			const mod: Mod = {
-				currentInfo: manifest,
-				enabled: true,
-				internalName: 'dev',
-				filename: '',
-			};
-			const handler = new ModHandler(mod);
+			const manifestText = await filesystem.readFile(devModPath + 'manifest.json');
+			const manifest = JSON.parse(manifestText) as ModManifest;
+			const handler = new ModHandler(manifest);
 
 			const src = devModPath + 'main.js';
 
@@ -177,12 +194,12 @@ export class Loader {
 					console.error(e);
 				}
 				handler.uninject();
-				await this.registerPatches(devModPath, mod.currentInfo.patches ?? [], false);
+				await this.registerPatches(devModPath, manifest.patches ?? [], false);
 
 				this.loadDevMod();
 			};
 
-			this.registerPatches(devModPath, mod.currentInfo.patches ?? [], true);
+			this.registerPatches(devModPath, manifest.patches ?? [], true);
 			const imported = await import(/*webpackIgnore: true*/ src);
 			imported.default(handler);
 			__projectSelene.devMod.afterMain?.(handler);
@@ -206,11 +223,13 @@ export class Loader {
 			}));
 
 		if (register) {
-			await Filesystem.worker.registerRawPatches(rawPatches);
-			await Filesystem.worker.registerJSONPatches(jsonPatches);
+			await filesystem.registerRawPatches(rawPatches);
+			await filesystem.registerJSONPatches(jsonPatches);
 		} else {
-			await Filesystem.worker.unregisterRawPatches(rawPatches);
-			await Filesystem.worker.unregisterJSONPatches(jsonPatches);
+			await filesystem.unregisterRawPatches(rawPatches);
+			await filesystem.unregisterJSONPatches(jsonPatches);
 		}
 	}
 }
+
+export const loader = new Loader();

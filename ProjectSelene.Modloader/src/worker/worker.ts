@@ -17,7 +17,7 @@ import { StorageLink } from './storage-link';
 import { StorageZip } from './storage-zip';
 import { RegisterDir, RegisterFs, RegisterPatches, RequestData, UnregisterPatches } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
-export type {};
+export type { };
 declare const self: SharedWorkerGlobalScope;
 
 const storages: Storage[] = [];
@@ -220,14 +220,20 @@ self.addEventListener('connect', event => {
 							'content-type': getMimeType(pathname),
 						},
 					};
+				} else {
+					const res = await fetch(request.url, {
+						method: request.method,
+						body: request.body,
+						duplex: 'half',
+					});
+					res.body?.pipeTo(response)
+						.catch(err => console.error(err));
+					return {
+						status: res.status,
+						headers: Object.fromEntries(res.headers.entries()),
+					}
 				}
 			}
-			return {
-				status: 500,
-				headers: {
-					'content-type': 'text/plain',
-				},
-			};
 		},
 	);
 

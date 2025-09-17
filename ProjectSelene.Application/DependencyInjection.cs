@@ -8,6 +8,8 @@ public static class DependencyInjection
 {
     public static void AddApplicationServices(this IHostApplicationBuilder builder)
     {
+        builder.Services.Configure<DiscordInteractionsConfig>(builder.Configuration.GetSection("DiscordInteractionsConfig"));
+
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

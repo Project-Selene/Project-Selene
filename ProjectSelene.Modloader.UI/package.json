@@ -1,0 +1,82 @@
+{
+  "name": "@project-selene/selene-ui",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.1.2",
+    "@mui/material": "^7.1.2",
+    "@project-selene/selene": "^0.1.0",
+    "@reduxjs/toolkit": "^2.8.2",
+    "@types/semver": "^7.7.0",
+    "fast-json-patch": "^3.1.1",
+    "idb-keyval": "^6.2.2",
+    "immer": "^10.1.1",
+    "jszip": "^3.10.1",
+    "mime": "^4.0.7",
+    "path-browserify": "^1.0.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-redux": "^9.2.0",
+    "semver": "^7.7.2",
+    "spark-md5": "^3.0.2",
+    "typescript": "^5.8.3",
+    "web-vitals": "^5.0.3"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "debug": "node --inspect scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "build-dummy": "cd ../ProjectSelene.DummyGame && npm run build",
+    "test": "eslint **/*.ts **/*.tsx && npx prettier . --check && npm run build-dummy && jest && playwright test",
+    "update-snapshot": "node ./scripts/delete-screenshots.mjs && jest -u && playwright test --update-snapshots"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      "chrome 71"
+    ],
+    "development": [
+      "chrome 71"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.0",
+    "@playwright/test": "^1.53.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.4.0",
+    "@types/path-browserify": "^1.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@types/spark-md5": "^3.0.5",
+    "@types/wicg-file-system-access": "^2023.10.6",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "esbuild": "~0.25.5",
+    "esbuild-sass-plugin": "^3.3.1",
+    "eslint": "^9.30.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-react": "^7.37.5",
+    "fake-indexeddb": "^6.0.1",
+    "globals": "^16.2.0",
+    "jsdom": "^27.0.0",
+    "lint-staged": "^16.1.2",
+    "postcss": "^8.5.6",
+    "postcss-modules": "^6.0.1",
+    "prettier": "3.6.2",
+    "sass": "^1.92.1",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript-eslint": "^8.35.0"
+  }
+}

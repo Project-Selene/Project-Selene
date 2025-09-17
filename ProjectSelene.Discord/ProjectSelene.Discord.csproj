@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="Discord.Net.Core" />
+        <PackageReference Include="Discord.Net.Rest" />
+        <PackageReference Include="Discord.Net.Webhook" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Http" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\ProjectSelene.Application\ProjectSelene.Application.csproj" />
+      <ProjectReference Include="..\ProjectSelene.Domain\ProjectSelene.Domain.csproj" />
+    </ItemGroup>
+</Project>
