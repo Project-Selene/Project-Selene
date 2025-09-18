@@ -124,10 +124,13 @@ public static class DependencyInjection
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)
     {
-        app.UseForwardedHeaders(new ForwardedHeadersOptions
+        var forwardingOptions = new ForwardedHeadersOptions()
         {
-            ForwardedHeaders = ForwardedHeaders.XForwardedProto
-        });
+            ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
+        };
+        forwardingOptions.KnownNetworks.Clear();
+        forwardingOptions.KnownProxies.Clear();
+        app.UseForwardedHeaders(forwardingOptions);
 
         app.UseAuthentication();
         app.UseAuthorization();
