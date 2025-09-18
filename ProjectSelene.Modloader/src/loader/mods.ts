@@ -134,7 +134,7 @@ export class Mods {
 
     private async readManifest(modId: number): Promise<ModManifest> {
         const manifestText = await filesystem.readFile(
-            '/fs/internal/mods/' + this.id + '/' + modId + '/manifest.json',
+            '/fs/internal/mods/' + this.id + '/mods/' + modId + '/manifest.json',
         );
         const manifest = JSON.parse(manifestText);
         return manifest;

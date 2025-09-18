@@ -32,7 +32,7 @@ class Loader {
 			for (const [id, manifest] of Object.entries(await collection.readManifests())) {
 				await filesystem.mountLink(
 					'/fs/mods/' + manifest.id + '/',
-					'/fs/internal/mods/' + modsId + '/' + id + '/',
+					'/fs/internal/mods/' + modsId + '/mods/' + id + '/',
 				);
 				mods.push(manifest);
 			}

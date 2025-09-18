@@ -1,7 +1,7 @@
 import { loader, Mods } from '@project-selene/selene';
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { ensureGameInfoMode, gameFromGameInfo, loadGameInfo, openGame } from './game-info';
+import { ensureGameInfoMode, gameFromGameInfo, getDefaultModFolder, loadGameInfo, openGame } from './game-info';
 import { Handles } from './handles';
 import { GameInfo, GameState } from './models/game';
 import { LoadingState } from './models/loading-state';
@@ -119,7 +119,17 @@ export const play = createAsyncThunk('play', async (_, { dispatch, getState }) =
 	await ensureGameInfoMode(gameInfo, 'read');
 
 	const game = await gameFromGameInfo(gameInfo);
-	return await loader.play(game, false);
+
+	const modCollections: Mods[] = [];
+	try {
+		const mods = await getDefaultModFolder(gameInfo);
+		await mods.refreshMods();
+		modCollections.push(mods);
+	} catch {
+		console.warn('Error occurred loading mods. Proceeding without mods.')
+	}
+
+	return await loader.play(game, false, ...modCollections);
 });
 
 export const gameSlice = createSlice({

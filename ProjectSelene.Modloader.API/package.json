@@ -1,6 +1,6 @@
 {
   "name": "@project-selene/api",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "The runtime API for Project Selene",
   "main": "dist/main.js",
   "type": "module",

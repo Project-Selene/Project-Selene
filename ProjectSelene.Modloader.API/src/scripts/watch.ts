@@ -106,7 +106,13 @@ import { diffAsset } from './lib/diff-assets.js';
 		};
 
 		const proxyReq = http.request(options, proxyRes => {
-			res.writeHead(proxyRes.statusCode, proxyRes.headers);
+			res.writeHead(proxyRes.statusCode, {
+				...proxyRes.headers,
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+				'Access-Control-Allow-Headers': '*',
+				'Access-Control-Max-Age': 2592000, // 30 days
+			});
 			proxyRes.pipe(res, { end: true });
 		});
 

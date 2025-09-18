@@ -1,4 +1,4 @@
-import { Game } from '@project-selene/selene';
+import { Game, Mods } from '@project-selene/selene';
 import * as idb from 'idb-keyval';
 import { GameInfo } from './models/game';
 
@@ -72,6 +72,23 @@ export async function gameFromGameInfo(gameInfo: GameInfo) {
         }
         case 'fs': {
             return await Game.fromLocalPath(gameInfo.path);
+        }
+        case 'filelist': throw new Error('Not implement yet');
+        default: throw new Error('Unknown GameInfo type');
+    }
+}
+
+export async function getDefaultModFolder(gameInfo: GameInfo): Promise<Mods> {
+    switch (gameInfo.type) {
+        case 'handle': {
+            const handle: FileSystemDirectoryHandle | undefined = await idb.get(gameInfo.id, gameHandleStore);
+            if (!handle || (await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+                throw new Error('Access denied');
+            }
+            return await Mods.fromFileHandle(await handle.getDirectoryHandle('mods'));
+        }
+        case 'fs': {
+            return await Mods.fromLocalPath(gameInfo.path + '/mods');
         }
         case 'filelist': throw new Error('Not implement yet');
         default: throw new Error('Unknown GameInfo type');
