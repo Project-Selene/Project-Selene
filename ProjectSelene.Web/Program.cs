@@ -2,6 +2,10 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("secrets/appsettings.secrets.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
+
 // Add services to the container.
 builder.AddKeyVaultIfConfigured();
 builder.AddApplicationServices();
