@@ -45,7 +45,6 @@ RUN npm run build
 WORKDIR "/src/ProjectSelene.Web"
 ARG TARGETARCH
 RUN dotnet publish "ProjectSelene.Web.csproj" -a $TARGETARCH -c Release -o /app/publish \
-    && rm -rf /app/publish/wwwroot/* \
     && cp -r ../ProjectSelene.Modloader.UI/build/* /app/publish/wwwroot/
 
 FROM base AS final

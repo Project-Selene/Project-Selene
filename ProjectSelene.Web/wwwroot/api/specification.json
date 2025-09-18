@@ -271,12 +271,24 @@
         }
       }
     },
-    "/api/Users/demoToken": {
-      "get": {
+    "/api/Users/apiKey": {
+      "post": {
         "tags": [
           "Users"
         ],
-        "operationId": "GetApiUsersDemoToken",
+        "operationId": "PostApiUsersApiKey",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateApiKeyCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
             "description": "",
@@ -395,6 +407,16 @@
           },
           "type": {
             "type": "string"
+          }
+        }
+      },
+      "GenerateApiKeyCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expiresInDays": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }

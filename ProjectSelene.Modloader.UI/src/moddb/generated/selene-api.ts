@@ -302,7 +302,7 @@ export interface IUsersClient {
 
     getLoginProviders(): Promise<LoginProviderDTO[]>;
 
-    getApiUsersDemoToken(): Promise<string>;
+    postApiUsersApiKey(command: GenerateApiKeyCommand): Promise<string>;
 }
 
 export class UsersClient implements IUsersClient {
@@ -348,23 +348,27 @@ export class UsersClient implements IUsersClient {
         return Promise.resolve<LoginProviderDTO[]>(null as any);
     }
 
-    getApiUsersDemoToken(): Promise<string> {
-        let url_ = this.baseUrl + "/api/Users/demoToken";
+    postApiUsersApiKey(command: GenerateApiKeyCommand): Promise<string> {
+        let url_ = this.baseUrl + "/api/Users/apiKey";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(command);
+
         let options_: RequestInit = {
-            method: "GET",
+            body: content_,
+            method: "POST",
             headers: {
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetApiUsersDemoToken(_response);
+            return this.processPostApiUsersApiKey(_response);
         });
     }
 
-    protected processGetApiUsersDemoToken(response: Response): Promise<string> {
+    protected processPostApiUsersApiKey(response: Response): Promise<string> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -415,6 +419,10 @@ export interface Result {
 export interface LoginProviderDTO {
     url: string;
     type: string;
+}
+
+export interface GenerateApiKeyCommand {
+    expiresInDays: number;
 }
 
 export interface FileParameter {

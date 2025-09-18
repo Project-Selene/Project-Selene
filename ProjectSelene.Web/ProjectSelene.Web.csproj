@@ -32,7 +32,6 @@
 
     <ItemGroup>
         <Folder Include="Testdata\StorageObjects\" />
-        <Folder Include="wwwroot\api\" />
     </ItemGroup>
 
 
