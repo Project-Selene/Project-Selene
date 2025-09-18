@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -68,7 +69,7 @@ public static class DependencyInjection
                 options.UsePkce = true;
                 options.TokenEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
                 options.AuthorizationEndpoint = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
-                options.CallbackPath = $"{builder.Configuration["Domains:UI"] ?? ""}/signin/{MicrosoftAccountDefaults.AuthenticationScheme}";
+                options.CallbackPath = $"/signin/{MicrosoftAccountDefaults.AuthenticationScheme}";
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");
                 options.Events.OnRemoteFailure += (RemoteFailureContext context) =>
@@ -123,6 +124,11 @@ public static class DependencyInjection
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)
     {
+        app.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedProto
+        });
+
         app.UseAuthentication();
         app.UseAuthorization();
 
