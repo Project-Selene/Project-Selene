@@ -56,16 +56,30 @@ self.addEventListener('install', (event) => {
 );
 
 async function install() {
-	await swClients.load();
-	await coms.sendToClients('install', {}, swClients.getClients(), 300);
+	try {
+		await swClients.load();
+		await coms.sendToClients('install', {}, swClients.getClients(), 3000);
+	} catch (e) {
+		console.error(e)
+	}
 }
-const installed = install().catch(err => console.error(err));
 
-self.addEventListener('activate', () => self.clients.claim());
+let isInstalled = false;
+let installPromise: Promise<void> | null = null;
+function ensureInstalled(): Promise<void> {
+	if (isInstalled) {
+		return installPromise!;
+	}
+	isInstalled = true;
+	installPromise = install();
+	return installPromise;
+}
+
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 
 self.addEventListener('fetch', event =>
 	event.respondWith(
-		installed.then(() => {
+		ensureInstalled().then(() => {
 			if (event.request.headers.get('Accept') === 'text/event-stream') {
 				return fetch(event.request);
 			}

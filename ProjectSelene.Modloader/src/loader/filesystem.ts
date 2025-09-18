@@ -45,16 +45,9 @@ class Filesystem {
 				this.swChannel.on('install', async () => {
 					const workers = await this.getSharedWorkers();
 					const ports = workers.map(w => w.port);
-					for (const port of ports) {
-						port.start();
-					}
-
 					await this.swChannel.sendToSW('workers', ports, ...ports);
 				});
 				const ports = workers.map(w => w.port);
-				for (const port of ports) {
-					port.start();
-				}
 				await this.swChannel.sendToSW('workers', ports, ...ports);
 			}
 		}
@@ -213,11 +206,19 @@ class Filesystem {
 
 	private async getSharedWorkers() {
 		if (this.workers.length > 0) {
-			return this.workers;
+			const result: SharedWorker[] = [];
+			for (let i = 0; i < WORKER_COUNT; i++) {
+				const sharedWorker = new SharedWorker('/static/js/worker.js', {
+					name: 'Project Selene Worker ' + (i + 1),
+				});
+				sharedWorker.port.start();
+				result.push(sharedWorker);
+			}
+			return result;
 		}
 
 		for (let i = 0; i < WORKER_COUNT; i++) {
-			const sharedWorker = new SharedWorker('static/js/worker.js', {
+			const sharedWorker = new SharedWorker('/static/js/worker.js', {
 				name: 'Project Selene Worker ' + (i + 1),
 			});
 			sharedWorker.port.start();

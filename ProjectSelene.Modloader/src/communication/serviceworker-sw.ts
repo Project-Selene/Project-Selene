@@ -28,6 +28,7 @@ export class ServiceWorkerCommunication {
 		const queue = this.messageQueue.get(data.id);
 		if (queue && data.success !== undefined) {
 			queue.count--;
+			console.log(queue.count + ' messages left for callbacks ' + data.id);
 			queue.results.push(data.data);
 			if (!data.success) {
 				queue.success = false;
@@ -93,6 +94,7 @@ export class ServiceWorkerCommunication {
 				type: 'window',
 			})
 			.then(clients => {
+				console.log('Has clients: ' + clients.map(c => c.id), ' wants ', clientIds)
 				clients = clients.filter(c => cIds.has(c.id));
 				if (clients.length === 0) {
 					return [];
@@ -126,8 +128,7 @@ export class ServiceWorkerCommunication {
 		return new Promise<T[]>((_, reject) => {
 			setTimeout(() => {
 				this.messageQueue.delete(id);
-				console.error(`Failed to receive response after ${delay} ms`);
-				reject(new Error('Timeout'));
+				reject(new Error('timeout'));
 			}, delay);
 		})
 	}
