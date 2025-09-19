@@ -2,7 +2,6 @@ import { loader, Mods } from '@project-selene/selene';
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { ensureGameInfoMode, gameFromGameInfo, getDefaultModFolder, loadGameInfo, openGame } from './game-info';
-import { Handles } from './handles';
 import { GameInfo, GameState } from './models/game';
 import { LoadingState } from './models/loading-state';
 import { ModManifest } from './models/mod';
@@ -27,17 +26,10 @@ const initialState: GameStore = {
 	opening: false,
 };
 
-const handlesCache = new Handles();
-
 export const loadInstalledMods = createAsyncThunk('loadInstalledMods', async (gameInfo: GameInfo) => {
 	switch (gameInfo.type) {
 		case 'handle': {
-			const handle = await handlesCache.get(1);
-			if (!handle) {
-				return {};
-			}
-
-			const mods = await Mods.fromFileHandle(handle)
+			const mods = await getDefaultModFolder(gameInfo);
 			return mods.readManifests();
 		}
 		case 'fs': {
