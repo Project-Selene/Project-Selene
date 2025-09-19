@@ -14,7 +14,7 @@ async function copyAssets() {
 		dir = path.join(dir, 'terra');
 	}
 
-	if (!fs.existsSync(path.join(dir, 'index-release.html'))) {
+	if (!fs.existsSync(path.join(dir, 'index.html'))) {
 		console.error('Could not find game in specified folder.');
 		process.exit(1);
 		return;
@@ -29,7 +29,7 @@ async function copyAssets() {
 	console.log('Applying patches');
 
 	await applyPatches();
-	
+
 	console.log('Done');
 	process.exit(0);
 }
@@ -43,5 +43,5 @@ async function getGameDir() {
 		return await fs.promises.readFile('./rawAssets/.game', 'utf-8');
 	}
 
-    return await readline.createInterface(process.stdin, process.stdout).question('Please enter the directory of Alabaster Dawn: ');
+	return await readline.createInterface(process.stdin, process.stdout).question('Please enter the directory of Alabaster Dawn: ');
 }
