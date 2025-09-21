@@ -141,9 +141,11 @@ clientChannel.on('unregister-patches', (data: UnregisterPatches) => {
 
 clientChannel.on('register-fs', (data: RegisterFs) => {
 	fsChannel = new ClientEventHandler(data.channel);
+	data.channel.start();
 });
 clientChannel.on('register-filelist', (data: RegisterFs) => {
 	fileListChannel = new ClientEventHandler(data.channel);
+	data.channel.start();
 });
 
 clientChannel.on(

@@ -21,18 +21,20 @@ self.addEventListener('install', (event) => {
 				source: 'network',
 			},
 			{
-				// baseURL == self.origin && !(pathname == '/fs/*')
-				condition: {
-					not: {
-						or: [
-							{ not: { urlPattern: { baseURL: self.origin } } },
-							{ urlPattern: { pathname: '/fs/*' } }
-						]
-					},
-				},
-				source: {
-					cacheName: "selene-loader",
-				}
+				condition: { urlPattern: { pathname: '/static/*', hostname: '*' } },
+				source: { cacheName: "selene-loader" }
+			},
+			{
+				condition: { urlPattern: { pathname: '/index.html', hostname: '*' } },
+				source: { cacheName: "selene-loader" }
+			},
+			{
+				condition: { urlPattern: { pathname: '/main.css', hostname: '*' } },
+				source: { cacheName: "selene-loader" }
+			},
+			{
+				condition: { urlPattern: { pathname: '/favicon.ico', hostname: '*' } },
+				source: { cacheName: "selene-loader" }
 			},
 			{
 				condition: { urlPattern: { pathname: '/api/*', hostname: '*' } },

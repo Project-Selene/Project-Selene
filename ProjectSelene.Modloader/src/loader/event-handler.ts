@@ -3,11 +3,9 @@ export class ClientEventHandler {
 	private readonly rejectQueue = new Map<number, (arg: unknown) => void>();
 
 	constructor(private readonly messagePort: {
-		onmessage: null | ((event: MessageEvent) => unknown),
 		addEventListener: (type: 'message', cb: (event: MessageEvent) => unknown) => unknown,
 		postMessage: (message: unknown, transferables: Transferable[]) => unknown,
 	}) {
-		this.messagePort.onmessage = () => void 0; //Does nothing but is required for it to work
 		this.messagePort.addEventListener('message', event => {
 			const data = event.data as {
 				id: number;

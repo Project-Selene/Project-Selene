@@ -46,9 +46,12 @@ export class Game {
 			'/fs/internal/game/' + this.id + '/project-selene.zip',
 		);
 		await this.copyFolder(
-			'/fs/internal/game/' + this.id + '/project-selene/',
-			'/fs/internal/game/' + this.id + '/',
+			'/fs/internal/game/' + this.id + '/project-selene/selene/',
+			'/fs/internal/game/' + this.id + '/selene/',
 		);
+
+		const packageJson = await filesystem.readFile('/fs/internal/game/' + this.id + '/package.json');
+		await filesystem.writeFile('/fs/internal/game/' + this.id + '/package.json', packageJson.replace('terra/index.html', 'selene/index.html'))
 
 		//Cleanup
 		await filesystem.delete('/fs/internal/game/' + this.id + '/project-selene.zip');

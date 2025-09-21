@@ -52,9 +52,9 @@ class Filesystem {
 			});
 
 			await navigator.serviceWorker.register('serviceworker.js');
-		}
 
-		await this.startWorkers();
+			await this.startWorkers();
+		}
 	}
 
 	private handleSwMessage(event: MessageEvent<{ type: 'fetch', id: number, data: SwFetchEvent }>) {
@@ -267,6 +267,7 @@ class Filesystem {
 			fsComs.on('stat', (args: FsMessage) => fs.stat(args.target, args.source, args.path, args.response));
 			fsComs.on('delete', (args: FsMessage) => fs.delete(args.target, args.source, args.path, args.response));
 
+			fsChannel.port1.start();
 			await coms.send('register-fs', { channel: fsChannel.port2 }, fsChannel.port2);
 		}
 	}
@@ -279,6 +280,7 @@ class Filesystem {
 		fsComs.on('readDir', (args: FsMessage) => this.fileListFS.readDir(args.target, args.path, args.response));
 		fsComs.on('stat', (args: FsMessage) => this.fileListFS.stat(args.target, args.path, args.response));
 
+		fileListChannel.port1.start();
 		await coms.send(
 			'register-filelist',
 			{ channel: fileListChannel.port2 },

@@ -64,10 +64,6 @@ async function prerender() {
 		resources: 'usable',
 	});
 
-	jsdom.window.BroadcastChannel = class {
-		postMessage() {}
-		addEventListener() {}
-	};
 	jsdom.window.indexedDB = {
 		open() {
 			return {};
