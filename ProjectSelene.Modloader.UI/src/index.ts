@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === 'development') {
 			await idb.clear(stateStore);
 			// store.dispatch(loadState(storeData));
 		}
-		new EventSource('/esbuild').addEventListener('change', async () => {
+		new EventSource('http://localhost:8080/esbuild').addEventListener('change', async () => {
 			await idb.set('store', store.getState())
 			return location.reload();
 		});

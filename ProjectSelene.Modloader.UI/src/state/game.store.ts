@@ -101,7 +101,6 @@ export const play = createAsyncThunk('play', async (_, { dispatch, getState }) =
 	let gameInfo = state.game.games.find(g => g.id === state.game.selectedGame);
 	if (!gameInfo) {
 		const openResult = await dispatch(openDirectory());
-		console.log(openResult);
 		gameInfo = (openResult.payload as GameInfo);
 		if (!gameInfo) {
 			throw new Error('No game selected');

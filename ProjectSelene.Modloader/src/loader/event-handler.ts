@@ -1,8 +1,12 @@
-export class SingleCommunication {
+export class ClientEventHandler {
 	private readonly resolveQueue = new Map<number, (arg: unknown) => void>();
 	private readonly rejectQueue = new Map<number, (arg: unknown) => void>();
 
-	constructor(private readonly messagePort: MessagePort) {
+	constructor(private readonly messagePort: {
+		onmessage: null | ((event: MessageEvent) => unknown),
+		addEventListener: (type: 'message', cb: (event: MessageEvent) => unknown) => unknown,
+		postMessage: (message: unknown, transferables: Transferable[]) => unknown,
+	}) {
 		this.messagePort.onmessage = () => void 0; //Does nothing but is required for it to work
 		this.messagePort.addEventListener('message', event => {
 			const data = event.data as {
@@ -48,14 +52,14 @@ export class SingleCommunication {
 							id: data.id,
 							success: true,
 							data: result,
-						}),
+						}, []),
 					)
 					.catch(result =>
 						this.messagePort.postMessage({
 							id: data.id,
 							success: false,
 							data: result,
-						}),
+						}, []),
 					);
 			}
 		});

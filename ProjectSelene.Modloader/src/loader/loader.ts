@@ -69,11 +69,11 @@ class Loader {
 			.map(b => b.toString(16).padStart(2, '0'))
 			.join('');
 
-		await filesystem.mountInMemory('/cache', 'cache');
-		const files = await filesystem.readDir('/cache/');
+		await filesystem.mountInMemory('/fs/cache', 'cache');
+		const files = await filesystem.readDir('/fs/cache/');
 		const existing = files.find(f => f.name === 'game-' + hashString + '.js');
 		if (existing) {
-			return '/cache/' + existing.name;
+			return '/fs/cache/' + existing.name;
 		}
 
 		//Limit cache size
@@ -86,8 +86,8 @@ class Loader {
 		const code = await filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
 		const prefix = await filesystem.readFile('static/js/prefix.js');
 		const result = transform(code, prefix);
-		await filesystem.writeFile('/cache/game-' + hashString + '.js', result);
-		return '/cache/game-' + hashString + '.js';
+		await filesystem.writeFile('/fs/cache/game-' + hashString + '.js', result);
+		return '/fs/cache/game-' + hashString + '.js';
 	}
 
 	async hookGameStart(mods: ModManifest[], ...args: unknown[]) {

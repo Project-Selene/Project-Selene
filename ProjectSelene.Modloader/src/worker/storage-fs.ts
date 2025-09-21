@@ -1,11 +1,11 @@
-import { SingleCommunication } from '../communication/single';
+import { ClientEventHandler } from '../loader/event-handler';
 import { Storage } from './storage';
 
 export class StorageFS extends Storage {
 	public constructor(
 		public readonly target: string,
 		private readonly source: string,
-		private readonly fsChannel: SingleCommunication,
+		private readonly fsChannel: ClientEventHandler,
 	) {
 		super();
 	}

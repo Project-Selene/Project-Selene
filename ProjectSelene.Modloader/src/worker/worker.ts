@@ -2,8 +2,8 @@
 
 import * as idb from 'idb-keyval';
 import mime from 'mime/lite';
-import { BroadcastCommunication } from '../communication/broadcast';
-import { SingleCommunication } from '../communication/single';
+import { ClientEventHandler } from '../loader/event-handler';
+import { WorkerEventHandler } from './event-handler';
 import { Patcher } from './patcher';
 import { PatcherJSON } from './patcher-json';
 import { PatcherRaw } from './patcher-raw';
@@ -18,60 +18,15 @@ import { StorageZip } from './storage-zip';
 import { RegisterDir, RegisterFs, RegisterPatches, RequestData, UnregisterPatches } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
 export type { };
-declare const self: SharedWorkerGlobalScope;
 
 const storages: Storage[] = [];
 const rawPatcher = new PatcherRaw(readFile);
 const patchers: Patcher[] = [rawPatcher, new PatcherJSON(readFile)];
 
 const store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
-const workerBroadcast = new BroadcastCommunication('project-selene-worker-broadcast');
-let fileListChannel: SingleCommunication;
-let fsChannel: SingleCommunication;
-let swChannel: SingleCommunication;
+let fileListChannel: ClientEventHandler;
+let fsChannel: ClientEventHandler;
 
-workerBroadcast.on('register-dir', async (data: RegisterDir) => {
-	if (data.kind === 'handle') {
-		const handle = await idb.get(data.handle, store);
-		if (!handle) {
-			throw new Error('Could not find handle');
-		}
-		storages.unshift(new StorageHandles(data.target, handle));
-	} else if (data.kind === 'indexed') {
-		storages.unshift(new StorageIndexedDB(data.target, data.key));
-	} else if (data.kind === 'zip') {
-		storages.unshift(new StorageZip(data.target, data.source, readFile));
-	} else if (data.kind === 'http') {
-		storages.unshift(new StorageHttp(data.target, data.source));
-	} else if (data.kind === 'link') {
-		const sourceStorage = storages
-			.filter(s => data.source.startsWith(s.target))
-			.sort((a, b) => b.target.length - a.target.length)[0];
-		const sourcePath = data.source.substring(sourceStorage.target.length);
-
-		storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
-	} else if (data.kind === 'fs') {
-		storages.unshift(new StorageFS(data.target, data.source, fsChannel));
-	} else {
-		storages.unshift(new StorageFileList(data.target, fileListChannel));
-	}
-});
-
-workerBroadcast.on('register-patches', (data: RegisterPatches) => {
-	if (data.kind === 'json') {
-		patchers[1].registerPatches(data.patches);
-	} else if (data.kind === 'raw') {
-		rawPatcher.registerPatches(data.patches);
-	}
-});
-
-workerBroadcast.on('unregister-patches', (data: UnregisterPatches) => {
-	if (data.kind === 'json') {
-		patchers[1].unregisterPatches(data.patches);
-	} else if (data.kind === 'raw') {
-		rawPatcher.unregisterPatches(data.patches);
-	}
-});
 
 async function readFileWithPatches(
 	pathname: string,
@@ -139,103 +94,140 @@ function getMimeType(pathname: string, command?: string): string {
 	return 'application/json';
 }
 
-self.addEventListener('connect', event => {
-	const port = event.ports[0];
+const clientChannel = new WorkerEventHandler();
 
-	swChannel = new SingleCommunication(port);
+clientChannel.on('register-dir', async (data: RegisterDir) => {
+	if (data.kind === 'handle') {
+		const handle = await idb.get(data.handle, store);
+		if (!handle) {
+			throw new Error('Could not find handle');
+		}
+		storages.unshift(new StorageHandles(data.target, handle));
+	} else if (data.kind === 'indexed') {
+		storages.unshift(new StorageIndexedDB(data.target, data.key));
+	} else if (data.kind === 'zip') {
+		storages.unshift(new StorageZip(data.target, data.source, readFile));
+	} else if (data.kind === 'http') {
+		storages.unshift(new StorageHttp(data.target, data.source));
+	} else if (data.kind === 'link') {
+		const sourceStorage = storages
+			.filter(s => data.source.startsWith(s.target))
+			.sort((a, b) => b.target.length - a.target.length)[0];
+		const sourcePath = data.source.substring(sourceStorage.target.length);
 
-	swChannel.on('register-fs', (data: RegisterFs) => {
-		fsChannel = new SingleCommunication(data.channel);
-	});
-	swChannel.on('register-filelist', (data: RegisterFs) => {
-		fileListChannel = new SingleCommunication(data.channel);
-	});
-
-	swChannel.on(
-		'fetch',
-		async ({
-			request,
-			response,
-		}: {
-			request: RequestData;
-			response: WritableStream<Uint8Array>;
-		}): Promise<ResponseInit> => {
-			const pathname = decodeURI(new URL(request.url).pathname);
-			let target: Storage | null = null;
-			for (const storage of storages) {
-				if (pathname.startsWith(storage.target)) {
-					if (!target || target.target.length < storage.target.length) {
-						target = storage;
-					}
-				}
-			}
-			console.log('handling: ', request.url, target);
-			if (target) {
-				const path = pathname.slice(target.target.length);
-				let result: boolean;
-				const command = request.headers['x-sw-command'];
-				switch (command) {
-					case 'writeFile':
-						result = await target.writeFile(path, request.body, response);
-						break;
-					case 'readDir':
-						result = await target.readDir(path, response);
-						break;
-					case 'isWritable':
-						result = await target.writeGranted(response);
-						break;
-					case 'stat':
-						result = await target.stat(path, response);
-						break;
-					case 'delete':
-						result = await target.delete(path, response);
-						break;
-					default: {
-						result = await readFileWithPatches(pathname, target, path, response);
-						break;
-					}
-				}
-
-				if (result) {
-					return {
-						status: 200,
-						headers: {
-							'content-type': getMimeType(path, command),
-						},
-					};
-				} else {
-					if (!response.locked) {
-						new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
-					}
-					return {
-						status: 404,
-					};
-				}
-			} else {
-				const result = await readFileWithPatches(pathname, null, null, response);
-				if (result) {
-					return {
-						status: 200,
-						headers: {
-							'content-type': getMimeType(pathname),
-						},
-					};
-				} else {
-					const res = await fetch(request.url, {
-						method: request.method,
-						body: request.body,
-						duplex: 'half',
-					});
-					res.body?.pipeTo(response)
-						.catch(err => console.error(err));
-					return {
-						status: res.status,
-						headers: Object.fromEntries(res.headers.entries()),
-					}
-				}
-			}
-		},
-	);
-
-	port.start();
+		storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
+	} else if (data.kind === 'fs') {
+		storages.unshift(new StorageFS(data.target, data.source, fsChannel));
+	} else {
+		storages.unshift(new StorageFileList(data.target, fileListChannel));
+	}
 });
+
+clientChannel.on('register-patches', (data: RegisterPatches) => {
+	if (data.kind === 'json') {
+		patchers[1].registerPatches(data.patches);
+	} else if (data.kind === 'raw') {
+		rawPatcher.registerPatches(data.patches);
+	}
+});
+
+clientChannel.on('unregister-patches', (data: UnregisterPatches) => {
+	if (data.kind === 'json') {
+		patchers[1].unregisterPatches(data.patches);
+	} else if (data.kind === 'raw') {
+		rawPatcher.unregisterPatches(data.patches);
+	}
+});
+
+clientChannel.on('register-fs', (data: RegisterFs) => {
+	fsChannel = new ClientEventHandler(data.channel);
+});
+clientChannel.on('register-filelist', (data: RegisterFs) => {
+	fileListChannel = new ClientEventHandler(data.channel);
+});
+
+clientChannel.on(
+	'fetch',
+	async ({
+		request,
+		response,
+	}: {
+		request: RequestData;
+		response: WritableStream<Uint8Array>;
+	}): Promise<ResponseInit> => {
+		const pathname = decodeURI(new URL(request.url).pathname);
+		let target: Storage | null = null;
+		for (const storage of storages) {
+			if (pathname.startsWith(storage.target)) {
+				if (!target || target.target.length < storage.target.length) {
+					target = storage;
+				}
+			}
+		}
+		console.debug('handling: ', request.url, target);
+		if (target) {
+			const path = pathname.slice(target.target.length);
+			let result: boolean;
+			const command = request.headers['x-sw-command'];
+			switch (command) {
+				case 'writeFile':
+					result = await target.writeFile(path, request.body, response);
+					break;
+				case 'readDir':
+					result = await target.readDir(path, response);
+					break;
+				case 'isWritable':
+					result = await target.writeGranted(response);
+					break;
+				case 'stat':
+					result = await target.stat(path, response);
+					break;
+				case 'delete':
+					result = await target.delete(path, response);
+					break;
+				default: {
+					result = await readFileWithPatches(pathname, target, path, response);
+					break;
+				}
+			}
+
+			if (result) {
+				return {
+					status: 200,
+					headers: {
+						'content-type': getMimeType(path, command),
+					},
+				};
+			} else {
+				if (!response.locked) {
+					new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+				}
+				return {
+					status: 404,
+				};
+			}
+		} else {
+			const result = await readFileWithPatches(pathname, null, null, response);
+			if (result) {
+				return {
+					status: 200,
+					headers: {
+						'content-type': getMimeType(pathname),
+					},
+				};
+			} else {
+				const res = await fetch(request.url, {
+					method: request.method,
+					body: request.body,
+					duplex: 'half',
+				});
+				res.body?.pipeTo(response)
+					.catch(err => console.error(err));
+				return {
+					status: res.status,
+					headers: Object.fromEntries(res.headers.entries()),
+				}
+			}
+		}
+	},
+);

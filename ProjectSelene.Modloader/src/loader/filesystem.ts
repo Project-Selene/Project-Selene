@@ -1,19 +1,16 @@
 import * as idb from 'idb-keyval';
-import { BroadcastCommunication } from '../communication/broadcast';
-import { ServiceWorkerCommunicationClient } from '../communication/serviceworker-client';
-import { SingleCommunication } from '../communication/single';
-import { WORKER_COUNT } from '../communication/worker';
 import { RegisterDir, RegisterPatches, UnregisterPatches } from '../worker/worker-message';
+import { ClientEventHandler } from './event-handler';
 import { StorageFileList } from './worker-storage-filelist';
 import { StorageFS } from './worker-storage-fs';
+
+export const WORKER_COUNT = 1;
 
 declare global {
 	interface RequestInit {
 		duplex?: 'half';
 	}
 }
-
-const workerBroadcast = new BroadcastCommunication('project-selene-worker-broadcast');
 
 interface FsMessage {
 	target: string;
@@ -26,30 +23,58 @@ interface FsMessageWrite extends FsMessage {
 	content: ReadableStream<Uint8Array>;
 }
 
+interface SwFetchEvent {
+	request: SwFetchRequest;
+	response: WritableStream;
+}
+
+interface SwFetchRequest {
+	method: string;
+	url: string;
+	headers: Record<string, string>;
+	body: WritableStream | null;
+}
 
 class Filesystem {
-	private swChannel!: ServiceWorkerCommunicationClient;
 	private readonly store = idb.createStore('SeleneDb-handle-transfer', 'handle-transfer');
 	private readonly fileListFS = new StorageFileList();
-	private readonly workers: SharedWorker[] = [];
+	private readonly workers: ClientEventHandler[] = [];
+	private nextWorker = 0;
 
 	public async setup() {
 		if (window.navigator.serviceWorker) {
+			window.navigator.serviceWorker.addEventListener('message', event => {
+				if (event.origin !== location.origin) {
+					return;
+				}
+
+				this.handleSwMessage(event);
+			});
+
 			await navigator.serviceWorker.register('serviceworker.js');
+		}
 
-			const workers = await this.getSharedWorkers();
+		await this.startWorkers();
+	}
 
-			const reg = await navigator.serviceWorker.ready;
-			if (reg.active) {
-				this.swChannel = new ServiceWorkerCommunicationClient();
-				this.swChannel.on('install', async () => {
-					const workers = await this.getSharedWorkers();
-					const ports = workers.map(w => w.port);
-					await this.swChannel.sendToSW('workers', ports, ...ports);
-				});
-				const ports = workers.map(w => w.port);
-				await this.swChannel.sendToSW('workers', ports, ...ports);
-			}
+	private handleSwMessage(event: MessageEvent<{ type: 'fetch', id: number, data: SwFetchEvent }>) {
+		const id = event.data.id;
+		switch (event.data.type) {
+			case 'fetch':
+				this.handleSwFetch(event.data.data)
+					.then(response => event.source?.postMessage({ type: 'response', success: true, id, response }))
+					.catch(err => event.source?.postMessage({ type: 'response', success: false, id, response: err }));
+		}
+	}
+
+	private handleSwFetch(data: SwFetchEvent): Promise<ResponseInit> {
+		const worker = this.workers[this.nextWorker];
+		this.nextWorker = (this.nextWorker + 1) % this.workers.length;
+
+		if (data.request.body) {
+			return worker.send('fetch', data, data.response, data.request.body);
+		} else {
+			return worker.send('fetch', data, data.response);
 		}
 	}
 
@@ -135,13 +160,21 @@ class Filesystem {
 		)?.success;
 	}
 
+	private sendToAllWorkers(type: string, message: unknown) {
+		const promises: Promise<void>[] = [];
+		for (const worker of this.workers) {
+			promises.push(worker.send(type, message));
+		}
+		return Promise.allSettled(promises);
+	}
+
 	public async mountDirectoryHandle(mount: string, dir: FileSystemDirectoryHandle) {
-		console.log('mounted directory', mount);
+		console.debug('mounted directory', mount);
 		const rid = Math.random();
 		const id = 'dir-' + rid;
 		await idb.set(id, dir, this.store);
 
-		await workerBroadcast.send('register-dir', {
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'handle',
 			handle: id,
@@ -150,15 +183,15 @@ class Filesystem {
 		idb.del(id, this.store);
 	}
 	public async mountDirectoryFS(mount: string, dir: string) {
-		console.log('mounted directory', mount);
-		await workerBroadcast.send('register-dir', {
+		console.debug('mounted directory', mount);
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'fs',
 			source: dir,
 		} satisfies RegisterDir);
 	}
 	public async mountFileList(mount: string, files: FileList) {
-		console.log('mounted files', mount);
+		console.debug('mounted files', mount);
 		for (const file of files) {
 			this.fileListFS.registerFile(
 				mount + file.webkitRelativePath.slice(file.webkitRelativePath.indexOf('/') + 1),
@@ -166,78 +199,66 @@ class Filesystem {
 			);
 		}
 
-		await workerBroadcast.send('register-dir', {
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'on-demand',
 		} satisfies RegisterDir);
 	}
 	public async mountInMemory(mount: string, key: string) {
-		console.log('mounted in memory', mount, key);
-		await workerBroadcast.send('register-dir', {
+		console.debug('mounted in memory', mount, key);
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'indexed',
 			key,
 		} satisfies RegisterDir);
 	}
 	public async mountZip(mount: string, source: string) {
-		console.log('mounted zip', mount, source);
-		await workerBroadcast.send('register-dir', {
+		console.debug('mounted zip', mount, source);
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'zip',
 			source,
 		} satisfies RegisterDir);
 	}
 	public async mountLink(mount: string, source: string) {
-		console.log('mounted link', mount, source);
-		await workerBroadcast.send('register-dir', {
+		console.debug('mounted link', mount, source);
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'link',
 			source,
 		} satisfies RegisterDir);
 	}
 	public async mountHttp(mount: string, source: string) {
-		console.log('mounted http', mount, source);
-		await workerBroadcast.send('register-dir', {
+		console.debug('mounted http', mount, source);
+		await this.sendToAllWorkers('register-dir', {
 			target: mount,
 			kind: 'http',
 			source,
 		} satisfies RegisterDir);
 	}
 
-	private async getSharedWorkers() {
-		if (this.workers.length > 0) {
-			const result: SharedWorker[] = [];
-			for (let i = 0; i < WORKER_COUNT; i++) {
-				const sharedWorker = new SharedWorker('/static/js/worker.js', {
-					name: 'Project Selene Worker ' + (i + 1),
-				});
-				sharedWorker.port.start();
-				result.push(sharedWorker);
-			}
-			return result;
-		}
-
+	private async startWorkers() {
 		for (let i = 0; i < WORKER_COUNT; i++) {
-			const sharedWorker = new SharedWorker('/static/js/worker.js', {
+			const worker = new Worker('static/js/worker.js', {
 				name: 'Project Selene Worker ' + (i + 1),
 			});
-			sharedWorker.port.start();
-			this.workers.push(sharedWorker);
+			const coms = new ClientEventHandler(worker);
+			this.workers.push(coms);
 
-			await this.registerLocalFS(sharedWorker.port);
-			await this.registerFileLists(sharedWorker.port);
+			await this.registerLocalFS(coms);
+			await this.registerFileLists(coms);
 
 		}
 		return this.workers;
 	}
 
-	private async registerLocalFS(worker: MessagePort) {
+	private async registerLocalFS(coms: ClientEventHandler) {
 		if (window['require']) {
 			const fs = new StorageFS();
 
 			const fsChannel = new MessageChannel();
 
-			const fsComs = new SingleCommunication(fsChannel.port1);
+			const fsComs = new ClientEventHandler(fsChannel.port1);
 			fsComs.on('readFile', (args: FsMessage) => fs.readFile(args.target, args.source, args.path, args.response));
 			fsComs.on('readDir', (args: FsMessage) => fs.readDir(args.target, args.source, args.path, args.response));
 			fsComs.on('writeFile', (args: FsMessageWrite) =>
@@ -246,20 +267,19 @@ class Filesystem {
 			fsComs.on('stat', (args: FsMessage) => fs.stat(args.target, args.source, args.path, args.response));
 			fsComs.on('delete', (args: FsMessage) => fs.delete(args.target, args.source, args.path, args.response));
 
-			await new SingleCommunication(worker).send('register-fs', { channel: fsChannel.port2 }, fsChannel.port2);
-
+			await coms.send('register-fs', { channel: fsChannel.port2 }, fsChannel.port2);
 		}
 	}
 
-	private async registerFileLists(worker: MessagePort) {
+	private async registerFileLists(coms: ClientEventHandler) {
 		const fileListChannel = new MessageChannel();
 
-		const fsComs = new SingleCommunication(fileListChannel.port1);
+		const fsComs = new ClientEventHandler(fileListChannel.port1);
 		fsComs.on('readFile', (args: FsMessage) => this.fileListFS.readFile(args.target, args.path, args.response));
 		fsComs.on('readDir', (args: FsMessage) => this.fileListFS.readDir(args.target, args.path, args.response));
 		fsComs.on('stat', (args: FsMessage) => this.fileListFS.stat(args.target, args.path, args.response));
 
-		await new SingleCommunication(worker).send(
+		await coms.send(
 			'register-filelist',
 			{ channel: fileListChannel.port2 },
 			fileListChannel.port2,
@@ -271,7 +291,7 @@ class Filesystem {
 			source: string;
 		}[],
 	) {
-		await workerBroadcast.send('register-patches', {
+		await this.sendToAllWorkers('register-patches', {
 			kind: 'json',
 			patches,
 		} satisfies RegisterPatches);
@@ -282,7 +302,7 @@ class Filesystem {
 			source: string;
 		}[],
 	) {
-		await workerBroadcast.send('unregister-patches', {
+		await this.sendToAllWorkers('unregister-patches', {
 			kind: 'json',
 			patches,
 		} satisfies UnregisterPatches);
@@ -294,7 +314,7 @@ class Filesystem {
 			source: string;
 		}[],
 	) {
-		await workerBroadcast.send('register-patches', {
+		await this.sendToAllWorkers('register-patches', {
 			kind: 'raw',
 			patches,
 		} satisfies RegisterPatches);
@@ -305,7 +325,7 @@ class Filesystem {
 			source: string;
 		}[],
 	) {
-		await workerBroadcast.send('unregister-patches', {
+		await this.sendToAllWorkers('unregister-patches', {
 			kind: 'raw',
 			patches,
 		} satisfies UnregisterPatches);

@@ -1,10 +1,10 @@
-import { SingleCommunication } from '../communication/single';
+import { ClientEventHandler } from '../loader/event-handler';
 import { Storage } from './storage';
 
 export class StorageFileList extends Storage {
 	public constructor(
 		public readonly target: string,
-		private readonly fileListChannel: SingleCommunication,
+		private readonly fileListChannel: ClientEventHandler,
 	) {
 		super();
 	}
