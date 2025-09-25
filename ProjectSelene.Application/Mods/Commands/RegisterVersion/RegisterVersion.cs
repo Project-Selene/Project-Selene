@@ -30,14 +30,19 @@ public class RegisterVersionCommandHandler(IApplicationDbContext context) : IReq
             .Include(m => m.Versions)
             .FirstOrDefaultAsync(m => m.Guid == request.ModId, cancellationToken);
 
-        mod ??= new()
+        if (mod == null)
         {
-            Guid = request.ModId,
-            Info = new() { Description = "", Name = "" }
-        };
+            mod ??= new()
+            {
+                Guid = request.ModId,
+                Info = new() { Description = "", Name = "" }
+            };
+            context.Mods.Add(mod);
+        }
 
         mod.Versions.Add(new()
         {
+            Version = request.Version,
             Mod = mod,
             ChangeRequests = [new() { ModInfo = new()
             {

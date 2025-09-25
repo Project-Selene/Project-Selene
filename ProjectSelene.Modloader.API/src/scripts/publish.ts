@@ -2,6 +2,7 @@
 
 import fs from 'fs';
 import { createInterface } from 'readline';
+import { ModsClient } from '../internal/moddb/generated/selene-api.js';
 import { build } from './lib/build.js';
 import { createZipBundle } from './lib/bundle.js';
 
@@ -19,19 +20,11 @@ interface Manifest {
 	await build();
 
 	const manifest = getModManifest();
-
-	console.log('Checking if mod already exists');
-	const exists = await modExists(token, manifest);
-
-	if (!exists) {
-		console.log('Registering new mod');
-		await createNewMod(token, manifest);
-	}
-
 	try {
 		console.log('Registering version');
 		await createDraft(token, manifest);
-	} catch {
+	} catch (ex) {
+		console.error(ex);
 		console.log('Failed to register version. Does it already exist?');
 	}
 
@@ -82,80 +75,44 @@ function url() {
 	return 'https://projectselene.org';
 }
 
-async function modExists(token: string, manifest: Manifest) {
-	const resp = await fetch(`${url()}/api/Mod/list`, {
-		headers: {
-			'Authorization': 'Bearer ' + token,
-		},
-	});
-
-	const { entries } = await resp.json();
-	for (const entry of entries) {
-		if (entry.id === manifest.id) {
-			return true;
+function withToken(token: string) {
+	return {
+		fetch: (url, request) => {
+			if (request) {
+				return fetch(url, {
+					...request,
+					headers: {
+						...(request.headers ?? {}),
+						'X-API-Key': token,
+					}
+				});
+			}
+			return fetch(url);
 		}
-	}
-
-	return false;
-}
-
-async function createNewMod(token: string, manifest: Manifest) {
-	const resp = await fetch(`${url()}/api/Mod/create`, {
-		method: 'POST',
-		headers: {
-			'Authorization': 'Bearer ' + token,
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			id: manifest.id,
-			name: manifest.name,
-			description: manifest.description,
-			version: manifest.version,
-		}),
-	});
-
-	if (resp.status === 409) {
-		throw new Error('Failed to create mod: Mod already exists');
-		return;
-	}
-
-	if (resp.status !== 200) {
-		throw new Error('Failed to create mod: ' + await resp.text());
-	}
+	};
 }
 
 async function createDraft(token: string, manifest: Manifest) {
-	const resp = await fetch(`${url()}/api/Mod/draft/${manifest.id}/create`, {
-		method: 'POST',
-		headers: {
-			'Authorization': 'Bearer ' + token,
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			version: manifest.version,
-		}),
+	const mods = new ModsClient(url(), withToken(token));
+
+	await mods.registerVersion(manifest.id, {
+		name: manifest.name,
+		modId: manifest.id,
+		description: manifest.description,
+		version: manifest.version,
 	});
-
-	if (resp.status === 409) {
-		throw new Error('Failed to create version draft: Version already exists');
-		return;
-	}
-
-	if (resp.status !== 200) {
-		throw new Error('Failed to register version: ' + await resp.text());
-	}
 }
 
 async function upload(token: string, manifest: Manifest): Promise<void> {
 	const data = await createZipBundle();
 
 	const formData = new FormData();
-	formData.append('data', new Blob([data], { type: 'application/zip' }), 'mod.zip');
+	formData.append('file', new Blob([data], { type: 'application/zip' }), 'mod.zip');
 
-	const resp = await fetch(`${url()}/api/Artifact/${manifest.id}/${manifest.version}/upload`, {
-		method: 'POST',
+	const resp = await fetch(`${url()}/api/Storage/${manifest.id}/${manifest.version}`, {
+		method: 'PUT',
 		headers: {
-			'Authorization': 'Bearer ' + token,
+			'X-API-Key': token,
 		},
 		body: formData,
 	});
@@ -166,14 +123,7 @@ async function upload(token: string, manifest: Manifest): Promise<void> {
 }
 
 async function submit(token: string, manifest: Manifest) {
-	const resp = await fetch(`${url()}/api/Mod/draft/${manifest.id}/${manifest.version}/submit`, {
-		method: 'POST',
-		headers: {
-			'Authorization': 'Bearer ' + token,
-		},
-	});
+	const mods = new ModsClient(url(), withToken(token));
 
-	if (resp.status !== 200) {
-		throw new Error('Failed to publish: ' + await resp.text());
-	}
+	await mods.submitVersion(manifest.id, { modId: manifest.id, version: manifest.version });
 }

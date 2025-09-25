@@ -11,8 +11,8 @@ declare global {
 export class ModDB {
 	private readonly baseUrl =
 		globalThis.window && window.DEBUG ? 'https://localhost:7086' : 'https://projectselene.org';
-	private readonly mods = new ModsClient(this.baseUrl);
-	private readonly storage = new StorageClient(this.baseUrl);
+	private readonly mods = new ModsClient(this.baseUrl, { fetch: globalThis.fetch.bind(globalThis) });
+	private readonly storage = new StorageClient(this.baseUrl, { fetch: globalThis.fetch.bind(globalThis) });
 
 	public async modList(): Promise<ModDto[]> {
 		if ((document.visibilityState as string) === 'prerender') {

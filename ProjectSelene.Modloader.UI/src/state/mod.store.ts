@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import semver from 'semver';
-import { ModDto, ModsClient } from '../moddb/generated/selene-api';
+import { ModDto } from '../moddb/generated/selene-api';
+import { ModDB } from '../moddb/moddb';
 import { selectInstalledMods } from './game.store';
 import { filterMods } from './helpers/filter-mods';
 import { LoadingState } from './models/loading-state';
@@ -19,10 +20,10 @@ const initialState: ModStore = {
 	dialogOpen: false,
 };
 
-const modsClient = new ModsClient(undefined, { fetch: globalThis.fetch });
+const moddb = new ModDB();
 
 export const loadModsFromDb = createAsyncThunk('loadModsFromDb', async () => {
-	return await modsClient.getMods();
+	return await moddb.modList();
 	// function exampleMod(id: string): ModDto {
 	// 	return {
 	// 		name: 'Jetpack',
@@ -51,13 +52,14 @@ export const modSlice = createSlice({
 		builder.addCase(loadModsFromDb.pending, state => {
 			state.mods.loading = true;
 		});
-		builder.addCase(loadModsFromDb.rejected, state => {
+		builder.addCase(loadModsFromDb.rejected, (state, { error }) => {
+			console.error(error);
 			state.mods.loading = false;
 		});
 		builder.addCase(loadModsFromDb.fulfilled, (state, { payload }) => {
 			state.mods = {
 				loading: false,
-				data: payload.mods,
+				data: payload,
 			};
 		});
 	},

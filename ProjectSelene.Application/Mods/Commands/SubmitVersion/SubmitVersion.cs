@@ -4,7 +4,7 @@ using ProjectSelene.Domain.Exceptions;
 namespace ProjectSelene.Application.Mods.Commands.SubmitVersion;
 
 [Authorize(Policy = Policies.NOBODY, AllowOwner = true)]
-public record SubmitVersionCommand : IRequest<Result>
+public record SubmitVersionCommand : IRequest<Result>, IModRequest
 {
     public required Guid ModId { get; init; }
     public required string Version { get; init; }

@@ -8,7 +8,7 @@ static class StreamLimiter
     {
         var result = new Pipe();
 
-        CopyAndLimit(result.Writer, stream, limit, cancellationToken).Start();
+        _ = CopyAndLimit(result.Writer, stream, limit, cancellationToken);
 
         return result.Reader.AsStream();
     }

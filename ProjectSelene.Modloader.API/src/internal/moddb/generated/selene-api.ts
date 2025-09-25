@@ -8,11 +8,58 @@
 /* eslint-disable */
 // ReSharper disable InconsistentNaming
 
+export interface IDiscordClient {
+
+    interactions(): Promise<ModListDto>;
+}
+
+export class DiscordClient implements IDiscordClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    interactions(): Promise<ModListDto> {
+        let url_ = this.baseUrl + "/api/Discord";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processInteractions(_response);
+        });
+    }
+
+    protected processInteractions(response: Response): Promise<ModListDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ModListDto;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ModListDto>(null as any);
+    }
+}
+
 export interface IModsClient {
 
     getMods(): Promise<ModListDto>;
-
-    getAllMods(): Promise<AllModListDto>;
 
     registerVersion(id: string, command: RegisterVersionCommand): Promise<void>;
 
@@ -60,39 +107,6 @@ export class ModsClient implements IModsClient {
             });
         }
         return Promise.resolve<ModListDto>(null as any);
-    }
-
-    getAllMods(): Promise<AllModListDto> {
-        let url_ = this.baseUrl + "/api/Mods/all";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetAllMods(_response);
-        });
-    }
-
-    protected processGetAllMods(response: Response): Promise<AllModListDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as AllModListDto;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<AllModListDto>(null as any);
     }
 
     registerVersion(id: string, command: RegisterVersionCommand): Promise<void> {
@@ -287,6 +301,8 @@ export class StorageClient implements IStorageClient {
 export interface IUsersClient {
 
     getLoginProviders(): Promise<LoginProviderDTO[]>;
+
+    postApiUsersApiKey(command: GenerateApiKeyCommand): Promise<string>;
 }
 
 export class UsersClient implements IUsersClient {
@@ -331,6 +347,43 @@ export class UsersClient implements IUsersClient {
         }
         return Promise.resolve<LoginProviderDTO[]>(null as any);
     }
+
+    postApiUsersApiKey(command: GenerateApiKeyCommand): Promise<string> {
+        let url_ = this.baseUrl + "/api/Users/apiKey";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processPostApiUsersApiKey(_response);
+        });
+    }
+
+    protected processPostApiUsersApiKey(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as string;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(null as any);
+    }
 }
 
 export interface ModListDto {
@@ -346,22 +399,11 @@ export interface ModDto {
     versions: string[];
 }
 
-export interface AllModListDto {
-    mods: ModDto2[];
-}
-
-export interface ModDto2 {
-    id: string;
-    name: string;
-    description: string;
-    author: string;
-    version: string;
-    versions: string[];
-}
-
 export interface RegisterVersionCommand {
     modId: string;
     version: string;
+    name: string;
+    description: string;
 }
 
 export interface SubmitVersionCommand {
@@ -377,6 +419,10 @@ export interface Result {
 export interface LoginProviderDTO {
     url: string;
     type: string;
+}
+
+export interface GenerateApiKeyCommand {
+    expiresInDays: number;
 }
 
 export interface FileParameter {

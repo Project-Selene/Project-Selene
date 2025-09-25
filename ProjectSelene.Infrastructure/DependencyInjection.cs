@@ -104,7 +104,12 @@ public static class DependencyInjection
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
-        builder.Services.AddAuthorization(options => options.AddPolicy(Policies.CAN_PURGE, policy => policy.RequireRole(Roles.ADMINISTRATOR)));
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(Policies.CAN_PURGE, policy => policy.RequireRole(Roles.ADMINISTRATOR))
+            .AddPolicy(Policies.CAN_SEE_ALL_MODS, policy => policy.RequireRole(Roles.ADMINISTRATOR))
+            .AddPolicy(Policies.CAN_UPLOAD_FOR_OTHERS, policy => policy.RequireRole(Roles.ADMINISTRATOR))
+            .AddPolicy(Policies.CAN_VERIFY, policy => policy.RequireRole(Roles.ADMINISTRATOR))
+            .AddPolicy(Policies.NOBODY, policy => policy.RequireRole(Roles.NOBODY));
 
         builder.Services.AddCors(options =>
         {
