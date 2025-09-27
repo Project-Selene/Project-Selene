@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ProjectSelene.Domain.Constants;
-using ProjectSelene.Domain.Entities;
 
 namespace ProjectSelene.Infrastructure.Data;
 
@@ -22,7 +21,7 @@ public static class InitialiserExtensions
     }
 }
 
-public class ApplicationDbContextInitialiser(ILogger<ApplicationDbContextInitialiser> logger, ApplicationDbContext context, UserManager<SeleneUser> userManager, RoleManager<IdentityRole> roleManager)
+public class ApplicationDbContextInitialiser(ILogger<ApplicationDbContextInitialiser> logger, ApplicationDbContext context, RoleManager<IdentityRole> roleManager)
 {
     public async Task InitialiseAsync()
     {
