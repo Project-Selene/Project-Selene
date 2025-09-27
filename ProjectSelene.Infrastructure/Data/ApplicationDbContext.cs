@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectSelene.Application.Common.Interfaces;
 using ProjectSelene.Domain.Common;
@@ -6,10 +7,11 @@ using ProjectSelene.Domain.Entities;
 
 namespace ProjectSelene.Infrastructure.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<SeleneUser>(options), IApplicationDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<SeleneUser>(options), IApplicationDbContext, IDataProtectionKeyContext
 {
     public DbSet<Mod> Mods => Set<Mod>();
     public DbSet<ModVersion> ModVersions => Set<ModVersion>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

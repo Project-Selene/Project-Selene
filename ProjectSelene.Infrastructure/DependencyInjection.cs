@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -94,6 +95,9 @@ public static class DependencyInjection
             });
 
         builder.Services.AddAuthorizationBuilder();
+
+        builder.Services.AddDataProtection()
+            .PersistKeysToDbContext<ApplicationDbContext>();
 
         builder.Services
             .AddIdentityCore<SeleneUser>()
