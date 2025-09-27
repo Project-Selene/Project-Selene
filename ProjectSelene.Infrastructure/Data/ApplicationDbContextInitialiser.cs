@@ -59,17 +59,5 @@ public class ApplicationDbContextInitialiser(ILogger<ApplicationDbContextInitial
         {
             await roleManager.CreateAsync(administratorRole);
         }
-
-        // Default users
-        var administrator = new SeleneUser() { UserName = "administrator@localhost", Email = "administrator@localhost" };
-
-        if (userManager.Users.All(u => u.UserName != administrator.UserName))
-        {
-            await userManager.CreateAsync(administrator, "Administrator1!");
-            if (!string.IsNullOrWhiteSpace(administratorRole.Name))
-            {
-                await userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
-            }
-        }
     }
 }
