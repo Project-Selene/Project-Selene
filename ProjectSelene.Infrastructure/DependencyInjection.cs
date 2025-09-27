@@ -97,6 +97,7 @@ public static class DependencyInjection
         builder.Services.AddAuthorizationBuilder();
 
         builder.Services.AddDataProtection()
+            .SetApplicationName("ProjectSelene")
             .PersistKeysToDbContext<ApplicationDbContext>();
 
         builder.Services
