@@ -194,9 +194,9 @@ export class ModsClient implements IModsClient {
 
 export interface IStorageClient {
 
-    uploadArtifact(id: string, version: string, file: FileParameter | null | undefined): Promise<Result>;
-
     downloadArtifact(id: string, version: string): Promise<FileResponse>;
+
+    uploadArtifact(id: string, version: string, file: FileParameter | null | undefined): Promise<Result>;
 }
 
 export class StorageClient implements IStorageClient {
@@ -207,50 +207,6 @@ export class StorageClient implements IStorageClient {
     constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
         this.http = http ? http : window as any;
         this.baseUrl = baseUrl ?? "";
-    }
-
-    uploadArtifact(id: string, version: string, file: FileParameter | null | undefined): Promise<Result> {
-        let url_ = this.baseUrl + "/api/Storage/{id}/{version}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (version === undefined || version === null)
-            throw new Error("The parameter 'version' must be defined.");
-        url_ = url_.replace("{version}", encodeURIComponent("" + version));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (file !== null && file !== undefined)
-            content_.append("file", file.data, file.fileName ? file.fileName : "file");
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processUploadArtifact(_response);
-        });
-    }
-
-    protected processUploadArtifact(response: Response): Promise<Result> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as Result;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<Result>(null as any);
     }
 
     downloadArtifact(id: string, version: string): Promise<FileResponse> {
@@ -295,6 +251,50 @@ export class StorageClient implements IStorageClient {
             });
         }
         return Promise.resolve<FileResponse>(null as any);
+    }
+
+    uploadArtifact(id: string, version: string, file: FileParameter | null | undefined): Promise<Result> {
+        let url_ = this.baseUrl + "/api/Storage/{id}/{version}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (version === undefined || version === null)
+            throw new Error("The parameter 'version' must be defined.");
+        url_ = url_.replace("{version}", encodeURIComponent("" + version));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file !== null && file !== undefined)
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processUploadArtifact(_response);
+        });
+    }
+
+    protected processUploadArtifact(response: Response): Promise<Result> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as Result;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Result>(null as any);
     }
 }
 

@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { gameManager } from '../../../state/game-manager';
 import { selectGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
 import {
+	loadModsFromDb,
 	searchForMod,
 	selectAvailableModsLoading,
 	selectMods,
@@ -117,6 +118,7 @@ export function ModsDialog() {
 										endIcon={<Refresh />}
 										onClick={e => {
 											refresh();
+											dispatch(loadModsFromDb());
 											e.stopPropagation();
 										}}
 									>

@@ -11,10 +11,13 @@ public class Storage : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this)
+            .DisableAntiforgery()
+            .MapGet(DownloadArtifact, "{id}/{version}");
+
+        app.MapGroup(this)
             .RequireAuthorization()
             .DisableAntiforgery()
-            .MapPut(UploadArtifact, "{id}/{version}")
-            .MapGet(DownloadArtifact, "{id}/{version}");
+            .MapPut(UploadArtifact, "{id}/{version}");
     }
 
     public async Task<Result> UploadArtifact(ISender sender, Guid id, string version, [FromForm] IFormFile file, IHttpContextAccessor contextAccessor, CancellationToken cancellationToken)
