@@ -95,7 +95,9 @@ export class GameManager {
                 path: '.',
             };
             this.game = await Game.fromLocalPath(this.gameInfo.game.path, mode);
-            await this.openDefaultModDirectory();
+            if (this.mods.length === 0) {
+                await this.openDefaultModDirectory();
+            }
 
             await this.save();
             return;
@@ -105,11 +107,15 @@ export class GameManager {
         switch (this.gameInfo.game.type) {
             case 'handle':
                 this.game = await Game.fromFileHandle(this.gameInfo.game.handle);
-                await this.openDefaultModDirectory();
+                if (this.mods.length === 0) {
+                    await this.openDefaultModDirectory();
+                }
                 break;
             case 'fs':
                 this.game = await Game.fromLocalPath(this.gameInfo.game.path);
-                await this.openDefaultModDirectory();
+                if (this.mods.length === 0) {
+                    await this.openDefaultModDirectory();
+                }
                 break;
         }
         await this.save();
