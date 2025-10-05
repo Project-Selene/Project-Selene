@@ -3,6 +3,7 @@ import './ui.scss';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
+import { gameManager } from '../state/game-manager';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -25,6 +26,11 @@ export function startUI() {
 		return;
 	}
 
+
+	if ("require" in window) {
+		gameManager.getOrOpenGame()
+			.catch(e => console.error('Failed to get or open game', e));
+	}
 	// store.dispatch(loadGames());
 	// store.dispatch(loadModList());
 }

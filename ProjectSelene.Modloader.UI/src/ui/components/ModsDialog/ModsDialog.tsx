@@ -82,6 +82,9 @@ export function ModsDialog() {
 		await refresh();
 	};
 
+	useEffect(() => {
+		refresh().catch(err => console.error('Failed to refresh mods', err));
+	}, [open]);
 
 	return <Fade in={open}>
 		<Box onKeyDown={onKeyDown} tabIndex={0} ref={backdropRef}
