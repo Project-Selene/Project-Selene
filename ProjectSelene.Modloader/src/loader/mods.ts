@@ -46,9 +46,26 @@ export class Mods {
         return this.id;
     }
 
-    public async deleteMod(filename: string) {
+    public async deleteMod(id: string) {
         if (this.mode === 'read') {
             throw new Error('Cannot delete mod from a readonly mods folder');
+        }
+
+        let filename: string | undefined;
+        try {
+            const manifests = await this.readManifests();
+            const internalId = Object.entries(manifests).find(m => m[1].id === id)?.[0];
+            if (!internalId) {
+                console.warn('Could not find mod with id ' + id);
+                return;
+            }
+            filename = Object.entries(this.mountedMods).find(m => m[1] === +internalId)?.[0];
+        } catch {
+            //Could not find mod name -> assume it's not installed
+        }
+        if (!filename) {
+            console.warn('Could not find mod with id ' + id);
+            return;
         }
 
         await filesystem.delete('/fs/internal/mods/' + this.id + '/folder/' + filename);

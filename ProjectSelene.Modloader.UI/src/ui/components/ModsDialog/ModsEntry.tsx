@@ -38,6 +38,17 @@ export function ModsEntry(props: { mod: Mod }) {
 		await refresh();
 	}
 
+	const deleteMod = async (mod: Mod) => {
+		for (const mods of gameManager.getMods()) {
+			try {
+				await mods.deleteMod(mod.id);
+			} catch (e) {
+				console.error('Failed to delete mod', e);
+			}
+		}
+		await refresh();
+	}
+
 	return (
 		<Card key={mod.id} sx={{ border: '1px solid hsl(0 0% 14%)', width: '20em' }}>
 			<CardHeader
@@ -58,12 +69,12 @@ export function ModsEntry(props: { mod: Mod }) {
 				action={
 					<>
 						{(mod.hasUpdate || !mod.isInstalled) && (
-							<IconButton onClick={(e) => { install(mod); e.preventDefault(); e.stopPropagation(); } /*dispatch(installMod(versionId))*/}>
+							<IconButton onClick={(e) => { install(mod); e.preventDefault(); e.stopPropagation(); }}>
 								<Download />
 							</IconButton>
 						)}
 						{mod.isInstalled && (
-							<IconButton onClick={() => null /*dispatch(deleteMod(mod.filename))*/}>
+							<IconButton onClick={(e) => { deleteMod(mod); e.preventDefault(); e.stopPropagation(); }}>
 								<Delete />
 							</IconButton>
 						)}
