@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { play, selectGameState } from '../../../../state/game.store';
+import { gameManager } from '../../../../state/game-manager';
+import { selectGameState } from '../../../../state/game.store';
 import { GameState } from '../../../../state/models/game';
 import { store } from '../../../../state/state.reducer';
 import { useSupportsOpenFolder } from '../../../hooks/detect';
@@ -13,5 +14,5 @@ export function PlayButton() {
 	const dispatch = useDispatch<typeof store.dispatch>();
 	const supportsOpenFolder = useSupportsOpenFolder();
 
-	return <HomeButton title={'Play'} onClick={() => dispatch(play())} disabled={!supportsOpenFolder || playing} />;
+	return <HomeButton title={'Play'} onClick={() => gameManager.play(false)} disabled={!supportsOpenFolder || playing} />;
 }

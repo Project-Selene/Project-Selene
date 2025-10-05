@@ -19,15 +19,15 @@ import {
 import { TransitionProps } from '@mui/material/transitions';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { openDirectory, selectGameState } from '../../../state/game.store';
+import { gameManager } from '../../../state/game-manager';
+import { selectGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
 import {
-	loadModsFromDb,
 	searchForMod,
 	selectAvailableModsLoading,
 	selectMods,
 	selectModsDialogOpen,
 	selectModsSearch,
-	setModsOpen,
+	setModsOpen
 } from '../../../state/mod.store';
 import { GameState } from '../../../state/models/game';
 import { store } from '../../../state/state.reducer';
@@ -68,6 +68,19 @@ export function ModsDialog() {
 		}
 	}
 
+	const refresh = async () => {
+		try {
+			dispatch(setInstalledModsLoading(true));
+			dispatch(setInstalledMods(await gameManager.refreshModManifests()));
+		} finally {
+			dispatch(setInstalledModsLoading(false));
+		}
+	};
+	const openModsFolder = async () => {
+		await gameManager.openModDirectory();
+		await refresh();
+	};
+
 
 	return <Fade in={open}>
 		<Box onKeyDown={onKeyDown} tabIndex={0} ref={backdropRef}
@@ -85,7 +98,7 @@ export function ModsDialog() {
 											variant="outlined"
 											style={{ backgroundColor: '#66F3' }}
 											endIcon={<OpenInNew />}
-											onClick={() => dispatch(openDirectory())}
+											onClick={openModsFolder}
 											disabled={gameState !== GameState.PROMPT}
 										>
 											Open mods folder
@@ -103,9 +116,7 @@ export function ModsDialog() {
 										style={{ backgroundColor: '#66F3' }}
 										endIcon={<Refresh />}
 										onClick={e => {
-											// dispatch(loadMods());
-											// dispatch(loadModList());
-											dispatch(loadModsFromDb());
+											refresh();
 											e.stopPropagation();
 										}}
 									>
