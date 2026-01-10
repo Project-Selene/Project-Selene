@@ -2,6 +2,8 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Button, ButtonGroup, Menu, MenuItem, Stack } from '@mui/material';
 import React from 'react';
 
+import { useSelector } from 'react-redux';
+import { selectPlayAnimation } from '../../../../state/misc.store';
 import './HomeButton.scss';
 
 export function HomeButton(props: {
@@ -14,6 +16,7 @@ export function HomeButton(props: {
 }) {
 	const [open, setOpen] = React.useState(false);
 	const anchorRef = React.useRef<HTMLDivElement>(null);
+	const disabled = useSelector(selectPlayAnimation);
 
 	return (
 		<>
@@ -26,7 +29,7 @@ export function HomeButton(props: {
 							onClick={props.onClick}
 							href={props.href}
 							style={{ backgroundColor: '#44E6' }}
-							disabled={props.loading || props.disabled}
+							disabled={props.loading || props.disabled || disabled}
 						>
 							{props.title}
 						</Button>
@@ -34,7 +37,7 @@ export function HomeButton(props: {
 							className="home-button"
 							size="small"
 							onClick={() => setOpen(true)}
-							disabled={props.loading || props.disabled}
+							disabled={props.loading || props.disabled || disabled}
 						>
 							<ArrowDropDownIcon />
 						</Button>
@@ -47,14 +50,14 @@ export function HomeButton(props: {
 						onClick={props.onClick}
 						href={props.href}
 						style={{ backgroundColor: '#44E6' }}
-						disabled={props.loading || props.disabled}
+						disabled={props.loading || props.disabled || disabled}
 					>
 						{props.title}
 					</Button>
 				)}
 				<Menu open={open} anchorEl={anchorRef.current} onClose={() => setOpen(false)}>
 					{props.actions?.map((value, i) => (
-						<MenuItem key={i} onClick={value.onClick}>
+						<MenuItem key={i} onClick={value.onClick} disabled={disabled}>
 							{value.title}
 						</MenuItem>
 					))}

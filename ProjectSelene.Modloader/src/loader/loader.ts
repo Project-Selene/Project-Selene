@@ -3,7 +3,6 @@ import { stopPollForDevMod } from './dev-poll';
 import { filesystem } from './filesystem';
 import { Game } from './game';
 import { ModManifest, ModPatch, Mods } from './mods';
-import { transform } from './transformer';
 import { prepareWindow } from './window';
 
 class Loader {
@@ -83,9 +82,9 @@ class Loader {
 			await filesystem.delete('/cache/' + oldest.name);
 		}
 
-		const code = await filesystem.readFile('/fs/internal/game/' + id + '/terra/dist/bundle.js');
-		const prefix = await filesystem.readFile('static/js/prefix.js');
-		const result = transform(code, prefix);
+		await filesystem.mountTransform('/fs/internal/game-transformed/' + id + '/terra/dist/', '/fs/internal/game/' + id + '/terra/dist/');
+
+		const result = await filesystem.readFile('/fs/internal/game-transformed/' + id + '/terra/dist/bundle.js');
 		await filesystem.writeFile('/fs/cache/game-' + hashString + '.js', result);
 		return '/fs/cache/game-' + hashString + '.js';
 	}

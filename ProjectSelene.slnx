@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="ProjectSelene.Application/ProjectSelene.Application.csproj" />
+  <Project Path="ProjectSelene.Discord/ProjectSelene.Discord.csproj" />
+  <Project Path="ProjectSelene.Domain/ProjectSelene.Domain.csproj" />
+  <Project Path="ProjectSelene.DummyGame/ProjectSelene.DummyGame.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ProjectSelene.Infrastructure/ProjectSelene.Infrastructure.csproj" />
+  <Project Path="ProjectSelene.Modloader.API/ProjectSelene.Modloader.API.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ProjectSelene.Modloader.UI/ProjectSelene.Modloader.UI.esproj">
+    <BuildDependency Project="ProjectSelene.Modloader/ProjectSelene.Modloader.esproj" />
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ProjectSelene.Modloader/ProjectSelene.Modloader.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="ProjectSelene.Web/ProjectSelene.Web.csproj" />
+</Solution>

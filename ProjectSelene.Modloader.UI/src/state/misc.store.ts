@@ -2,10 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface MiscStore {
 	infoOpen: boolean;
+	playAnimation: boolean;
 }
 
 const initialState: MiscStore = {
 	infoOpen: false,
+	playAnimation: false,
 };
 
 export const miscSlice = createSlice({
@@ -15,12 +17,16 @@ export const miscSlice = createSlice({
 		setInfoOpen: (state, { payload }: PayloadAction<boolean>) => {
 			state.infoOpen = payload;
 		},
+		setPlayAnimation: (state, { payload }: PayloadAction<boolean>) => {
+			state.playAnimation = payload;
+		}
 	},
 	selectors: {
 		selectInfoDialogOpen: state => state.infoOpen,
+		selectPlayAnimation: state => state.playAnimation,
 	},
 });
 
-export const { setInfoOpen } = miscSlice.actions;
+export const { setInfoOpen, setPlayAnimation } = miscSlice.actions;
 
-export const { selectInfoDialogOpen } = miscSlice.selectors;
+export const { selectInfoDialogOpen, selectPlayAnimation } = miscSlice.selectors;

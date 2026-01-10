@@ -228,6 +228,15 @@ class Filesystem {
 			source,
 		} satisfies RegisterDir);
 	}
+	public async mountTransform(mount: string, source: string) {
+		console.debug('mounted transform', mount, source);
+		await this.sendToAllWorkers('register-dir', {
+			target: mount,
+			kind: 'transform',
+			source,
+			prefix: await this.readFile('static/js/prefix.js'),
+		} satisfies RegisterDir);
+	}
 	public async mountHttp(mount: string, source: string) {
 		console.debug('mounted http', mount, source);
 		await this.sendToAllWorkers('register-dir', {

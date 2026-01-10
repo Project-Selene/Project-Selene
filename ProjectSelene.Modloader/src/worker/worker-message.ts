@@ -13,39 +13,45 @@ export interface Fetch {
 
 export type RegisterDir =
 	| {
-			kind: 'handle';
-			target: string;
-			handle: string;
-	  }
+		kind: 'handle';
+		target: string;
+		handle: string;
+	}
 	| {
-			kind: 'indexed';
-			target: string;
-			key: string;
-	  }
+		kind: 'indexed';
+		target: string;
+		key: string;
+	}
 	| {
-			kind: 'on-demand';
-			target: string;
-	  }
+		kind: 'on-demand';
+		target: string;
+	}
 	| {
-			kind: 'zip';
-			target: string;
-			source: string;
-	  }
+		kind: 'zip';
+		target: string;
+		source: string;
+	}
 	| {
-			kind: 'link';
-			target: string;
-			source: string;
-	  }
+		kind: 'link';
+		target: string;
+		source: string;
+	}
 	| {
-			kind: 'http';
-			target: string;
-			source: string;
-	  }
+		kind: 'transform';
+		target: string;
+		source: string;
+		prefix: string;
+	}
 	| {
-			kind: 'fs';
-			target: string;
-			source: string;
-	  };
+		kind: 'http';
+		target: string;
+		source: string;
+	}
+	| {
+		kind: 'fs';
+		target: string;
+		source: string;
+	};
 
 export interface RegisterPatches {
 	kind: 'json' | 'raw';

@@ -34,3 +34,11 @@ body,
 	--panSpeed: .5s;
 	--panType: ease-in-out;
 }
+@keyframes moveStars {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}

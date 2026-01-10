@@ -14,6 +14,7 @@ import { StorageHandles } from './storage-handles';
 import { StorageHttp } from './storage-http';
 import { StorageIndexedDB } from './storage-indexeddb';
 import { StorageLink } from './storage-link';
+import { StorageTransform } from './storage-transform';
 import { StorageZip } from './storage-zip';
 import { RegisterDir, RegisterFs, RegisterPatches, RequestData, UnregisterPatches } from './worker-message';
 // export empty type because of tsc --isolatedModules flag
@@ -116,6 +117,13 @@ clientChannel.on('register-dir', async (data: RegisterDir) => {
 		const sourcePath = data.source.substring(sourceStorage.target.length);
 
 		storages.unshift(new StorageLink(data.target, sourcePath, sourceStorage));
+	} else if (data.kind === 'transform') {
+		const sourceStorage = storages
+			.filter(s => data.source.startsWith(s.target))
+			.sort((a, b) => b.target.length - a.target.length)[0];
+		const sourcePath = data.source.substring(sourceStorage.target.length);
+
+		storages.unshift(new StorageTransform(data.target, sourcePath, sourceStorage, data.prefix));
 	} else if (data.kind === 'fs') {
 		storages.unshift(new StorageFS(data.target, data.source, fsChannel));
 	} else {

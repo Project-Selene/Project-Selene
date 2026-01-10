@@ -6,7 +6,8 @@ declare global {
 	}
 }
 
-export function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
+export function
+	prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
 	const global: ProjectSeleneGlobal = {
 		classes: {},
 		functions: {},
