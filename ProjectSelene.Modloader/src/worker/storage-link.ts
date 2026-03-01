@@ -14,6 +14,9 @@ export class StorageLink extends Storage {
 	public async readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		return this.sourceStorage.readDir(this.sourcePath + path, response);
 	}
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		return this.sourceStorage.readDirRecursive(this.sourcePath + path, response);
+	}
 	public writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		return this.sourceStorage.writeGranted(response);
 	}

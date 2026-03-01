@@ -21,6 +21,9 @@ export class StorageHttp extends Storage {
 	public async readDir(): Promise<boolean> {
 		return false; //If this is ever needed we can implement it for dev mods
 	}
+	public async readDirRecursive(): Promise<boolean> {
+		return false; //If this is ever needed we can implement it for dev mods
+	}
 
 	public async stat(): Promise<boolean> {
 		return false;

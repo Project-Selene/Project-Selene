@@ -36,6 +36,16 @@ export class StorageFileList {
 		new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;
 	}
+	public async readDirRecursive(target: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		const result: { name: string; isDir: boolean }[] = [];
+		for (const [key, value] of this.dirMap.entries()) {
+			if (key.startsWith(target + path)) {
+				result.push(...value);
+			}
+		}
+		new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
+		return true;
+	}
 	public async stat(target: string, path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		const file = this.fileMap.get(target + path);
 		if (!file) {

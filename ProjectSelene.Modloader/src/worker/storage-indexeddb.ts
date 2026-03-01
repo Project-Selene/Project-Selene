@@ -28,6 +28,12 @@ export class StorageIndexedDB extends Storage {
 		this.readDirAsync(path, response);
 		return true;
 	}
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		this.readDirAsync(path, response);
+		return true;
+	}
+
+	//TODO: Fix this to support deep directories.
 	private async readDirAsync(path: string, response: WritableStream<Uint8Array>): Promise<void> {
 		const result: { name: string; isDir: boolean }[] = [];
 		try {

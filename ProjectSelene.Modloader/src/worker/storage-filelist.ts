@@ -30,6 +30,17 @@ export class StorageFileList extends Storage {
 			response,
 		);
 	}
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		return await this.fileListChannel.send<boolean>(
+			'readDirRecursive',
+			{
+				target: this.target,
+				path,
+				response,
+			},
+			response,
+		);
+	}
 	public async writeGranted(): Promise<boolean> {
 		return false;
 	}

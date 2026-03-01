@@ -78,6 +78,52 @@ export class StorageZip extends Storage {
 		}
 	}
 
+	//TODO: make actually recursive. This currently just lists the same as readDir.
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const stream = await this.readFileFromFS(this.source);
+			if (!stream) {
+				return false;
+			}
+
+			const zip = await JSZip.loadAsync(await new Response(stream).arrayBuffer());
+			const folder = zip.folder(path);
+			if (!folder) {
+				return false;
+			}
+
+			(async (zip: JSZip, response: WritableStream<Uint8Array>) => {
+				const result: { name: string; isDir: boolean }[] = [];
+				zip.forEach((name, file) => {
+					if (file.dir) {
+						// Directories always end with a slash and may not have another slash in the name
+						if (name.indexOf('/') !== name.length - 1) {
+							return;
+						}
+						result.push({
+							name: name.slice(0, -1),
+							isDir: true,
+						});
+					} else {
+						// Files may not have a slash
+						if (name.includes('/')) {
+							return;
+						}
+						result.push({
+							name,
+							isDir: false,
+						});
+					}
+				});
+				await new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response);
+			})(folder, response);
+			return true;
+		} catch (e) {
+			console.error(e);
+			return false;
+		}
+	}
+
 	public async stat(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
 		try {
 			const stream = await this.readFileFromFS(this.source);

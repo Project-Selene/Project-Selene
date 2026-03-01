@@ -33,6 +33,19 @@ export class StorageFS extends Storage {
 			response,
 		);
 	}
+
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		return await this.fsChannel.send<boolean>(
+			'readDirRecursive',
+			{
+				source: this.source,
+				target: this.target,
+				path,
+				response,
+			},
+			response,
+		);
+	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		new Blob(['{"state":"granted"}'], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
 		return true;

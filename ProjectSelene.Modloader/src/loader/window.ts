@@ -1,3 +1,5 @@
+import { filesystem } from "./filesystem";
+
 const originalRequire = globalThis.require;
 
 declare global {
@@ -6,8 +8,27 @@ declare global {
 	}
 }
 
-export function
-	prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
+export async function prepareWindow(hookGameStart: (...args: unknown[]) => unknown) {
+	const filelist: Record<string, { name: string; isDir: boolean }> = {};
+	if (!originalRequire) {
+		//TODO: Cache
+		const start = performance.mark('fillFileList-start');
+		const [terraList, savesList] = await Promise.all([
+			filesystem.readDirRecursive('/fs/game/terra/'),
+			filesystem.readDirRecursive('/fs/saves/')
+				.catch(() => []), //Saves may not exist, but that's fine
+		]);
+		const end = performance.mark('fillFileList-end');
+		performance.measure('fillFileList', start.name, end.name);
+		for (const file of terraList) {
+			filelist['/fs/game/terra/' + file.name] = { name: '/fs/game/terra/' + file.name, isDir: file.isDir };
+		}
+		for (const file of savesList) {
+			filelist['/fs/saves/' + file.name] = { name: '/fs/saves/' + file.name, isDir: file.isDir };
+		}
+	}
+
+
 	const global: ProjectSeleneGlobal = {
 		classes: {},
 		functions: {},
@@ -15,6 +36,7 @@ export function
 		lets: {},
 		enums: {},
 		gameReadyCallback: hookGameStart,
+		filelist,
 		symbol: Symbol('ProjectSelene'),
 	};
 
@@ -140,8 +162,8 @@ function requireFS() {
 				(
 					{
 						promises: requireFSPromises(),
-						existsSync() {
-							return false; //We cannot emulate sync fs access.
+						existsSync(path: string) {
+							return __projectSelene.filelist['/fs/game/' + path] !== undefined;
 						},
 						mkdirSync() {
 							//We cannot emulate sync fs access.

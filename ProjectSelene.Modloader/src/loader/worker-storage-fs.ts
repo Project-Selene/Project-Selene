@@ -45,6 +45,26 @@ export class StorageFS {
 			return false;
 		}
 	}
+	public async readDirRecursive(
+		target: string,
+		source: string,
+		path: string,
+		response: WritableStream<Uint8Array>,
+	): Promise<boolean> {
+		try {
+			const dir = await this.fs.promises.readdir(this.path.join(source, path), {
+				withFileTypes: true,
+				encoding: 'utf-8',
+				recursive: true,
+			});
+			const result = dir.map(f => ({ isDir: f.isDirectory(), name: f.name }));
+			new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			new Blob([], { type: 'text/plain' }).stream().pipeTo(response);
+			return false;
+		}
+	}
 	public async writeGranted(
 		target: string,
 		source: string,

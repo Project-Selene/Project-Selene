@@ -17,7 +17,7 @@ export function PlayButton() {
 
 	return <HomeButton title={'Play'} onClick={() => {
 		dispatch(setPlayAnimation(true));
-		return gameManager.play(true)
+		return gameManager.play(new URLSearchParams(window.location.search).get('dev') === 'true')
 			.finally(() => dispatch(setPlayAnimation(false)));
 	}} disabled={!supportsOpenFolder || playing} />;
 }

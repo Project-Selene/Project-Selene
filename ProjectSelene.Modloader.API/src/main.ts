@@ -8,7 +8,8 @@ export { IsDevelopment } from './internal/consts.js';
 export { Mod } from './mod.js';
 
 
-if (IsDevelopment) {
+// eslint-disable-next-line no-unused-labels
+DROP_IN_PROD: if (IsDevelopment) {
 	const watcher = reloadAssetsOnChange();
 	waitForCodeChange().then(() => {
 		watcher.close();

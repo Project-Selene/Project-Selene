@@ -44,7 +44,7 @@ class Loader {
 		base.href = '/fs/game/terra/';
 		doc.head.prepend(base);
 
-		prepareWindow((...args: unknown[]) => this.hookGameStart(mods, ...args));
+		await prepareWindow((...args: unknown[]) => this.hookGameStart(mods, ...args));
 
 		document.open();
 		document.write(doc.documentElement.innerHTML);

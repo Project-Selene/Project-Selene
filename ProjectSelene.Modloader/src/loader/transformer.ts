@@ -378,7 +378,7 @@ export function transform(content: string, prefix: string) {
 		},
 		compilerOptions: {
 			target: ts.ScriptTarget.ESNext,
-			inlineSourceMap: false,
+			inlineSourceMap: true,
 			removeComments: true,
 			inlineSources: true,
 			isolatedDeclarations: true,

@@ -2,6 +2,7 @@ export abstract class Storage {
 	abstract readonly target: string;
 	abstract readFile(path: string, response: WritableStream<Uint8Array>): Promise<boolean>;
 	abstract readDir(path: string, response: WritableStream<Uint8Array>): Promise<boolean>;
+	abstract readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean>;
 	abstract writeGranted(response: WritableStream<Uint8Array>): Promise<boolean>;
 	abstract writeFile(
 		path: string,
@@ -14,22 +15,22 @@ export abstract class Storage {
 
 export type StorageInfo =
 	| {
-			fsType: 'fs';
-			path: string;
-			target: string;
-	  }
+		fsType: 'fs';
+		path: string;
+		target: string;
+	}
 	| {
-			fsType: 'handles';
-			path: string;
-			target: FileSystemDirectoryHandle;
-	  }
+		fsType: 'handles';
+		path: string;
+		target: FileSystemDirectoryHandle;
+	}
 	| {
-			fsType: 'indexed';
-			path: string;
-			target: string;
-	  }
+		fsType: 'indexed';
+		path: string;
+		target: string;
+	}
 	| {
-			fsType: 'link';
-			path: string;
-			target: string;
-	  };
+		fsType: 'link';
+		path: string;
+		target: string;
+	};

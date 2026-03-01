@@ -124,6 +124,16 @@ class Filesystem {
 			})
 		).json();
 	}
+	public async readDirRecursive(path: string): Promise<{ name: string; isDir: boolean }[]> {
+		return await (
+			await fetch(path, {
+				method: 'GET',
+				headers: {
+					'X-SW-Command': 'readDirRecursive',
+				},
+			})
+		).json();
+	}
 
 	public async isWritable(path: string): Promise<boolean> {
 		return await (
@@ -270,6 +280,7 @@ class Filesystem {
 			const fsComs = new ClientEventHandler(fsChannel.port1);
 			fsComs.on('readFile', (args: FsMessage) => fs.readFile(args.target, args.source, args.path, args.response));
 			fsComs.on('readDir', (args: FsMessage) => fs.readDir(args.target, args.source, args.path, args.response));
+			fsComs.on('readDirRecursive', (args: FsMessage) => fs.readDirRecursive(args.target, args.source, args.path, args.response));
 			fsComs.on('writeFile', (args: FsMessageWrite) =>
 				fs.writeFile(args.target, args.source, args.path, args.response, args.content),
 			);
@@ -287,6 +298,7 @@ class Filesystem {
 		const fsComs = new ClientEventHandler(fileListChannel.port1);
 		fsComs.on('readFile', (args: FsMessage) => this.fileListFS.readFile(args.target, args.path, args.response));
 		fsComs.on('readDir', (args: FsMessage) => this.fileListFS.readDir(args.target, args.path, args.response));
+		fsComs.on('readDirRecursive', (args: FsMessage) => this.fileListFS.readDirRecursive(args.target, args.path, args.response));
 		fsComs.on('stat', (args: FsMessage) => this.fileListFS.stat(args.target, args.path, args.response));
 
 		fileListChannel.port1.start();

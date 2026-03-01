@@ -12,6 +12,7 @@ declare interface ProjectSeleneGlobal {
 	consts: Record<string | symbol, unknown>;
 	lets: Record<string | symbol, { getter: () => unknown; setter: (value: unknown) => void }>;
 	enums: Record<string, Record<string, number>>;
+	filelist: Record<string, { name: string; isDir: boolean }>;
 }
 
 declare const __projectSelene: ProjectSeleneGlobal;

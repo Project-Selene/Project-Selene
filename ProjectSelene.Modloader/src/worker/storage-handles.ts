@@ -36,6 +36,32 @@ export class StorageHandles extends Storage {
 			return false;
 		}
 	}
+	public async readDirRecursive(path: string, response: WritableStream<Uint8Array>): Promise<boolean> {
+		try {
+			const parts = path.split('/');
+			const dirHandle = await this.resolveFolder(parts, 'read', false);
+			const result: { name: string; isDir: boolean }[] = [];
+			await this.readDirRecursiveInternal(dirHandle, '', result);
+			new Blob([JSON.stringify(result)], { type: 'application/json' }).stream().pipeTo(response); //Do not wait here
+			return true;
+		} catch {
+			return false;
+		}
+	}
+	private async readDirRecursiveInternal(dirHandle: FileSystemDirectoryHandle, path: string, result: { name: string; isDir: boolean }[]) {
+		const promises: Promise<void>[] = [];
+		for await (const [name, entry] of dirHandle.entries()) {
+			const fullPath = path + name;
+			result.push({
+				name: fullPath,
+				isDir: entry.kind === 'directory',
+			});
+			if (entry.kind === 'directory') {
+				promises.push(this.readDirRecursiveInternal(entry, fullPath + '/', result));
+			}
+		}
+		await Promise.allSettled(promises);
+	}
 	public async writeGranted(response: WritableStream<Uint8Array>): Promise<boolean> {
 		new Blob(['{"state":"' + (await this.dir.queryPermission({ mode: 'readwrite' })) + '"}'], {
 			type: 'application/json',

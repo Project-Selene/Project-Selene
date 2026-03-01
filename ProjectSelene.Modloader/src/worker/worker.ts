@@ -186,6 +186,9 @@ clientChannel.on(
 				case 'readDir':
 					result = await target.readDir(path, response);
 					break;
+				case 'readDirRecursive':
+					result = await target.readDirRecursive(path, response);
+					break;
 				case 'isWritable':
 					result = await target.writeGranted(response);
 					break;

@@ -22,6 +22,7 @@ export async function build() {
 		define: {
 			'globalThis.IS_DEVELOPMENT': 'false',
 		},
+		dropLabels: ['DROP_IN_PROD'],
 		plugins: sassPlugin ? [sassPlugin()] : [],
 		external: ['*.woff', '*.woff2'],
 	});
