@@ -1,5 +1,4 @@
-﻿
-using ProjectSelene.Domain.Exceptions;
+﻿using ProjectSelene.Domain.Exceptions;
 
 namespace ProjectSelene.Application.Storage.Commands.UploadArtifact;
 

@@ -12,13 +12,28 @@
           "Discord"
         ],
         "operationId": "Interactions",
+        "requestBody": {
+          "x-name": "interactionData",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscordInteractionBaseDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
+          "202": {
+            "description": ""
+          },
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ModListDto"
+                  "$ref": "#/components/schemas/PingResultDto"
                 }
               }
             }
@@ -306,6 +321,32 @@
   },
   "components": {
     "schemas": {
+      "PingResultDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "DiscordInteractionBaseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
       "ModListDto": {
         "type": "object",
         "additionalProperties": false,

@@ -10,7 +10,7 @@
 
 export interface IDiscordClient {
 
-    interactions(): Promise<ModListDto>;
+    interactions(interactionData: DiscordInteractionBaseDto): Promise<PingResultDto>;
 }
 
 export class DiscordClient implements IDiscordClient {
@@ -23,13 +23,17 @@ export class DiscordClient implements IDiscordClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    interactions(): Promise<ModListDto> {
+    interactions(interactionData: DiscordInteractionBaseDto): Promise<PingResultDto> {
         let url_ = this.baseUrl + "/api/Discord";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(interactionData);
+
         let options_: RequestInit = {
+            body: content_,
             method: "POST",
             headers: {
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             }
         };
@@ -39,13 +43,17 @@ export class DiscordClient implements IDiscordClient {
         });
     }
 
-    protected processInteractions(response: Response): Promise<ModListDto> {
+    protected processInteractions(response: Response): Promise<PingResultDto> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
+        if (status === 202) {
+            return response.text().then((_responseText) => {
+            return throwException("A server side error occurred.", status, _responseText, _headers);
+            });
+        } else if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ModListDto;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as PingResultDto;
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -53,7 +61,7 @@ export class DiscordClient implements IDiscordClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<ModListDto>(null as any);
+        return Promise.resolve<PingResultDto>(null as any);
     }
 }
 
@@ -384,6 +392,16 @@ export class UsersClient implements IUsersClient {
         }
         return Promise.resolve<string>(null as any);
     }
+}
+
+export interface PingResultDto {
+    type: number;
+}
+
+export interface DiscordInteractionBaseDto {
+    type: number;
+    id: string;
+    token: string;
 }
 
 export interface ModListDto {

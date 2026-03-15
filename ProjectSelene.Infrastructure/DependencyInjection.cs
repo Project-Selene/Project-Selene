@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ProjectSelene.Application.Common.Interfaces;
+using ProjectSelene.Discord;
 using ProjectSelene.Domain.Constants;
 using ProjectSelene.Domain.Entities;
 using ProjectSelene.Infrastructure.Data;
@@ -54,6 +55,7 @@ public static class DependencyInjection
         builder.Services.AddAuthentication("Cookie_Or_ApiKey")
             .AddApiKey(ApiKeyDefaults.AuthenticationScheme)
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddDiscordInteractions(DiscordInteractionsAuthDefaults.AuthenticationScheme)
             .AddMicrosoftAccount(options =>
             {
                 if (!builder.Configuration.GetSection("MicrosoftAccountOptions").Exists())
@@ -94,7 +96,12 @@ public static class DependencyInjection
                 };
             });
 
-        builder.Services.AddAuthorizationBuilder();
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("Discord", policy =>
+            {
+                policy.AuthenticationSchemes = [DiscordInteractionsAuthDefaults.AuthenticationScheme];
+                policy.RequireAuthenticatedUser();
+            });
 
         builder.Services.AddDataProtection()
             .SetApplicationName("ProjectSelene")
