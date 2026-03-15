@@ -35,6 +35,12 @@
         <Folder Include="Testdata\StorageObjects\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="dev_cert.p12">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 
     <!-- Auto-generated Open API specification and Angular TypeScript clients  -->
     <PropertyGroup>

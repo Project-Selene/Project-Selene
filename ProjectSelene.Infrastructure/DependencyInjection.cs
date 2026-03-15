@@ -23,6 +23,7 @@ using ProjectSelene.Infrastructure.Data.Interceptors;
 using ProjectSelene.Infrastructure.Identity;
 using ProjectSelene.Infrastructure.Storage;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -105,7 +106,10 @@ public static class DependencyInjection
 
         builder.Services.AddDataProtection()
             .SetApplicationName("ProjectSelene")
-            .PersistKeysToDbContext<ApplicationDbContext>();
+            .PersistKeysToDbContext<ApplicationDbContext>()
+            .ProtectKeysWithCertificate(X509CertificateLoader.LoadPkcs12FromFile(
+                builder.Configuration["DataProtection:File"] ?? throw new Exception("DataProtection:File must be configured"),
+                builder.Configuration["DataProtection:Password"]));
 
         builder.Services
             .AddIdentityCore<SeleneUser>()
