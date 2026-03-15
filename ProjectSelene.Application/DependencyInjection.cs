@@ -10,8 +10,6 @@ public static class DependencyInjection
     {
         builder.Services.Configure<DiscordInteractionsConfig>(builder.Configuration.GetSection("DiscordInteractionsConfig"));
 
-        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         builder.Services.AddMediatR(cfg =>

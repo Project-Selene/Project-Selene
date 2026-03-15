@@ -30,8 +30,8 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("SeleneSqliteDb");
-        Guard.Against.Null(connectionString, message: "Connection string 'SeleneSqliteDb' not found.");
+        var connectionString = builder.Configuration.GetConnectionString("SeleneSqliteDb")
+            ?? throw new Exception("Connection string 'SeleneSqliteDb' not found.");
 
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         builder.Services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -145,7 +145,7 @@ public static class DependencyInjection
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
         };
-        forwardingOptions.KnownNetworks.Clear();
+        forwardingOptions.KnownIPNetworks.Clear();
         forwardingOptions.KnownProxies.Clear();
         app.UseForwardedHeaders(forwardingOptions);
 
