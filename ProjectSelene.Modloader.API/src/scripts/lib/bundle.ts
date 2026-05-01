@@ -16,7 +16,7 @@ async function addFolderToZip(zip: JSZip, folderPath: string, prefix = '') {
 		const relativePath = path.join(prefix, file);
 
 		if (fs.lstatSync(filePath).isDirectory()) {
-			await addFolderToZip(zip.folder(file), filePath, relativePath);
+			await addFolderToZip(zip.folder(file)!, filePath, relativePath);
 			return;
 		}
 

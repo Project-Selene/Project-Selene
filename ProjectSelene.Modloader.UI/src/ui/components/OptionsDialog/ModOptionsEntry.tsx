@@ -12,7 +12,7 @@ export function ModOptionsEntry({ mod }: { mod: Mod }) {
 	return (
 		<Accordion expanded={modExpanded} onClick={() => null /*dispatch(toggleModOptionsExpanded(props.id))*/}>
 			<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
-				<Stack direction="row" alignItems="baseline" justifyContent="space-between" width="100%">
+				<Stack direction="row" sx={{ alignItems: "baseline", justifyContent: "space-between", width: "100%" }} >
 					<Typography variant="subtitle1">{mod.name}</Typography>
 					<Switch
 						checked={modEnabled}

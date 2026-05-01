@@ -1,7 +1,7 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import pluginReact from 'eslint-plugin-react';
+import eslintReact from "@eslint-react/eslint-plugin";
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
@@ -14,7 +14,7 @@ export default [
 	},
 	pluginJs.configs.recommended,
 	...tseslint.configs.recommended,
-	pluginReact.configs.flat.recommended,
+	eslintReact.configs["recommended-typescript"],
 	{
 		rules: {
 			'no-unused-vars': 'off',

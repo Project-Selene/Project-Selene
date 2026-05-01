@@ -15,7 +15,7 @@ export function OpenDialog() {
 	return (
 		<Dialog open={open} maxWidth={false} fullWidth={false}>
 			<DialogTitle>
-				<Stack direction="row" justifyContent="space-between">
+				<Stack direction="row" sx={{ justifyContent: "space-between" }} >
 					<span>Finding the game directory using Steam</span>
 				</Stack>
 			</DialogTitle>

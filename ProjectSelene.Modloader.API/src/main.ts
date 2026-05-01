@@ -13,6 +13,6 @@ DROP_IN_PROD: if (IsDevelopment) {
 	const watcher = reloadAssetsOnChange();
 	waitForCodeChange().then(() => {
 		watcher.close();
-		__projectSelene.devMod.hotreload();
+		__projectSelene.devMod?.hotreload();
 	});
 }

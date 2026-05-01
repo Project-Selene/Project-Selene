@@ -1,6 +1,5 @@
 import CopyPlugin = require('copy-webpack-plugin');
 import path = require('path');
-import TerserPlugin = require('terser-webpack-plugin');
 
 import { downloadNWJS } from './build';
 
@@ -12,7 +11,7 @@ module.exports = {
 	output: {
 		filename: 'game.compiled.js',
 		path: path.resolve(__dirname, 'dist', 'assets', 'js'),
-        
+
 	},
 	resolve: {
 		extensions: ['.ts']

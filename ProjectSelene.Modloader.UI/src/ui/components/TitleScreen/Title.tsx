@@ -12,7 +12,7 @@ export function Title() {
 			}}
 		>
 			<Stack sx={{ marginTop: theme.spacing(5), textAlign: 'center' }}>
-				<Typography variant="h1" fontFamily="Comfortaa">Project Selene</Typography>
+				<Typography variant="h1" sx={{ fontFamily: "Comfortaa" }} >Project Selene</Typography>
 				<Typography variant="subtitle1">Alabaster Dawn modloader</Typography>
 			</Stack>
 		</Box>

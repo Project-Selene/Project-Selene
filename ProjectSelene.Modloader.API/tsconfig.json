@@ -8,7 +8,7 @@
     "inlineSources": true,
     "declaration": true,
     "outDir": "./dist",
-    "sourceRoot": "./src",
+    "rootDir": "./src",
     "skipLibCheck": true // Chokidar has a bug. Remove this when it works again. https://github.com/paulmillr/chokidar/issues/1299
   },
   "exclude": [

@@ -7,7 +7,9 @@ export function StatusNotification() {
 	return (
 		<Snackbar
 			open={!!status}
-			TransitionComponent={Slide}
+			slotProps={{
+				transition: Slide
+			}}
 			anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
 			message={<Typography variant="body1">{status}</Typography>}
 			action={<CircularProgress />}

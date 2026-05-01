@@ -12,7 +12,7 @@ export function InfoDialog() {
 	return (
 		<Dialog open={open} maxWidth={false} fullWidth={false} onClose={() => dispatch(setInfoOpen(false))}>
 			<DialogTitle>
-				<Stack direction="row" justifyContent="space-between">
+				<Stack direction="row" sx={{ justifyContent: "space-between" }} >
 					<span>Info</span>
 					<span></span>
 				</Stack>

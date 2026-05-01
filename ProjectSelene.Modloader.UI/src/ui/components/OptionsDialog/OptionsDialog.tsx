@@ -33,7 +33,7 @@ export function OptionsDialog() {
 	return (
 		<Dialog open={open} maxWidth={false} fullWidth={true} onClose={() => null /*dispatch(setOptionsOpen(false))*/}>
 			<DialogTitle>
-				<Stack direction="row" justifyContent="space-between">
+				<Stack direction="row" sx={{ justifyContent: "space-between" }}>
 					<span>Options</span>
 					<Stack direction="row" spacing={0.5}>
 						<Button
@@ -48,7 +48,7 @@ export function OptionsDialog() {
 				</Stack>
 			</DialogTitle>
 			<DialogContent sx={{ height: '70vh' }}>
-				<Stack direction="column" sx={{ height: '100%' }} gap={1}>
+				<Stack direction="column" spacing={3} sx={{ height: '100%' }} >
 					<Stack direction="column">
 						<Accordion
 							expanded={seleneOptionsExpanded}
@@ -56,10 +56,11 @@ export function OptionsDialog() {
 						>
 							<AccordionSummary expandIcon={<ExpandMore />} sx={{ flexDirection: 'row-reverse', gap: 1 }}>
 								<Stack
-									direction="row"
-									alignItems="baseline"
-									justifyContent="space-between"
-									width="100%"
+									direction="row" sx={{
+										alignItems: "baseline",
+										justifyContent: "space-between",
+										width: "100%",
+									}}
 								>
 									<Typography variant="subtitle1">Project Selene</Typography>
 								</Stack>

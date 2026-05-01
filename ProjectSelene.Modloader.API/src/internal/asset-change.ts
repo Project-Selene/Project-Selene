@@ -27,6 +27,12 @@ export function reloadAssetsOnChange() {
 			return result;
 		}
 	}
+
+	if (!__projectSelene.devMod) {
+		throw new Error('Dev mod is not enabled. Make sure to enable it in the config and restart the game.');
+	}
+	const devMod = __projectSelene.devMod;
+
 	__projectSelene.devMod.afterMain = mod => {
 		mod.inject(AssetChangeEvents);
 	};
@@ -34,26 +40,26 @@ export function reloadAssetsOnChange() {
 	__projectSelene.devMod.watchers ??= new Map<string, () => void>();
 	window['require']('fs').watch = function (name: string, callback: () => void) {
 		name = name.replace(/\\/g, '/').replace(/[/]+/g, '/');
-		__projectSelene.devMod.watchers.set(name, callback);
-		return { close() { __projectSelene.devMod.watchers.delete(name); } };
+		devMod.watchers?.set(name, callback);
+		return { close() { devMod.watchers?.delete(name); } };
 	};
 
 	const esAssets = new EventSource('http://localhost:8182/asset-changes');
 	esAssets.addEventListener('change', async (ev) => {
 		const files: string[] = JSON.parse(ev.data);
-		await __projectSelene.devMod.registerPatches(files.map(target => ({ type: 'json', target })));
+		await devMod.registerPatches(files.map(target => ({ type: 'json', target })));
 		for (const file of files) {
 			console.log('reloading', file);
-			__projectSelene.devMod.watchers.get(file)?.();
+			devMod.watchers?.get(file)?.();
 		}
 	});
 	esAssets.addEventListener('remove', async (ev) => {
 		const files: string[] = JSON.parse(ev.data);
 
-		await __projectSelene.devMod.unregisterPatches(files.map(target => ({ type: 'json', target })));
+		await devMod.unregisterPatches(files.map(target => ({ type: 'json', target })));
 		for (const file of files) {
 			console.log('reloading', file);
-			__projectSelene.devMod.watchers.get(file)?.();
+			devMod.watchers?.get(file)?.();
 		}
 	});
 

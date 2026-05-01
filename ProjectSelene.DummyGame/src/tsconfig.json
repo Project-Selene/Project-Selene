@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noImplicitAny": false,
     "target": "ES2020",
-    "lib": ["ES2018"],
+    "lib": ["ES2018", "DOM"],
     "sourceMap": true,
     "outDir": "../cache",
     "composite": true

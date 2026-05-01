@@ -106,7 +106,7 @@ import { diffAsset } from './lib/diff-assets.js';
 		};
 
 		const proxyReq = http.request(options, proxyRes => {
-			res.writeHead(proxyRes.statusCode, {
+			res.writeHead(proxyRes.statusCode ?? 500, {
 				...proxyRes.headers,
 				'Access-Control-Allow-Origin': '*',
 				'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',

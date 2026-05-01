@@ -77,7 +77,7 @@ function url() {
 
 function withToken(token: string) {
 	return {
-		fetch: (url, request) => {
+		fetch: (url: string | URL | Request, request?: RequestInit) => {
 			if (request) {
 				return fetch(url, {
 					...request,

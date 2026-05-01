@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { diffAsset } from './diff-assets.js';
 
-export async function getAssets(folder: string) {
+export async function getAssets(folder: string): Promise<ModPatch[]> {
 	if (!fs.existsSync(folder)) {
 		return [];
 	}
@@ -16,7 +16,7 @@ export async function getAssets(folder: string) {
 			.map((relative): ModPatch => {
 				const subdir = path.relative('assets', relative).replace(/\\/g, '/');
 				if (relative.endsWith('.json-patch')) {
-					return { type: 'json', target: 'terra/' + subdir.substring(0, subdir.length - '-patch'.length)};
+					return { type: 'json', target: 'terra/' + subdir.substring(0, subdir.length - '-patch'.length) };
 				} else {
 					return { type: 'raw', target: 'terra/' + subdir };
 				}
