@@ -4,7 +4,7 @@ public record ListModsQuery : IRequest<ModListDto>;
 
 public class ListModsQueryHandler(IUser user, IApplicationDbContext context, IIdentityService identityService) : IRequestHandler<ListModsQuery, ModListDto>
 {
-    public async Task<ModListDto> Handle(ListModsQuery request, CancellationToken cancellationToken)
+    public async ValueTask<ModListDto> Handle(ListModsQuery request, CancellationToken cancellationToken)
     {
         if (user.Id != null && await identityService.AuthorizeAsync(user.Id, Policies.CAN_SEE_ALL_MODS))
         {

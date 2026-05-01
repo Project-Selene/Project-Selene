@@ -23,7 +23,7 @@ public class DownloadValidator : AbstractValidator<Download>
 
 public class DownloadHandler(IApplicationDbContext context, IStorageProviderService storage) : IRequestHandler<Download, DownloadDto>
 {
-    public async Task<DownloadDto> Handle(Download request, CancellationToken cancellationToken)
+    public async ValueTask<DownloadDto> Handle(Download request, CancellationToken cancellationToken)
     {
         var download = await context.ModVersions
             .Where(m =>

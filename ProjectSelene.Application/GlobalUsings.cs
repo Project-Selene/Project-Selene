@@ -1,5 +1,5 @@
 ﻿global using FluentValidation;
-global using MediatR;
+global using Mediator;
 global using Microsoft.EntityFrameworkCore;
 global using ProjectSelene.Application.Common.Interfaces;
 global using ProjectSelene.Application.Common.Mappings;

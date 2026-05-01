@@ -30,7 +30,7 @@ public class UploadArtifactCommandValidator : AbstractValidator<UploadArtifactCo
 
 public class UploadArtifactCommandHandler(IApplicationDbContext context, IUser user, IStorageProviderService storage) : IRequestHandler<UploadArtifactCommand, Result>
 {
-    public async Task<Result> Handle(UploadArtifactCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result> Handle(UploadArtifactCommand request, CancellationToken cancellationToken)
     {
         var version = await context.ModVersions
             .Include(m => m.Download)

@@ -11,13 +11,13 @@ using System.Text.Encodings.Web;
 
 namespace ProjectSelene.Discord;
 
-public class DiscordInteractionsAuthHandler(IOptionsMonitor<DiscordInteractionsAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock systemClock, IOptions<DiscordInteractionsConfig> config, IHttpContextAccessor httpContextAccessor)
-    : AuthenticationHandler<DiscordInteractionsAuthOptions>(options, logger, encoder, systemClock)
+public class DiscordInteractionsAuthHandler(IOptionsMonitor<DiscordInteractionsAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, IOptions<DiscordInteractionsConfig> config, IHttpContextAccessor httpContextAccessor)
+    : AuthenticationHandler<DiscordInteractionsAuthOptions>(options, logger, encoder)
 {
     private static readonly AuthenticateResult invalidSignature = AuthenticateResult.Fail("Failed to validate Discord signature.");
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var httpRequest = httpContextAccessor.HttpContext.Request;
+        var httpRequest = httpContextAccessor.HttpContext?.Request ?? throw new Exception("Cannot use DiscordInteractionsAuthHandler withoout active http request");
 
         var publicKey = Convert.FromHexString(config.Value.PublicKey);
 

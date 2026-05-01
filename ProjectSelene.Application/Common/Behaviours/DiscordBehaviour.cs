@@ -14,9 +14,9 @@ public record DiscordInteractionsConfig
     public required string Algorithm { get; set; }
 }
 
-public class DiscordBehaviour<TRequest, TResponse>(IHttpContextAccessor httpContextAccessor, ILogger<DiscordBehaviour<TRequest, TResponse>> logger, IOptions<DiscordInteractionsConfig> config) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+public class DiscordBehaviour<TRequest, TResponse>(IHttpContextAccessor httpContextAccessor, ILogger<DiscordBehaviour<TRequest, TResponse>> logger, IOptions<DiscordInteractionsConfig> config) : IPipelineBehavior<TRequest, TResponse> where TRequest : IMessage
 {
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async ValueTask<TResponse> Handle(TRequest request, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
     {
         var discordAttributes = request.GetType().GetCustomAttributes<DiscordAttribute>();
 
@@ -50,6 +50,6 @@ public class DiscordBehaviour<TRequest, TResponse>(IHttpContextAccessor httpCont
             }
         }
 
-        return await next();
+        return await next(request, cancellationToken);
     }
 }

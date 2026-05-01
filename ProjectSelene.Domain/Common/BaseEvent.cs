@@ -1,5 +1,3 @@
-﻿using MediatR;
+﻿namespace ProjectSelene.Domain.Common;
 
-namespace ProjectSelene.Domain.Common;
-
-public abstract record BaseEvent : INotification;
+public abstract record BaseEvent : IMessage;

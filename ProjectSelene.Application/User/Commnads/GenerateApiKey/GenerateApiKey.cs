@@ -9,8 +9,6 @@ public record GenerateApiKeyCommand : IRequest<string>
 
 public class GenerateApiKeyCommandHandler(IApiKeyGenerator keyGenerator) : IRequestHandler<GenerateApiKeyCommand, string>
 {
-    public Task<string> Handle(GenerateApiKeyCommand request, CancellationToken cancellationToken)
-    {
-        return keyGenerator.GenerateApiKey(request.ExpiresInDays);
-    }
+    public ValueTask<string> Handle(GenerateApiKeyCommand request, CancellationToken cancellationToken)
+        => new(keyGenerator.GenerateApiKey(request.ExpiresInDays));
 }

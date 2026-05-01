@@ -6,9 +6,9 @@ namespace ProjectSelene.Application.Common.Behaviours;
 public class AuthorizationBehaviour<TRequest, TResponse>(
     IUser user,
     IIdentityService identityService,
-    IApplicationDbContext context) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+    IApplicationDbContext context) : IPipelineBehavior<TRequest, TResponse> where TRequest : IMessage
 {
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async ValueTask<TResponse> Handle(TRequest request, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
     {
         var authorizeAttributes = request.GetType().GetCustomAttributes<AuthorizeAttribute>();
 
@@ -27,13 +27,11 @@ public class AuthorizationBehaviour<TRequest, TResponse>(
 
                     if (isVerified)
                     {
-                        // Resource is public, skip other checks
-                        return await next();
+                        return await next(request, cancellationToken);
                     }
                 }
             }
 
-            // Must be authenticated user
             if (user.Id == null)
             {
                 throw new UnauthorizedAccessException();
@@ -52,13 +50,11 @@ public class AuthorizationBehaviour<TRequest, TResponse>(
 
                     if (isOwner)
                     {
-                        // User is the owner of the mod version, skip other checks
-                        return await next();
+                        return await next(request, cancellationToken);
                     }
                 }
             }
 
-            // Role-based authorization
             var authorizeAttributesWithRoles = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Roles));
 
             if (authorizeAttributesWithRoles.Any())
@@ -78,14 +74,12 @@ public class AuthorizationBehaviour<TRequest, TResponse>(
                     }
                 }
 
-                // Must be a member of at least one role in roles
                 if (!authorized)
                 {
                     throw new ForbiddenAccessException();
                 }
             }
 
-            // Policy-based authorization
             var authorizeAttributesWithPolicies = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Policy));
             if (authorizeAttributesWithPolicies.Any())
             {
@@ -101,7 +95,6 @@ public class AuthorizationBehaviour<TRequest, TResponse>(
             }
         }
 
-        // User is authorized / authorization not required
-        return await next();
+        return await next(request, cancellationToken);
     }
 }

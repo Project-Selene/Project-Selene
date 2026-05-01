@@ -2,9 +2,9 @@
 
 namespace ProjectSelene.Application.Mods.EventHandlers;
 
-public class VersionSubmittedEventHandler(IApplicationDbContext context, IAdminNotifier adminNotifier) : INotificationHandler<VersionSubmittedEvent>
+public class VersionSubmittedEventHandler(IApplicationDbContext context, IAdminNotifier adminNotifier)
 {
-    public async Task Handle(VersionSubmittedEvent notification, CancellationToken cancellationToken)
+    public async ValueTask Handle(VersionSubmittedEvent notification, CancellationToken cancellationToken)
     {
         var data = await context.ModVersions
             .Where(v => v.Id == notification.ModVersionId)

@@ -10,7 +10,7 @@ public record GetLoginProviderQuery : IRequest<List<LoginProviderDTO>>
 
 public class GetLoginProviderQueryHandler(SignInManager<SeleneUser> signInManager) : IRequestHandler<GetLoginProviderQuery, List<LoginProviderDTO>>
 {
-    public async Task<List<LoginProviderDTO>> Handle(GetLoginProviderQuery request, CancellationToken cancellationToken)
+    public async ValueTask<List<LoginProviderDTO>> Handle(GetLoginProviderQuery request, CancellationToken cancellationToken)
     {
         var schemes = await signInManager.GetExternalAuthenticationSchemesAsync();
         return schemes

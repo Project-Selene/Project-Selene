@@ -6,15 +6,15 @@ namespace ProjectSelene.Application.Common.Behaviours;
 public class PerformanceBehaviour<TRequest, TResponse>(
     ILogger<TRequest> logger,
     IUser user,
-    IIdentityService identityService) : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+    IIdentityService identityService) : IPipelineBehavior<TRequest, TResponse> where TRequest : IMessage
 {
     private readonly Stopwatch timer = new Stopwatch();
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async ValueTask<TResponse> Handle(TRequest request, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
     {
         timer.Start();
 
-        var response = await next();
+        var response = await next(request, cancellationToken);
 
         timer.Stop();
 

@@ -9,8 +9,8 @@ public record PingCommand : IRequest<PingResultDto>
 
 public class PingCommandHandler : IRequestHandler<PingCommand, PingResultDto>
 {
-    public async Task<PingResultDto> Handle(PingCommand request, CancellationToken cancellationToken)
+    public ValueTask<PingResultDto> Handle(PingCommand request, CancellationToken cancellationToken)
     {
-        return new();
+        return new(new PingResultDto());
     }
 }

@@ -25,7 +25,7 @@ public class SubmitVersionCommandValidator : AbstractValidator<SubmitVersionComm
 
 public class SubmitVersionCommandHandler(IApplicationDbContext context, IUser user) : IRequestHandler<SubmitVersionCommand, Result>
 {
-    public async Task<Result> Handle(SubmitVersionCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result> Handle(SubmitVersionCommand request, CancellationToken cancellationToken)
     {
         var version = await context.ModVersions
             .FirstOrDefaultAsync(m => m.Mod.Guid == request.ModId && m.Version == request.Version && m.CreatedBy != null && m.CreatedBy.Id == user.Id

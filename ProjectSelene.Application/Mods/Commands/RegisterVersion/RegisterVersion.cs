@@ -24,7 +24,7 @@ public class UploadVersionCommandValidator : AbstractValidator<RegisterVersionCo
 
 public class RegisterVersionCommandHandler(IApplicationDbContext context) : IRequestHandler<RegisterVersionCommand, Result>
 {
-    public async Task<Result> Handle(RegisterVersionCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result> Handle(RegisterVersionCommand request, CancellationToken cancellationToken)
     {
         var mod = await context.Mods
             .Include(m => m.Versions)
