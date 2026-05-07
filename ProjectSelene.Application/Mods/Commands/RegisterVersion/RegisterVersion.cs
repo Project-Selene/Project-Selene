@@ -85,9 +85,9 @@ public class UploadVersionCommandValidator : AbstractValidator<RegisterVersionCo
             .WithMessage("You have exceeded the maximum number of submitted but unverified versions.");
     }
 
-    private Task<bool> NotExist(RegisterVersionCommand command, string version, CancellationToken cancellationToken)
+    private async Task<bool> NotExist(RegisterVersionCommand command, string version, CancellationToken cancellationToken)
     {
-        return dbContext.ModVersions
+        return !await dbContext.ModVersions
             .AnyAsync(v => v.Mod.Guid == command.ModId && v.Version == version && v.VerifiedBy != null, cancellationToken);
     }
 
