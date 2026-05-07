@@ -140,8 +140,7 @@ export class StorageHandles extends Storage {
 	) {
 		const state = await dir.queryPermission({ mode });
 		if (state !== 'granted') {
-			const result = await dir.requestPermission({ mode });
-			console.log('permission result', result);
+			await dir.requestPermission({ mode });
 		}
 		return dir;
 	}

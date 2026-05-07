@@ -250,8 +250,9 @@ function requireFSPromises() {
 									throw new Error('Failed to write file: ' + name);
 								}
 							},
-							rename(from: string, to: string) {
-								console.log('rename', from, to); //TODO: implement rename
+							rename() {
+								//rename(from: string, to: string) {
+								// console.log('rename', from, to); //TODO: implement rename
 							},
 							async access(path: string) {
 								const result = await (

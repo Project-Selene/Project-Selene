@@ -73,7 +73,7 @@ export function ModsDialog() {
 		}
 	};
 	const openModsFolder = async () => {
-		await gameManager.openModDirectory();
+		await gameManager.openModDirectory('readwrite');
 		await refresh();
 	};
 

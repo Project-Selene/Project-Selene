@@ -88,7 +88,7 @@ export class GameManager {
         });
     }
 
-    public async openGameDirectory(mode: FileSystemPermissionMode = 'read'): Promise<void> {
+    public async openGameDirectory(mode: FileSystemPermissionMode = 'read'): Promise<Game> {
         if ("require" in window) {
             this.gameInfo.game = {
                 type: 'fs',
@@ -100,7 +100,7 @@ export class GameManager {
             }
 
             await this.save();
-            return;
+            return this.game;
         }
 
         this.gameInfo.game = await this.openDirectory('game', mode);
@@ -119,6 +119,7 @@ export class GameManager {
                 break;
         }
         await this.save();
+        return this.game;
     }
 
     public async openDefaultModDirectory(): Promise<void> {
