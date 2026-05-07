@@ -1,12 +1,12 @@
-﻿using ProjectSelene.Domain.Exceptions;
+﻿using Microsoft.Extensions.Options;
+using ProjectSelene.Domain.Configuration;
+using ProjectSelene.Domain.Exceptions;
 
 namespace ProjectSelene.Application.Storage.Commands.UploadArtifact;
 
 [Authorize(Policy = Policies.CAN_UPLOAD_FOR_OTHERS, AllowOwner = true)]
 public record UploadArtifactCommand : IRequest<Result>, IModRequest
 {
-    public const int MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10 MB
-
     public required Guid ModId { get; init; }
     public required string Version { get; init; }
     public required Stream Content { get; init; }
@@ -28,7 +28,7 @@ public class UploadArtifactCommandValidator : AbstractValidator<UploadArtifactCo
     }
 }
 
-public class UploadArtifactCommandHandler(IApplicationDbContext context, IUser user, IStorageProviderService storage) : IRequestHandler<UploadArtifactCommand, Result>
+public class UploadArtifactCommandHandler(IApplicationDbContext context, IUser user, IStorageProviderService storage, IOptions<LimitConfig> limitConfig) : IRequestHandler<UploadArtifactCommand, Result>
 {
     public async ValueTask<Result> Handle(UploadArtifactCommand request, CancellationToken cancellationToken)
     {
@@ -51,7 +51,7 @@ public class UploadArtifactCommandHandler(IApplicationDbContext context, IUser u
             await storage.Delete(version.Download.Guid, cancellationToken);
         }
 
-        using var limitedStream = StreamLimiter.Limit(request.Content, UploadArtifactCommand.MAX_UPLOAD_SIZE, cancellationToken);
+        using var limitedStream = StreamLimiter.Limit(request.Content, limitConfig.Value.MaxUploadSize, cancellationToken);
 
         var id = await storage.Upload(limitedStream, cancellationToken);
         version.Download = new()

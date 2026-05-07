@@ -9,19 +9,6 @@ public record SubmitVersionCommand : IRequest<Result>, IModRequest
     public required Guid ModId { get; init; }
     public required string Version { get; init; }
 }
-public class SubmitVersionCommandValidator : AbstractValidator<SubmitVersionCommand>
-{
-    public SubmitVersionCommandValidator()
-    {
-        RuleFor(v => v.ModId)
-            .NotEmpty();
-
-        RuleFor(v => v.Version)
-            .Matches(@"^\d+\.\d+\.\d+$")
-            .MaximumLength(16);
-    }
-}
-
 
 public class SubmitVersionCommandHandler(IApplicationDbContext context, IUser user) : IRequestHandler<SubmitVersionCommand, Result>
 {
@@ -38,5 +25,18 @@ public class SubmitVersionCommandHandler(IApplicationDbContext context, IUser us
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
+    }
+}
+
+public class SubmitVersionCommandValidator : AbstractValidator<SubmitVersionCommand>
+{
+    public SubmitVersionCommandValidator()
+    {
+        RuleFor(v => v.ModId)
+            .NotEmpty();
+
+        RuleFor(v => v.Version)
+            .Matches(@"^\d+\.\d+\.\d+$")
+            .MaximumLength(16);
     }
 }

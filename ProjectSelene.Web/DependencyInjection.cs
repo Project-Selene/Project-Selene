@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using ProjectSelene.Application.Common.Interfaces;
+using ProjectSelene.Domain.Configuration;
 using ProjectSelene.Infrastructure.Data;
 using ProjectSelene.Web.Services;
 
@@ -13,6 +14,8 @@ public static class DependencyInjection
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+        builder.Services.Configure<LimitConfig>(builder.Configuration.GetSection("Limits"));
 
         builder.Services.AddScoped<IUser, CurrentUser>();
 

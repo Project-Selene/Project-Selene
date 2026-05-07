@@ -55,6 +55,10 @@ export class DiscordClient implements IDiscordClient {
             return response.text().then((_responseText) => {
             return throwException("A server side error occurred.", status, _responseText, _headers);
             });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            return throwException("A server side error occurred.", status, _responseText, _headers);
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
@@ -399,8 +403,30 @@ export interface PingResultDto {
 
 export interface DiscordInteractionBaseDto {
     type: number;
+    data: KeyValuePairOfStringAndJsonNode[] | undefined;
     id: string;
     token: string;
+    message: PartialMessage | undefined;
+}
+
+export interface KeyValuePairOfStringAndJsonNode {
+    key: string | undefined;
+    value: JsonNode | undefined;
+}
+
+export interface JsonNode {
+    underlyingElement: any | undefined;
+    options: JsonNodeOptions | undefined;
+    parent: JsonNode | undefined;
+    root: JsonNode;
+}
+
+export interface JsonNodeOptions {
+    propertyNameCaseInsensitive: boolean;
+}
+
+export interface PartialMessage {
+    id: string;
 }
 
 export interface ModListDto {

@@ -2,7 +2,7 @@
 
 namespace ProjectSelene.Application.Mods.EventHandlers;
 
-public class VersionSubmittedEventHandler(IApplicationDbContext context, IAdminNotifier adminNotifier)
+public class VersionSubmittedEventHandler(IApplicationDbContext context, IAdminNotifier adminNotifier) : INotificationHandler<VersionSubmittedEvent>
 {
     public async ValueTask Handle(VersionSubmittedEvent notification, CancellationToken cancellationToken)
     {

@@ -20,7 +20,7 @@ public class Storage : EndpointGroupBase
             .MapPut(UploadArtifact, "{id}/{version}");
     }
 
-    public async Task<Result> UploadArtifact(ISender sender, Guid id, string version, [FromForm] IFormFile file, IHttpContextAccessor contextAccessor, CancellationToken cancellationToken)
+    public async Task<Result> UploadArtifact(ISender sender, Guid id, string version, [FromForm] IFormFile file, CancellationToken cancellationToken)
     {
         return await sender.Send(new UploadArtifactCommand()
         {

@@ -31,6 +31,22 @@ public class AdminNotifier([FromKeyedServices("SubmissionWebhook")] DiscordWebho
                         .WithButton("Reject", JsonSerializer.Serialize(new VersionVerifiedEvent(modVersionId, VersionVerifiedEvent.VerificationStatus.Rejected)), ButtonStyle.Danger)
                 )
                 .Build(),
+            options: new() { CancelToken = cancellationToken },
             flags: MessageFlags.ComponentsV2);
+    }
+    public async Task NotifyVersionVerified(ulong messageId, string modName, string description, string version, string author, string verifiedBy, CancellationToken cancellationToken)
+    {
+        await submissionWebhook.ModifyMessageAsync(
+            messageId,
+            properties =>
+            {
+                properties.Components = new ComponentBuilderV2()
+                    .WithContainer(
+                        new ContainerBuilder()
+                            .WithTextDisplay("# " + modName + " - " + version + "\n" + description)
+                    )
+                    .WithTextDisplay("Submitted by: " + author + "\nVerified by: " + verifiedBy)
+                    .Build();
+            }, new() { CancelToken = cancellationToken });
     }
 }

@@ -37,6 +37,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": ""
           }
         },
         "security": [
@@ -344,10 +347,93 @@
             "type": "integer",
             "format": "int32"
           },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/KeyValuePairOfStringAndJsonNode"
+            }
+          },
           "id": {
             "type": "string"
           },
           "token": {
+            "type": "string"
+          },
+          "message": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PartialMessage"
+              }
+            ]
+          }
+        }
+      },
+      "KeyValuePairOfStringAndJsonNode": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          }
+        }
+      },
+      "JsonNode": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "underlyingElement": {
+            "nullable": true
+          },
+          "options": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JsonNodeOptions"
+              }
+            ]
+          },
+          "parent": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JsonNode"
+              }
+            ]
+          },
+          "root": {
+            "$ref": "#/components/schemas/JsonNode"
+          }
+        }
+      },
+      "JsonNodeOptions": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "propertyNameCaseInsensitive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PartialMessage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
             "type": "string"
           }
         }

@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Mod> Mods => Set<Mod>();
     public DbSet<ModVersion> ModVersions => Set<ModVersion>();
+    public DbSet<ModInfoChangeRequest> ModInfoChangeRequest => Set<ModInfoChangeRequest>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder builder)
