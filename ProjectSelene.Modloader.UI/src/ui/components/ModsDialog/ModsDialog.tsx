@@ -3,12 +3,7 @@ import Close from '@mui/icons-material/Close';
 import {
 	Box,
 	Button,
-	Card,
-	CardContent,
-	CircularProgress,
 	Container,
-	Dialog,
-	DialogContent,
 	Fade,
 	Paper,
 	Slide,
@@ -169,62 +164,5 @@ export function ModsDialog() {
 				</Slide>
 			</Stack>
 		</Box>
-	</Fade >
-
-	return (
-		<Dialog
-			open={open}
-			maxWidth={false}
-			fullWidth={true}
-			onClose={() => dispatch(setModsOpen(false))}
-			hideBackdrop={true}
-			slots={{ transition: Transition }}
-			slotProps={{ transition: { easing: 'ease-in-out' } }}
-			transitionDuration={{ enter: 200, exit: 200 }}
-		>
-			<DialogContent sx={{ height: '80vh' }}>
-				<Card sx={{ height: '100%', backgroundColor: 'hsl(0 0% 14%)' }}>
-					<CardContent sx={{ height: '100%', padding: 0 }}>
-						<Stack
-							direction="column"
-							sx={{ overflowY: 'auto', height: '100%', padding: 2, boxSizing: 'border-box' }}
-						>
-							<Box sx={{ maxHeight: 0 }}>
-								<Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', paddingBottom: 2 }}>
-									{gameState !== GameState.READY ? (
-										<Stack direction="row" sx={{ width: '100%', justifyContent: 'center' }}>
-										</Stack>
-									) : (
-										<></>
-									)}
-
-									{installedMods.length > 0 ? (
-										<Box sx={{ width: '100%' }}>
-											<Typography variant="body2">Installed mods</Typography>
-										</Box>
-									) : (
-										<></>
-									)}
-
-									{installedMods.map(mod => (
-										<ModsEntry key={'i' + mod.id} mod={mod} />
-									))}
-
-									<Stack direction="row" sx={{ width: '100%', justifyContent: 'center' }}>
-										<Typography variant="body2">Available mods</Typography>
-									</Stack>
-
-									{availableModsLoading ? (
-										<CircularProgress />
-									) : (
-										availableMods.map(mod => <ModsEntry key={'i' + mod.id} mod={mod} />)
-									)}
-								</Stack>
-							</Box>
-						</Stack>
-					</CardContent>
-				</Card>
-			</DialogContent>
-		</Dialog>
-	);
+	</Fade>
 }

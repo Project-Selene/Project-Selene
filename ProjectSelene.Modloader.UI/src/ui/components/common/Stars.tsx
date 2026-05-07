@@ -1,7 +1,5 @@
 import { Box } from '@mui/material';
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import { selectPlayAnimation } from '../../../state/misc.store';
 
 export function Stars() {
 	const points = useMemo(
@@ -11,8 +9,6 @@ export function Stars() {
 				.map(() => calculatePoint()),
 		[],
 	);
-
-	const playAnimation = useSelector(selectPlayAnimation);
 
 	return (
 		<Box
@@ -29,11 +25,8 @@ export function Stars() {
 				{[...Array(100)].map((_, i) => (
 					<circle
 						key={i}
-						style={{
-							offsetPath: `shape(from ${points[i].x * 100 + 'vw'} ${points[i].y * 100 + 'vh'}, line to ${(points[i].edgeX * 100) + 2 + 'vw'} ${points[i].edgeY * 100 + 'vh'}, move to 50vw 50vh, line to ${points[i].x * 100 + 'vw'} ${points[i].y * 100 + 'vh'})`,
-							animation: `moveStars ${points[i].animationTime} cubic-bezier(0.05,0,0,0) forwards, moveStars ${points[i].animationTime} linear infinite ${points[i].animationTime}`,
-							animationPlayState: playAnimation ? 'running' : 'paused',
-						}}
+						cx={points[i].x * 100 + 'vw'}
+						cy={points[i].y * 100 + 'vh'}
 						className='star'
 						r="1"
 						fill="white"
