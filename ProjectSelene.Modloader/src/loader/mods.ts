@@ -39,7 +39,22 @@ export class Mods {
     public static async fromFileList(files: FileList) {
         const id = this.nextId++;
         await filesystem.mountFileList('/fs/internal/mods/' + id + '/folder', files);
-        return new Mods(id, 'read');
+        return await this.create(id, 'read');
+    }
+
+    private static async create(id: number, mode: FileSystemPermissionMode) {
+        try {
+            const pkg = await filesystem.readFile('/fs/internal/mods/' + id + '/folder/package.json');
+            const manifest = JSON.parse(pkg) as { name: string };
+            if (manifest.name === 'Alabaster Dawn') {
+                const newId = this.nextId++;
+                await filesystem.mountLink('/fs/internal/mods/' + newId + '/folder', '/fs/internal/mods/' + id + '/folder/mods');
+                return new Mods(newId, mode);
+            }
+        } catch {
+            //The user selected the actual mod folder instead of the parent folder. Ignore.
+        }
+        return new Mods(id, mode);
     }
 
     public getCollectionId() {
