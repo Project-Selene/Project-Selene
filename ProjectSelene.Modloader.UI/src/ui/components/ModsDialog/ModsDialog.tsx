@@ -15,7 +15,7 @@ import { TransitionProps } from '@mui/material/transitions';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameManager } from '../../../state/game-manager';
-import { selectGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
+import { selectGameState, setGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
 import {
 	loadModsFromDb,
 	searchForMod,
@@ -27,6 +27,7 @@ import {
 } from '../../../state/mod.store';
 import { GameState } from '../../../state/models/game';
 import { store } from '../../../state/state.reducer';
+import { useIsLocal } from '../../hooks/detect';
 import { ModsEntry } from './ModsEntry';
 
 const Transition = React.forwardRef(function Transition(
@@ -45,6 +46,7 @@ export function ModsDialog() {
 	const mods = useSelector(selectMods);
 	const searchString = useSelector(selectModsSearch);
 	const availableModsLoading = useSelector(selectAvailableModsLoading);
+	const isLocal = useIsLocal();
 
 	const installedMods = mods.filter(m => m.isInstalled);
 	const availableMods = mods.filter(m => !m.isInstalled);
@@ -73,8 +75,15 @@ export function ModsDialog() {
 		}
 	};
 	const openModsFolder = async () => {
-		await gameManager.openModDirectory('readwrite');
-		await refresh();
+		if (!isLocal) {
+			dispatch(setGameState(GameState.OPENING));
+		}
+		try {
+			await gameManager.openModDirectory('readwrite');
+			await refresh();
+		} finally {
+			dispatch(setGameState(GameState.PROMPT));
+		}
 	};
 
 	useEffect(() => {

@@ -27,13 +27,13 @@ export class Mods {
     public static async fromFileHandle(handle: FileSystemDirectoryHandle, mode: FileSystemPermissionMode = 'readwrite') {
         const id = this.nextId++;
         await filesystem.mountDirectoryHandle('/fs/internal/mods/' + id + '/folder', handle);
-        return new Mods(id, mode);
+        return await this.create(id, mode);
     }
 
     public static async fromLocalPath(path: string, mode: FileSystemPermissionMode = 'readwrite') {
         const id = this.nextId++;
         await filesystem.mountDirectoryFS('/fs/internal/mods/' + id + '/folder', path);
-        return new Mods(id, mode);
+        return await this.create(id, mode);
     }
 
     public static async fromFileList(files: FileList) {

@@ -26,6 +26,9 @@ export const gameSlice = createSlice({
 		},
 		setInstalledModsLoading: (state, action: { payload: boolean }) => {
 			state.installedModsLoading = action.payload;
+		},
+		setGameState: (state, action: { payload: GameState }) => {
+			state.state = action.payload;
 		}
 	},
 	selectors: {
@@ -35,6 +38,6 @@ export const gameSlice = createSlice({
 	},
 });
 
-export const { setInstalledMods, setInstalledModsLoading } = gameSlice.actions;
+export const { setGameState, setInstalledMods, setInstalledModsLoading } = gameSlice.actions;
 
 export const { selectGameState, selectInstalledMods, selectInstalledModsLoading } = gameSlice.selectors;
