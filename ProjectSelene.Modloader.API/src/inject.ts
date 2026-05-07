@@ -2,7 +2,7 @@
 const InjectableClass = /* @__PURE__ */  (() => Symbol('InjectableClass'))();
 //Indicates that a class can be injected into (and therefore has the injectable layer)
 //Does not actually exist at runtime
-export type InjectableClass = { [InjectableClass]: 'Result of Injectable(...)' & never };
+export type InjectableClass = { [""]: 'Result of Injectable(...)' & never };
 
 export function Injectable<T extends new (...args: unknown[]) => unknown>(clazz: T):
 	//This monstrosity is necessary to convince ts that the result can be extended with proper types but no static members 
