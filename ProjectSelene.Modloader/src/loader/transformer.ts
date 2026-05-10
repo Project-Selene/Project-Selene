@@ -262,6 +262,59 @@ export function transform(content: string, prefix: string) {
 								for (let i = 0; i < properties.length; i++) {
 									const prop = properties[i];
 									if (
+										ts.isMethodDeclaration(prop) &&
+										prop.body &&
+										ts.isBlock(prop.body)
+									) {
+										properties[i] = ts.factory.updateMethodDeclaration(
+											prop,
+											prop.modifiers,
+											prop.asteriskToken,
+											prop.name,
+											prop.questionToken,
+											prop.typeParameters,
+											prop.parameters,
+											prop.type,
+											hookBlock(prop.body)
+										);
+									}
+								}
+								stmts[1] = ts.factory.updateVariableStatement(
+									stmts[1],
+									stmts[1].modifiers,
+									ts.factory.updateVariableDeclarationList(stmts[1].declarationList, [
+										ts.factory.updateVariableDeclaration(
+											stmts[1].declarationList.declarations[0],
+											stmts[1].declarationList.declarations[0].name,
+											stmts[1].declarationList.declarations[0].exclamationToken,
+											stmts[1].declarationList.declarations[0].type,
+											ts.factory.updateParenthesizedExpression(
+												stmts[1].declarationList.declarations[0].initializer,
+												ts.factory.updateObjectLiteralExpression(
+													stmts[1].declarationList.declarations[0].initializer.expression,
+													properties,
+												),
+											),
+										),
+									]),
+								);
+							}
+
+							// Start - only for old version
+							if (
+								ts.isVariableStatement(stmts[1]) &&
+								stmts[1].declarationList.flags === ts.NodeFlags.Synthesized &&
+								stmts[1].declarationList.declarations.length === 1 &&
+								ts.isIdentifier(stmts[1].declarationList.declarations[0].name) &&
+								stmts[1].declarationList.declarations[0].name.text === '__webpack_modules__' &&
+								stmts[1].declarationList.declarations[0].initializer &&
+								ts.isParenthesizedExpression(stmts[1].declarationList.declarations[0].initializer) &&
+								ts.isObjectLiteralExpression(stmts[1].declarationList.declarations[0].initializer.expression)
+							) {
+								const properties = [...stmts[1].declarationList.declarations[0].initializer.expression.properties];
+								for (let i = 0; i < properties.length; i++) {
+									const prop = properties[i];
+									if (
 										ts.isPropertyAssignment(prop) &&
 										ts.isNumericLiteral(prop.name) &&
 										ts.isParenthesizedExpression(prop.initializer) &&
@@ -337,6 +390,8 @@ export function transform(content: string, prefix: string) {
 								);
 							}
 
+							// End - only for old version
+
 							stmts.splice(0, 0, ...injectedSourceFile.statements);
 
 							//Injects the prefix at the start of the arrow function block
@@ -356,7 +411,7 @@ export function transform(content: string, prefix: string) {
 													result.statements[0].expression.expression.expression.parameters,
 													result.statements[0].expression.expression.expression.type,
 													result.statements[0].expression.expression.expression.equalsGreaterThanToken,
-													ts.factory.updateBlock(result.statements[0].expression.expression.expression.body, stmts),
+													hookBlock(ts.factory.updateBlock(result.statements[0].expression.expression.expression.body, stmts)),
 												),
 											),
 											result.statements[0].expression.typeArguments,
