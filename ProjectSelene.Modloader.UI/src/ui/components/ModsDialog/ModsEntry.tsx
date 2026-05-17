@@ -54,7 +54,6 @@ export function ModsEntry(props: { mod: Mod }) {
 	};
 
 	const deleteMod = async (mod: Mod) => {
-		await gameManager.setModEnabled(mod.id, true);
 		for (const mods of gameManager.getMods()) {
 			try {
 				await mods.deleteMod(mod.id);
