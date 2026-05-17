@@ -222,7 +222,9 @@ export class GameManager {
         const installed = new Set(sorted.map(mod => mod.id));
         const disabledMods = this.getDisabledMods();
         const filteredDisabled = disabledMods.filter(id => installed.has(id));
-        if (filteredDisabled.length !== disabledMods.length) {
+        const disabledChanged = filteredDisabled.length !== disabledMods.length
+            || filteredDisabled.some((id, idx) => id !== disabledMods[idx]);
+        if (disabledChanged) {
             this.gameInfo.disabledModIds = filteredDisabled;
             await this.save();
         }

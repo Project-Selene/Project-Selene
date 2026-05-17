@@ -99,7 +99,7 @@ export const selectUnfilteredMods = createSelector(
 
 				isInstalled: true,
 				isEnabled: !disabled.has(mod.id),
-				hasUpdate: dbMod && (!mod.version || semver.gt(mod.version, dbMod.version)),
+				hasUpdate: dbMod && (!mod.version || semver.gt(dbMod.version, mod.version)),
 
 				name: mod.name,
 				description: mod.description,
