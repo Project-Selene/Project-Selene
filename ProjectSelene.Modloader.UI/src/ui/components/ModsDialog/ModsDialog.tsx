@@ -1,21 +1,17 @@
 import { OpenInNew, Refresh } from '@mui/icons-material';
 import Close from '@mui/icons-material/Close';
-import {
-	Box,
-	Button,
-	Container,
-	Fade,
-	Paper,
-	Slide,
-	Stack,
-	TextField,
-	Typography
-} from '@mui/material';
+import { Box, Button, Container, Fade, Paper, Slide, Stack, TextField, Typography } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameManager } from '../../../state/game-manager';
-import { selectGameState, setGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
+import {
+	selectGameState,
+	setDisabledMods,
+	setGameState,
+	setInstalledMods,
+	setInstalledModsLoading,
+} from '../../../state/game.store';
 import {
 	loadModsFromDb,
 	searchForMod,
@@ -23,7 +19,7 @@ import {
 	selectMods,
 	selectModsDialogOpen,
 	selectModsSearch,
-	setModsOpen
+	setModsOpen,
 } from '../../../state/mod.store';
 import { GameState } from '../../../state/models/game';
 import { store } from '../../../state/state.reducer';
@@ -56,20 +52,21 @@ export function ModsDialog() {
 	const backdropRef = useRef<HTMLElement>(null);
 	useEffect(() => {
 		if (open) {
-			backdropRef.current?.focus()
+			backdropRef.current?.focus();
 		}
-	}, [open])
+	}, [open]);
 
 	const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-		if (e.key === "Escape") {
-			dispatch(setModsOpen(false))
+		if (e.key === 'Escape') {
+			dispatch(setModsOpen(false));
 		}
-	}
+	};
 
 	const refresh = async () => {
 		try {
 			dispatch(setInstalledModsLoading(true));
 			dispatch(setInstalledMods(await gameManager.refreshModManifests()));
+			dispatch(setDisabledMods(gameManager.getDisabledMods()));
 		} finally {
 			dispatch(setInstalledModsLoading(false));
 		}
@@ -90,88 +87,129 @@ export function ModsDialog() {
 		refresh().catch(err => console.error('Failed to refresh mods', err));
 	}, [open]);
 
-	return <Fade in={open}>
-		<Box onKeyDown={onKeyDown} tabIndex={0} ref={backdropRef}
-			sx={{ backdropFilter: 'blur(5px)', backgroundColor: 'rgba(0,0,16,0.3)', backgroundSize: '5px 5px', backgroundImage: 'linear-gradient(45deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%),linear-gradient(135deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%)', position: 'fixed', top: 0, bottom: 0, left: 0, right: 0 }}>
-			<Stack direction='column' spacing={3} sx={{ height: '100%', justifyContent: 'space-between' }} >
-				<Slide in={open} direction='down' style={{ transformOrigin: 'top center' }}>
-					<Paper sx={{ width: '100vw' }} elevation={6} square={true}>
-						<Container>
-							<Stack direction='row' sx={{ height: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
-								<Typography variant="h2">Mods</Typography>
+	return (
+		<Fade in={open}>
+			<Box
+				onKeyDown={onKeyDown}
+				tabIndex={0}
+				ref={backdropRef}
+				sx={{
+					backdropFilter: 'blur(5px)',
+					backgroundColor: 'rgba(0,0,16,0.3)',
+					backgroundSize: '5px 5px',
+					backgroundImage:
+						'linear-gradient(45deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%),linear-gradient(135deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%)',
+					position: 'fixed',
+					top: 0,
+					bottom: 0,
+					left: 0,
+					right: 0,
+				}}
+			>
+				<Stack direction="column" spacing={3} sx={{ height: '100%', justifyContent: 'space-between' }}>
+					<Slide in={open} direction="down" style={{ transformOrigin: 'top center' }}>
+						<Paper sx={{ width: '100vw' }} elevation={6} square={true}>
+							<Container>
+								<Stack
+									direction="row"
+									sx={{ height: '100%', alignItems: 'center', justifyContent: 'space-between' }}
+								>
+									<Typography variant="h2">Mods</Typography>
 
-								<Stack direction='row' spacing={0.5}>
-									{gameState !== GameState.READY
-										? <Button
+									<Stack direction="row" spacing={0.5}>
+										{gameState !== GameState.READY ? (
+											<Button
+												variant="outlined"
+												style={{ backgroundColor: '#66F3' }}
+												endIcon={<OpenInNew />}
+												onClick={openModsFolder}
+												disabled={gameState !== GameState.PROMPT}
+											>
+												Open mods folder
+											</Button>
+										) : (
+											<></>
+										)}
+										<TextField
+											id="outlined-basic"
+											label="Search..."
+											variant="outlined"
+											value={searchString}
+											onChange={e => dispatch(searchForMod(e.target.value))}
+										/>
+										<Button
 											variant="outlined"
 											style={{ backgroundColor: '#66F3' }}
-											endIcon={<OpenInNew />}
-											onClick={openModsFolder}
-											disabled={gameState !== GameState.PROMPT}
+											endIcon={<Refresh />}
+											onClick={e => {
+												refresh();
+												dispatch(loadModsFromDb());
+												e.stopPropagation();
+											}}
 										>
-											Open mods folder
+											Refresh
 										</Button>
-										: <></>}
-									<TextField
-										id="outlined-basic"
-										label="Search..."
-										variant="outlined"
-										value={searchString}
-										onChange={e => dispatch(searchForMod(e.target.value))}
-									/>
-									<Button
-										variant="outlined"
-										style={{ backgroundColor: '#66F3' }}
-										endIcon={<Refresh />}
-										onClick={e => {
-											refresh();
-											dispatch(loadModsFromDb());
-											e.stopPropagation();
-										}}
-									>
-										Refresh
-									</Button>
-									<Button
-										variant="outlined"
-										style={{ backgroundColor: '#66F3' }}
-										endIcon={<Close />}
-										onClick={() => dispatch(setModsOpen(false))}
-									>
-										Close
-									</Button>
+										<Button
+											variant="outlined"
+											style={{ backgroundColor: '#66F3' }}
+											endIcon={<Close />}
+											onClick={() => dispatch(setModsOpen(false))}
+										>
+											Close
+										</Button>
+									</Stack>
 								</Stack>
-							</Stack>
-						</Container>
-					</Paper>
-				</Slide>
+							</Container>
+						</Paper>
+					</Slide>
 
-				<Slide in={open} direction='up' style={{ transformOrigin: 'bottom center' }} timeout={100}>
-					<Container sx={{ flexGrow: 1 }}>
-						<Stack direction='row' sx={{ justifyContent: 'center' }} >
-							<Stack direction='column' sx={theme => ({ width: `calc(100% - rem(100%, 20em + 2px + ${theme.spacing(3)}) - ${theme.spacing(3)})`, gap: 3, justifyContent: 'start' })}>
-								{installedMods.length > 0 ? <>
-									<Typography variant="h4">Installed mods</Typography>
-									<Stack direction='row' sx={{ flexWrap: 'wrap', spacing: 3 }}>
-										{installedMods.map(mod => (
+					<Slide in={open} direction="up" style={{ transformOrigin: 'bottom center' }} timeout={100}>
+						<Container sx={{ flexGrow: 1 }}>
+							<Stack direction="row" sx={{ justifyContent: 'center' }}>
+								<Stack
+									direction="column"
+									sx={theme => ({
+										width: `calc(100% - rem(100%, 20em + 2px + ${theme.spacing(3)}) - ${theme.spacing(3)})`,
+										gap: 3,
+										justifyContent: 'start',
+									})}
+								>
+									{installedMods.length > 0 ? (
+										<>
+											<Typography variant="h4">Installed mods</Typography>
+											<Stack direction="row" sx={{ flexWrap: 'wrap', spacing: 3 }}>
+												{installedMods.map(mod => (
+													<ModsEntry key={'i' + mod.id} mod={mod} />
+												))}
+											</Stack>
+										</>
+									) : (
+										<></>
+									)}
+									<Typography variant="h4" sx={{ width: 'fit-available' }}>
+										Available mods
+									</Typography>
+									<Stack
+										direction="row"
+										spacing={3}
+										sx={{ width: 'fit-available', justifyContent: 'start', flexWrap: 'wrap' }}
+									>
+										{availableMods.map(mod => (
 											<ModsEntry key={'i' + mod.id} mod={mod} />
 										))}
 									</Stack>
-								</> : <></>}
-								<Typography variant="h4" sx={{ width: 'fit-available' }}>Available mods</Typography>
-								<Stack direction='row' spacing={3} sx={{ width: 'fit-available', justifyContent: 'start', flexWrap: 'wrap' }}>
-									{availableMods.map(mod => (
-										<ModsEntry key={'i' + mod.id} mod={mod} />
-									))}
 								</Stack>
 							</Stack>
-						</Stack>
-					</Container>
-				</Slide>
+						</Container>
+					</Slide>
 
-				<Slide in={open} direction='up' style={{ transformOrigin: 'top center' }}>
-					<Paper sx={{ width: '100vw' }} elevation={6} square={true}><Typography variant="h4">&nbsp;</Typography></Paper>
-				</Slide>
-			</Stack>
-		</Box>
-	</Fade>
+					<Slide in={open} direction="up" style={{ transformOrigin: 'top center' }}>
+						<Paper sx={{ width: '100vw' }} elevation={6} square={true}>
+							<Typography variant="h4">&nbsp;</Typography>
+						</Paper>
+					</Slide>
+				</Stack>
+			</Box>
+		</Fade>
+	);
 }

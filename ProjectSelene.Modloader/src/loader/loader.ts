@@ -9,7 +9,7 @@ class Loader {
 	private devModIteration = 0;
 	private hasDevMod = false;
 
-	public async play(game: Game, loadDevMod: boolean, ...modCollections: Mods[]) {
+	public async play(game: Game, loadDevMod: boolean, disabledMods: string[] = [], ...modCollections: Mods[]) {
 		this.hasDevMod = loadDevMod;
 
 		const id = game.getGameId();
@@ -26,9 +26,13 @@ class Loader {
 		}
 
 		const mods: ModManifest[] = [];
+		const disabledModIds = new Set(disabledMods);
 		for (const collection of modCollections) {
 			const modsId = collection.getCollectionId();
 			for (const [id, manifest] of Object.entries(await collection.readManifests())) {
+				if (disabledModIds.has(manifest.id)) {
+					continue;
+				}
 				await filesystem.mountLink(
 					'/fs/mods/' + manifest.id + '/',
 					'/fs/internal/mods/' + modsId + '/mods/' + id + '/',
@@ -82,7 +86,10 @@ class Loader {
 			await filesystem.delete('/cache/' + oldest.name);
 		}
 
-		await filesystem.mountTransform('/fs/internal/game-transformed/' + id + '/terra/dist/', '/fs/internal/game/' + id + '/terra/dist/');
+		await filesystem.mountTransform(
+			'/fs/internal/game-transformed/' + id + '/terra/dist/',
+			'/fs/internal/game/' + id + '/terra/dist/',
+		);
 
 		const result = await filesystem.readFile('/fs/internal/game-transformed/' + id + '/terra/dist/bundle.js');
 		await filesystem.writeFile('/fs/cache/game-' + hashString + '.js', result);
@@ -101,28 +108,26 @@ class Loader {
 
 		const originalPost = prototype.post;
 		prototype.post = function (...args: unknown[]) {
-			if (args.length >= 2
-				&& typeof args[0] === 'string'
-				&& args[0].startsWith(apiRoot)
-				&& typeof args[1] === 'object'
+			if (
+				args.length >= 2 &&
+				typeof args[0] === 'string' &&
+				args[0].startsWith(apiRoot) &&
+				typeof args[1] === 'object'
 			) {
-				(args[1] as Record<string, unknown>)['modDisabled'] = true
+				(args[1] as Record<string, unknown>)['modDisabled'] = true;
 			}
 
 			return originalPost.apply(this, args);
-		}
+		};
 
 		const originalGetJson = prototype.getJson;
 		prototype.getJson = function (...args: unknown[]) {
-			if (args.length >= 1
-				&& typeof args[0] === 'string'
-				&& args[0].startsWith(apiRoot)
-			) {
-				args[0] += '&modDisabled=true'
+			if (args.length >= 1 && typeof args[0] === 'string' && args[0].startsWith(apiRoot)) {
+				args[0] += '&modDisabled=true';
 			}
 
 			return originalGetJson.apply(this, args);
-		}
+		};
 	}
 
 	async loadMods(mods: ModManifest[]) {

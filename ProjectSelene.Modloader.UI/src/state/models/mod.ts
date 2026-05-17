@@ -1,6 +1,7 @@
 export interface Mod {
 	id: string;
 	isInstalled: boolean;
+	isEnabled: boolean;
 	hasUpdate: boolean;
 
 	name: string;
