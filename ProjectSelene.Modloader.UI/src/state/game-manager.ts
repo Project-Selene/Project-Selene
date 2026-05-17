@@ -220,8 +220,9 @@ export class GameManager {
         }
         const sorted = Object.values(manifests).sort((a, b) => a.name.localeCompare(b.name));
         const installed = new Set(sorted.map(mod => mod.id));
-        const filteredDisabled = this.getDisabledMods().filter(id => installed.has(id));
-        if (filteredDisabled.length !== this.getDisabledMods().length) {
+        const disabledMods = this.getDisabledMods();
+        const filteredDisabled = disabledMods.filter(id => installed.has(id));
+        if (filteredDisabled.length !== disabledMods.length) {
             this.gameInfo.disabledModIds = filteredDisabled;
             await this.save();
         }
