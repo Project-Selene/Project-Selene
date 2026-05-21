@@ -21,6 +21,7 @@ public class VersionVerifiedEventHandler(
             {
                 user = new()
                 {
+                    UserName = "DummyVerifier",
                     Email = "verify@localhost",
                     EmailConfirmed = true,
                     LockoutEnabled = true,
