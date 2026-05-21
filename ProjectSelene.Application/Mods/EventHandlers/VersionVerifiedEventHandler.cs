@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using ProjectSelene.Domain.Entities;
+﻿using Microsoft.Extensions.Logging;
 using ProjectSelene.Domain.Events;
 
 namespace ProjectSelene.Application.Mods.EventHandlers;
@@ -8,7 +6,7 @@ namespace ProjectSelene.Application.Mods.EventHandlers;
 public class VersionVerifiedEventHandler(
     IApplicationDbContext context,
     ILogger<VersionVerifiedEventHandler> logger,
-    UserManager<SeleneUser> userManager,
+    IUser user,
     IAdminNotifier adminNotifier
     ) : INotificationHandler<VersionVerifiedEvent>
 {
@@ -16,26 +14,7 @@ public class VersionVerifiedEventHandler(
     {
         if (notification.Verified == VersionVerifiedEvent.VerificationStatus.Verified)
         {
-            var user = await userManager.FindByEmailAsync("verify@localhost");
-            if (user == null)
-            {
-                user = new()
-                {
-                    UserName = "DummyVerifier",
-                    Email = "verify@localhost",
-                    EmailConfirmed = true,
-                    LockoutEnabled = true,
-                    LockoutEnd = DateTimeOffset.MaxValue,
-                };
-                var result = await userManager.CreateAsync(user);
-                if (!result.Succeeded)
-                {
-                    logger.LogError("Failed to create user for verification: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
-                }
-            }
-
             var version = await context.ModVersions
-                .Include(v => v.VerifiedBy)
                 .Include(v => v.CreatedBy)
                 .Include(v => v.ChangeRequests)
                 .ThenInclude(cr => cr.ModInfo)
@@ -48,7 +27,7 @@ public class VersionVerifiedEventHandler(
                 return;
             }
 
-            version.VerifiedBy = user;
+            version.VerifiedById = user.Id;
             version.VerifiedOn = DateTime.UtcNow;
             version.Mod.LatestVersionId = notification.VersionId;
 

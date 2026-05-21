@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ProjectSelene.Application.Common.Interfaces;
 using ProjectSelene.Discord;
 using ProjectSelene.Domain.Constants;
@@ -56,7 +57,34 @@ public static class DependencyInjection
         builder.Services.AddAuthentication("Cookie_Or_ApiKey")
             .AddApiKey(ApiKeyDefaults.AuthenticationScheme)
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddDiscordInteractions(DiscordInteractionsAuthDefaults.AuthenticationScheme)
+            .AddDiscordInteractions(DiscordInteractionsAuthDefaults.AuthenticationScheme, options =>
+            {
+                options.GetOrCreateUser = async (sp) =>
+                {
+                    var userManager = sp.GetRequiredService<UserManager<SeleneUser>>();
+                    var user = await userManager.FindByEmailAsync("discord@localhost");
+                    if (user == null)
+                    {
+                        user = new()
+                        {
+                            UserName = "Discord",
+                            Email = "discord@localhost",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            LockoutEnd = DateTimeOffset.MaxValue,
+                        };
+                        var result = await userManager.CreateAsync(user);
+                        if (!result.Succeeded)
+                        {
+                            var logger = sp.GetRequiredService<ILogger<DiscordInteractionsAuthHandler>>();
+                            logger.LogError("Failed to create user for discord: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+
+                            throw new AuthenticationFailureException("Failed to create user for discord.");
+                        }
+                    }
+                    return user.Id;
+                };
+            })
             .AddMicrosoftAccount(options =>
             {
                 if (!builder.Configuration.GetSection("MicrosoftAccountOptions").Exists())

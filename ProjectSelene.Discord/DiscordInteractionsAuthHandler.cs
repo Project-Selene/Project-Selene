@@ -48,10 +48,12 @@ public class DiscordInteractionsAuthHandler(IOptionsMonitor<DiscordInteractionsA
                 return invalidSignature;
             }
 
+            var userId = Options.GetOrCreateUser is { } idFactory ? await idFactory(httpContextAccessor.HttpContext.RequestServices) : "Discord";
+
             var loginType = DiscordInteractionsAuthDefaults.AuthenticationScheme;
             var tokenPrincipal = new ClaimsPrincipal();
             //TODO: Maybe extract discord user id from request body
-            tokenPrincipal.AddIdentity(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, "Discord")], loginType));
+            tokenPrincipal.AddIdentity(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, userId)], loginType));
             return AuthenticateResult.Success(new(tokenPrincipal, loginType));
         }
         catch (Exception ex)

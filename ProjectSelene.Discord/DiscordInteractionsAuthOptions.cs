@@ -4,4 +4,5 @@ namespace ProjectSelene.Discord;
 
 public class DiscordInteractionsAuthOptions : AuthenticationSchemeOptions
 {
+    public Func<IServiceProvider, Task<string>>? GetOrCreateUser { get; set; }
 }
