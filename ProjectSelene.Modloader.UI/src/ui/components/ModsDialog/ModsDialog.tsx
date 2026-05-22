@@ -93,7 +93,7 @@ export function ModsDialog() {
 	return <Fade in={open}>
 		<Box onKeyDown={onKeyDown} tabIndex={0} ref={backdropRef}
 			sx={{ backdropFilter: 'blur(5px)', backgroundColor: 'rgba(0,0,16,0.3)', backgroundSize: '5px 5px', backgroundImage: 'linear-gradient(45deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%),linear-gradient(135deg,#0000007F 4.55%,#0000 4.55%,#0000 50%,#0000007F 50%,#0000007F 54.55%,#0000 54.55%,#0000 100%)', position: 'fixed', top: 0, bottom: 0, left: 0, right: 0 }}>
-			<Stack direction='column' spacing={3} sx={{ height: '100%', justifyContent: 'space-between' }} >
+			<Stack direction='column' spacing={3} sx={{ height: '100%', width: '100%', justifyContent: 'space-between', alignItems: 'center' }} >
 				<Slide in={open} direction='down' style={{ transformOrigin: 'top center' }}>
 					<Paper sx={{ width: '100vw' }} elevation={6} square={true}>
 						<Container>
@@ -158,9 +158,18 @@ export function ModsDialog() {
 									</Stack>
 								</> : <></>}
 								<Typography variant="h4" sx={{ width: 'fit-available' }}>Available mods</Typography>
-								<Stack direction='row' spacing={3} sx={{ width: 'fit-available', justifyContent: 'start', flexWrap: 'wrap' }}>
+								<Stack direction='row' sx={{ width: 'fit-available', justifyContent: 'start', flexWrap: 'wrap', gap: 3 }}>
 									{availableMods.map(mod => (
 										<ModsEntry key={'i' + mod.id} mod={mod} />
+									))}
+									{availableMods.map(mod => (
+										<ModsEntry key={'1i' + mod.id} mod={mod} />
+									))}
+									{availableMods.map(mod => (
+										<ModsEntry key={'2i' + mod.id} mod={mod} />
+									))}
+									{availableMods.map(mod => (
+										<ModsEntry key={'3i' + mod.id} mod={mod} />
 									))}
 								</Stack>
 							</Stack>
