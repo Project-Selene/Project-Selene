@@ -21,7 +21,7 @@ async function addFolderToZip(zip: JSZip, folderPath: string, prefix = '') {
 		}
 
 		const fileContent = fs.readFileSync(filePath);
-		zip.file(relativePath, fileContent);
+		zip.file(file, fileContent);
 	});
 	await Promise.all(promises);
 }
