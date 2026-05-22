@@ -162,15 +162,6 @@ export function ModsDialog() {
 									{availableMods.map(mod => (
 										<ModsEntry key={'i' + mod.id} mod={mod} />
 									))}
-									{availableMods.map(mod => (
-										<ModsEntry key={'1i' + mod.id} mod={mod} />
-									))}
-									{availableMods.map(mod => (
-										<ModsEntry key={'2i' + mod.id} mod={mod} />
-									))}
-									{availableMods.map(mod => (
-										<ModsEntry key={'3i' + mod.id} mod={mod} />
-									))}
 								</Stack>
 							</Stack>
 						</Stack>
