@@ -147,7 +147,9 @@ import { diffAsset } from './lib/diff-assets.js';
 	}
 	if (fs.existsSync('./rawAssets/.game')) {
 		const gamePath = await fs.promises.readFile('./rawAssets/.game', 'utf-8');
-		chokidar.watch('./rawAssets/**/*.json').on('change', (filePath) => {
+		chokidar.watch('./rawAssets', {
+			ignored: (file, _stats) => !!_stats?.isFile() && !file.endsWith('.json'),
+		}).on('change', (filePath) => {
 			const relative = path.relative('rawAssets', filePath);
 
 			async function updateAssetsIfNeeded(relative: string) {
@@ -180,12 +182,20 @@ import { diffAsset } from './lib/diff-assets.js';
 				console.error('Failed to update manifest');
 			}
 		});
-		const watcher = chokidar.watch('./assets/**/*.json-patch');
+		const watcher = chokidar.watch('./assets', {
+			ignored: (file, _stats) => !!_stats?.isFile() && !file.endsWith('.json-patch'),
+		});
 		watcher.on('add', filePath => {
 			const relative = path.relative('assets', filePath);
-			const target = 'terra/' + relative.substring(0, relative.length - '-patch'.length).replace(/\\/g, '/');
+			const target = filePath.endsWith('.json-patch')
+				? 'terra/' + relative.substring(0, relative.length - '-patch'.length).replace(/\\/g, '/')
+				: 'terra/' + relative.replace(/\\/g, '/');
+			const type = filePath.endsWith('.json-patch') ? 'json' : 'raw';
+
 			setTimeout(async () => {
-				assets.push({ type: 'raw', target } as ModPatch);
+				if (!assets.some(a => a.target === target)) {
+					assets.push({ type, target } as ModPatch);
+				}
 				await fs.promises.mkdir(path.dirname(path.join('assets', relative)), { recursive: true });
 				await fs.promises.copyFile(path.join('assets', relative), path.join('dist/unpacked/assets', relative), fs.constants.COPYFILE_FICLONE);
 				await fs.promises.writeFile('./dist/unpacked/manifest.json', JSON.stringify({
@@ -199,7 +209,9 @@ import { diffAsset } from './lib/diff-assets.js';
 		});
 		watcher.on('unlink', filePath => {
 			const relative = path.relative('assets', filePath);
-			const target = 'terra/' + relative.substring(0, relative.length - '-patch'.length).replace(/\\/g, '/');
+			const target = filePath.endsWith('.json-patch')
+				? 'terra/' + relative.substring(0, relative.length - '-patch'.length).replace(/\\/g, '/')
+				: 'terra/' + relative.replace(/\\/g, '/');
 			setTimeout(async () => {
 				const index = assets.findIndex(a => a.target === target);
 				if (index >= 0) {
