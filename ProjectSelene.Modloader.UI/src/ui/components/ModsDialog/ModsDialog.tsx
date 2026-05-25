@@ -15,7 +15,7 @@ import { TransitionProps } from '@mui/material/transitions';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { gameManager } from '../../../state/game-manager';
-import { selectGameState, setGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
+import { selectGameState, setDisabledMods, setGameState, setInstalledMods, setInstalledModsLoading } from '../../../state/game.store';
 import {
 	loadModsFromDb,
 	searchForMod,
@@ -70,6 +70,7 @@ export function ModsDialog() {
 		try {
 			dispatch(setInstalledModsLoading(true));
 			dispatch(setInstalledMods(await gameManager.refreshModManifests()));
+			dispatch(setDisabledMods(gameManager.getDisabledMods()));
 		} finally {
 			dispatch(setInstalledModsLoading(false));
 		}

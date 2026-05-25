@@ -2,7 +2,7 @@ import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@r
 import semver from 'semver';
 import { ModDto } from '../moddb/generated/selene-api';
 import { ModDB } from '../moddb/moddb';
-import { selectInstalledMods } from './game.store';
+import { selectDisabledMods, selectInstalledMods } from './game.store';
 import { filterMods } from './helpers/filter-mods';
 import { LoadingState } from './models/loading-state';
 import { Mod } from './models/mod';
@@ -64,7 +64,10 @@ export const modSlice = createSlice({
 		});
 	},
 	selectors: {
-		selectDbMods: createSelector((state: ModStore) => state.mods?.data, data => data ?? []),
+		selectDbMods: createSelector(
+			(state: ModStore) => state.mods?.data,
+			data => data ?? [],
+		),
 		selectModsSearch: state => state.search,
 		selectModsDialogOpen: state => state.dialogOpen,
 		selectAvailableModsLoading: state => !!state.mods.loading,
@@ -78,9 +81,11 @@ export const { selectModsSearch, selectModsDialogOpen, selectAvailableModsLoadin
 export const selectUnfilteredMods = createSelector(
 	modSlice.selectors.selectDbMods,
 	selectInstalledMods,
-	(dbMods, installedMods) => {
+	selectDisabledMods,
+	(dbMods, installedMods, disabledMods) => {
 		const mods: Mod[] = [];
 		const ids = new Set<string>();
+		const disabled = new Set(disabledMods);
 
 		const modMap: Record<string, ModDto> = {};
 		for (const mod of dbMods) {
@@ -93,7 +98,8 @@ export const selectUnfilteredMods = createSelector(
 				id: mod.id,
 
 				isInstalled: true,
-				hasUpdate: dbMod && (!mod.version || semver.gt(mod.version, dbMod.version)),
+				isEnabled: !disabled.has(mod.id),
+				hasUpdate: dbMod && (!mod.version || semver.gt(dbMod.version, mod.version)),
 
 				name: mod.name,
 				description: mod.description,
@@ -113,6 +119,7 @@ export const selectUnfilteredMods = createSelector(
 				id: mod.id,
 
 				isInstalled: false,
+				isEnabled: true,
 				hasUpdate: false,
 
 				name: mod.name,

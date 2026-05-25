@@ -6,6 +6,7 @@ const gameInfoStore = idb.createStore('SeleneDb-gameInfo', 'gameInfo');
 interface GameInfo {
     game?: HandleInfo;
     mods: HandleInfo[];
+    disabledModIds?: string[];
 }
 
 type HandleInfo = {
@@ -37,6 +38,7 @@ export class GameManager {
         }
 
         this.gameInfo = info;
+        this.gameInfo.disabledModIds ??= [];
 
         if (this.gameInfo.game) {
             switch (this.gameInfo.game.type) {
@@ -65,6 +67,21 @@ export class GameManager {
 
     public async save(): Promise<void> {
         await idb.set('0', this.gameInfo, gameInfoStore);
+    }
+
+    public getDisabledMods(): string[] {
+        return this.gameInfo.disabledModIds ?? [];
+    }
+
+    public async setModEnabled(id: string, enabled: boolean): Promise<void> {
+        const disabledMods = new Set(this.getDisabledMods());
+        if (enabled) {
+            disabledMods.delete(id);
+        } else {
+            disabledMods.add(id);
+        }
+        this.gameInfo.disabledModIds = [...disabledMods].sort();
+        await this.save();
     }
 
     public getGame(): Game | null {
@@ -201,7 +218,17 @@ export class GameManager {
                 console.warn('Error occurred loading mods. Proceeding without mods.', e)
             }
         }
-        return Object.values(manifests).sort((a, b) => a.name.localeCompare(b.name));
+        const sorted = Object.values(manifests).sort((a, b) => a.name.localeCompare(b.name));
+        const installed = new Set(sorted.map(mod => mod.id));
+        const disabledMods = this.getDisabledMods();
+        const filteredDisabled = disabledMods.filter(id => installed.has(id));
+        const disabledChanged = filteredDisabled.length !== disabledMods.length
+            || filteredDisabled.some((id, idx) => id !== disabledMods[idx]);
+        if (disabledChanged) {
+            this.gameInfo.disabledModIds = filteredDisabled;
+            await this.save();
+        }
+        return sorted;
     }
 
     async play(withDevMod: boolean): Promise<void> {
@@ -217,7 +244,7 @@ export class GameManager {
             console.warn('Error occurred loading mods. Proceeding without mods.')
         }
 
-        return await loader.play(this.game!, withDevMod, ...this.mods);
+        return await loader.play(this.game!, withDevMod, this.getDisabledMods(), ...this.mods);
     }
 }
 
