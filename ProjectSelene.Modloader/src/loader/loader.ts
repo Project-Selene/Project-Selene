@@ -77,9 +77,9 @@ class Loader {
 
 		//Limit cache size
 		if (files.length > 3) {
-			const dates = await Promise.all(files.map(async f => (await filesystem.stat('/cache/' + f.name)).ctimeMs));
+			const dates = await Promise.all(files.map(async f => (await filesystem.stat('/fs/cache/' + f.name)).ctimeMs));
 			const oldest = files[dates.indexOf(Math.min(...dates))];
-			await filesystem.delete('/cache/' + oldest.name);
+			await filesystem.delete('/fs/cache/' + oldest.name);
 		}
 
 		await filesystem.mountTransform('/fs/internal/game-transformed/' + id + '/terra/dist/', '/fs/internal/game/' + id + '/terra/dist/');
