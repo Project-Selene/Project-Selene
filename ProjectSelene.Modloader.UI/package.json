@@ -56,11 +56,11 @@
     "@types/react-dom": "^19.2.3",
     "@types/spark-md5": "^3.0.5",
     "@types/wicg-file-system-access": "^2023.10.6",
-    "@typescript-eslint/eslint-plugin": "^8.35.0",
-    "@typescript-eslint/parser": "^8.35.0",
+    "@typescript-eslint/eslint-plugin": "^8.73.0",
+    "@typescript-eslint/parser": "^8.73.0",
     "esbuild": "~0.28.0",
     "esbuild-sass-plugin": "^3.7.0",
-    "eslint": "^10.2.1",
+    "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.5",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.5.0",
@@ -70,6 +70,6 @@
     "postcss-modules": "^6.0.1",
     "prettier": "3.8.3",
     "sass": "^1.99.0",
-    "typescript-eslint": "^8.59.1"
+    "typescript-eslint": "^8.73.0"
   }
 }
